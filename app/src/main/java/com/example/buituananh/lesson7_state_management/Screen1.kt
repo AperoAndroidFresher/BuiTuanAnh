@@ -1,15 +1,5 @@
-package com.example.buituananh.lesson6_jetpackcompose_ui
+package com.example.buituananh.lesson7_state_management
 
-import android.widget.GridLayout.Spec
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,7 +39,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,37 +51,48 @@ import com.example.buituananh.ui.theme.background1
 import kotlinx.coroutines.delay
 
 @Composable
-fun ComposeHoisting(
+fun Screen1(
     modifier: Modifier = Modifier
 ) {
 
-    val currentWidthScreen = LocalConfiguration.current.screenWidthDp.dp
     val currentFocusManager = LocalFocusManager.current
-    val context = LocalContext.current
-
-    var isShowDialog by remember {
-        mutableStateOf(false)
-    }
+    val currentWidthScreen = LocalConfiguration.current.screenWidthDp.dp
 
     val focusRequester = remember {
         FocusRequester()
+    }
+
+    var isShowDialog by remember {
+        mutableStateOf(false)
     }
 
     var inputNameField by remember {
         mutableStateOf("")
     }
 
+    var isNameError by remember {
+        mutableStateOf(false)
+    }
+
     var inputPhoneFieldField by remember {
         mutableStateOf("")
     }
+
 
     var inputUniversityField by remember {
         mutableStateOf("")
     }
 
+    var isUniversityError by remember {
+        mutableStateOf(false)
+    }
+
+
     var inputDescriptionField by remember {
         mutableStateOf("")
     }
+
+    var enableEditor by remember { mutableStateOf(false) }
 
     LaunchedEffect(isShowDialog) {
         if (isShowDialog) {
@@ -108,9 +108,14 @@ fun ComposeHoisting(
             .background(background1),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(34.dp))
         //information section
-        InformationSection(focusRequester = focusRequester)
+        InformationSection(
+            enableEditor = enableEditor
+        ) {
+            enableEditor = true
+            focusRequester.requestFocus()
+        }
         Spacer(Modifier.height(28.dp))
         //name, phonenumber section
         Row(
@@ -125,6 +130,8 @@ fun ComposeHoisting(
                 titleName = "Name",
                 placeholderText = "Enter your name...",
                 inputValue = inputNameField,
+                isEnabled = enableEditor,
+                isError = isNameError
             ) {
                 inputNameField = it
             }
@@ -134,6 +141,8 @@ fun ComposeHoisting(
                 titleName = "Phone number",
                 placeholderText = "Your phone number...",
                 inputValue = inputPhoneFieldField,
+                isEnabled = enableEditor,
+                isPhoneOptions = true
             ) {
                 inputPhoneFieldField = it
             }
@@ -149,6 +158,8 @@ fun ComposeHoisting(
                 titleName = "UNIVERSITY NAME",
                 placeholderText = "Your university name...",
                 inputValue = inputUniversityField,
+                isEnabled = enableEditor,
+                isError = isUniversityError
             ) {
                 inputUniversityField = it
             }
@@ -164,41 +175,45 @@ fun ComposeHoisting(
                 titleName = "DESCRIBE YOURSELF",
                 placeholderText = "Enter a description about yourself...",
                 inputValue = inputDescriptionField,
-                maxLines = 4
+                maxLines = 4,
+                isEnabled = enableEditor,
+                isLastOne = true
             ) {
                 inputDescriptionField = it
             }
         }
         Spacer(Modifier.height(20.dp))
         //submit button
-        Button(
-            onClick = {
-                currentFocusManager.clearFocus()
-                isShowDialog = true
-            },
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Text(
-                "Submit", modifier = Modifier.padding(
-                    vertical = 8.dp,
-                    horizontal = 24.dp
+        if (enableEditor) {
+            Button(
+                onClick = {
+//                    currentFocusManager.clearFocus()
+                    isNameError = false
+                    isUniversityError = false
+                    validateInput(
+                        name = inputNameField,
+                        university = inputUniversityField,
+                        onNameError = {
+                            isNameError = true
+                        }
+                    ) {
+                        isUniversityError = true
+                    }
+                    if(!isNameError && !isUniversityError) {
+                        isShowDialog = true
+                    }
+                },
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(
+                    "Submit", modifier = Modifier.padding(
+                        vertical = 8.dp,
+                        horizontal = 24.dp
+                    )
                 )
-            )
+            }
         }
-
-        AnimatedVisibility(
-            visible = isShowDialog,
-            enter = slideInVertically(
-                animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing),
-                initialOffsetY = { fullHeight -> fullHeight }
-            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-            exit = slideOutVertically(
-                animationSpec = tween(durationMillis = 300, easing = FastOutLinearInEasing),
-                targetOffsetY = { fullHeight -> fullHeight }
-            ) + fadeOut(
-                animationSpec = tween(durationMillis = 300)
-            )
-        ) {
+        if (isShowDialog) {
             SuccessfulDialog {
                 isShowDialog = false
             }
@@ -207,116 +222,19 @@ fun ComposeHoisting(
 
 }
 
-@Composable
-fun InformationSection(
-    modifier: Modifier = Modifier,
-    focusRequester: FocusRequester
+fun validateInput(
+    name: String,
+    university: String,
+    onNameError: () -> Unit,
+    onUniversityError: () -> Unit,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Spacer(Modifier.size(30.dp))
-            Text(
-                text = "MY INFORMATION",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.W500
-            )
-            Icon(
-                painter = painterResource(R.drawable.registration),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable {
-                        focusRequester.requestFocus()
-                    }
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-        Image(
-            painter = painterResource(R.drawable.avatar),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .border(
-                    1.dp,
-                    Color.Black,
-                    CircleShape
-                )
-        )
+    val regex = Regex("^[a-zA-Z]+( [a-zA-Z]+)*$")
+    if(!name.matches(regex)) {
+        onNameError()
     }
-
-}
-
-@Composable
-fun InputField(
-    modifier: Modifier = Modifier,
-    titleName: String = "",
-    placeholderText: String = "",
-    inputValue: String = "",
-    maxLines: Int = 1,
-    isTextFieldScaleFullyWidth: Boolean = true,
-    onValueChange: (String) -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    Column(
-        modifier = modifier
-    ) {
-        Text(
-            text = titleName.uppercase(),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.alpha(0.5f)
-        )
-        Spacer(Modifier.height(8.dp))
-        TextField(
-            value = inputValue,
-            onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholderText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.alpha(0.6f)
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.White,
-                unfocusedIndicatorColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-
-                ),
-            shape = MaterialTheme.shapes.medium,
-            maxLines = maxLines,
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusManager.moveFocus(FocusDirection.Next)
-                }
-            ),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            modifier = Modifier
-                .height((maxLines * 56).dp)
-                .border(
-                    1.dp,
-                    Color.LightGray,
-                    MaterialTheme.shapes.medium
-                )
-                .then(
-                    if (isTextFieldScaleFullyWidth) {
-                        Modifier.fillMaxWidth()
-                    } else {
-                        Modifier
-                    }
-                )
-        )
+    if(!university.matches(regex)) {
+        onUniversityError()
     }
 
 }
@@ -325,7 +243,7 @@ fun InputField(
 @Composable
 fun PreviewComposeHoisting(modifier: Modifier = Modifier) {
     BuiTuanAnhTheme {
-        ComposeHoisting()
+        Screen1()
     }
 }
 

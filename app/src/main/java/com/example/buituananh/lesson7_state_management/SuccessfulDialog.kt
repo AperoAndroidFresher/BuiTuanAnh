@@ -1,4 +1,4 @@
-package com.example.buituananh.lesson6_jetpackcompose_ui
+package com.example.buituananh.lesson7_state_management
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,9 +40,7 @@ fun SuccessfulDialog(
 
 
     Dialog(
-        onDismissRequest = {
-            onDismissRequest()
-        }
+        onDismissRequest =  onDismissRequest
     ) {
         Card(
             modifier = modifier
@@ -53,7 +51,6 @@ fun SuccessfulDialog(
                 containerColor = Color.White
             )
         ) {
-
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
