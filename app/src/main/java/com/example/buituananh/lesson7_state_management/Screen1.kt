@@ -1,10 +1,6 @@
 package com.example.buituananh.lesson7_state_management
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,17 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,21 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.buituananh.R
+import com.example.buituananh.model.UserInformation
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.ui.theme.background1
 import kotlinx.coroutines.delay
@@ -57,6 +38,10 @@ fun Screen1(
 
     val currentFocusManager = LocalFocusManager.current
     val currentWidthScreen = LocalConfiguration.current.screenWidthDp.dp
+
+    var state by remember {
+        mutableStateOf(UserInformation())
+    }
 
     val focusRequester = remember {
         FocusRequester()
@@ -78,6 +63,9 @@ fun Screen1(
         mutableStateOf("")
     }
 
+    var isPhoneNumberError by remember {
+        mutableStateOf(false)
+    }
 
     var inputUniversityField by remember {
         mutableStateOf("")
@@ -142,7 +130,8 @@ fun Screen1(
                 placeholderText = "Your phone number...",
                 inputValue = inputPhoneFieldField,
                 isEnabled = enableEditor,
-                isPhoneOptions = true
+                isPhoneOptions = true,
+                isError = isPhoneNumberError
             ) {
                 inputPhoneFieldField = it
             }
@@ -191,15 +180,20 @@ fun Screen1(
                     isNameError = false
                     isUniversityError = false
                     validateInput(
-                        name = inputNameField,
-                        university = inputUniversityField,
-                        onNameError = {
-                            isNameError = true
-                        }
-                    ) {
-                        isUniversityError = true
-                    }
+                        name = inputNameField.trim(),
+                        university = inputUniversityField.trim(),
+                        phoneNumber = inputPhoneFieldField.trim(),
+                        onPhoneError = {isPhoneNumberError = true},
+                        onNameError = { isNameError = true },
+                        onUniversityError = { isUniversityError = true }
+                    )
                     if(!isNameError && !isUniversityError) {
+                        state = state.copy(
+                            name = inputNameField.trim(),
+                            phoneNumber = inputPhoneFieldField,
+                            universityName = inputUniversityField.trim(),
+                            description = inputDescriptionField
+                        )
                         isShowDialog = true
                     }
                 },
@@ -227,6 +221,8 @@ fun validateInput(
     university: String,
     onNameError: () -> Unit,
     onUniversityError: () -> Unit,
+    onPhoneError: () -> Unit,
+    phoneNumber: String,
 ) {
 
     val regex = Regex("^[a-zA-Z]+( [a-zA-Z]+)*$")
@@ -235,6 +231,9 @@ fun validateInput(
     }
     if(!university.matches(regex)) {
         onUniversityError()
+    }
+    if(phoneNumber.isEmpty()) {
+        onPhoneError()
     }
 
 }
@@ -247,16 +246,3 @@ fun PreviewComposeHoisting(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true, backgroundColor = 0xFFF5FAFC)
-@Composable
-fun PreviewInputField(modifier: Modifier = Modifier) {
-    val currentWidthScreen = LocalConfiguration.current.screenWidthDp.dp
-    BuiTuanAnhTheme {
-        InputField(
-            modifier = Modifier.fillMaxWidth(),
-            titleName = "NAME",
-            placeholderText = "Enter your name..",
-            maxLines = 1,
-        ) { }
-    }
-}
