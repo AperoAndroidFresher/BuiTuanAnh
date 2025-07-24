@@ -1,6 +1,7 @@
 package com.example.buituananh.lesson8_listlayout
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -32,8 +35,13 @@ import androidx.compose.ui.unit.dp
 import com.example.buituananh.model.Song
 import com.example.buituananh.model.listSongs
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
+import org.burnoutcrew.reorderable.reorderable
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlaylistScreen(
     modifier: Modifier = Modifier
@@ -42,8 +50,21 @@ fun PlaylistScreen(
     val listSongsState = remember {
         mutableStateListOf<Song>().apply { addAll(listSongs) }
     }
+    var backingUpList by remember {
+        mutableStateOf<List<Song>>(emptyList())
+    }
+
+    val state = rememberReorderableLazyGridState(
+        onMove = { from, to ->
+            listSongsState.add(to.index, listSongsState.removeAt(from.index))
+        }
+    )
 
     var isGridMode by remember {
+        mutableStateOf(false)
+    }
+
+    var isSortMode by remember {
         mutableStateOf(false)
     }
 
@@ -80,38 +101,71 @@ fun PlaylistScreen(
                 detectTapGestures(
                     onPress = {
                         showPopup = false
-                    }
-                )
-            }
-    ) {
+                    })
+            }) {
 
         Column {
             Spacer(Modifier.height(12.dp))
 
             HeaderSection(
-                isGridMode = isGridMode
-            ) {
-                isGridMode = !isGridMode
-            }
+                isGridMode = isGridMode,
+                isSortMode = isSortMode,
+                onSwitchToSortMode = {
+                    isSortMode = true
+                    backingUpList = listSongsState.toList()
+                },
+                onCancelSort = {
+                    isSortMode = false
+                    listSongsState.clear()
+                    listSongsState.addAll(backingUpList)
+                },
+                onAcceptSort = {
+                    isSortMode = false
+                }
+            ) { isGridMode = !isGridMode }
 
             Spacer(Modifier.height(20.dp))
 
             LazyVerticalGrid(
-                modifier = Modifier.fillMaxWidth(),
-                columns = if (isGridMode) GridCells.Fixed(2) else GridCells.Fixed(1),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                columns = GridCells.Fixed(if (isGridMode) 2 else 1),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                state = state.gridState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .reorderable(state)
             ) {
                 items(listSongsState) { song: Song ->
                     if (!isGridMode) {
-                        LinearSongItem(
-                            song = song
-                        ) { (offset, song) ->
-                            currentSong = song
-                            if (currentOffset != offset) {
-                                currentOffset = offset
-                                showPopup = true
-                            } else {
-                                showPopup = false
+                        ReorderableItem(
+                            reorderableState = state,
+                            key = song.id,
+                        ) { isDragging ->
+                            Log.d("A1", "${song.id}: $isDragging")
+                            LinearSongItem(
+                                modifier = Modifier
+                                    .then(
+                                        if (isSortMode) {
+                                            Modifier
+                                                .detectReorderAfterLongPress(state)
+                                                .graphicsLayer {
+                                                    alpha = if (isDragging) 0.9f else 1f
+                                                    scaleX = if (isDragging) 1.2f else 1f
+                                                    scaleY = if (isDragging) 1.2f else 1f
+                                                }
+                                        } else {
+                                            Modifier
+                                        }
+                                    ),
+                                isSortMode = isSortMode,
+                                song = song
+                            ) { (offset, song) ->
+                                currentSong = song
+                                if (currentOffset != offset) {
+                                    currentOffset = offset
+                                    showPopup = true
+                                } else {
+                                    showPopup = false
+                                }
                             }
                         }
                     } else {
@@ -132,18 +186,15 @@ fun PlaylistScreen(
         }
 
         if (showPopup) {
-            CustomPopupSong(
-                modifier = Modifier.offset {
-                    IntOffset(
-                        safeOffsetX.roundToInt(),
-                        currentOffset.y.roundToInt()
-                    )
-                },
-                onRemove = {
-                    showPopup = false
-                    listSongsState.remove(currentSong)
-                    currentSong = null
-                }) {
+            CustomPopupSong(modifier = Modifier.offset {
+                IntOffset(
+                    safeOffsetX.roundToInt(), currentOffset.y.roundToInt()
+                )
+            }, onRemove = {
+                showPopup = false
+                listSongsState.remove(currentSong)
+                currentSong = null
+            }) {
                 //sharing feature
             }
         }

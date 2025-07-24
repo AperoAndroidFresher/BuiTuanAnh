@@ -5,10 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +28,10 @@ import com.example.buituananh.R
 fun HeaderSection(
     modifier: Modifier = Modifier,
     isGridMode: Boolean,
+    isSortMode: Boolean,
+    onSwitchToSortMode: () -> Unit,
+    onCancelSort: () -> Unit,
+    onAcceptSort: () -> Unit,
     onModeChange: () -> Unit,
 ) {
 
@@ -33,10 +42,24 @@ fun HeaderSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(Modifier.size(40.dp))
+
+        if(isSortMode) {
+            IconButton(
+                onClick = onCancelSort
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Clear,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+        } else {
+            Spacer(Modifier.width(50.dp).height(30.dp))
+        }
 
         Text(
-            text = "My Playlist",
+            text = if(isSortMode) "Sorting" else "My Playlist",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.W600,
             color = MaterialTheme.colorScheme.onSurface
@@ -44,22 +67,38 @@ fun HeaderSection(
 
         Row(
         ) {
-            Icon(
-                painter = if(isGridMode) painterResource(R.drawable.filled_menu) else painterResource(R.drawable.menu),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(25.dp)
-                    .clickable {
-                        onModeChange()
-                    }
-            )
-            Spacer(Modifier.width(12.dp))
-            Icon(
-                painter = painterResource(R.drawable.right_alignment),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(28.dp)
-            )
+            if(!isSortMode) {
+                Icon(
+                    painter = if(isGridMode) painterResource(R.drawable.filled_menu) else painterResource(R.drawable.menu),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(25.dp)
+                        .clickable {
+                            onModeChange()
+                        }
+                )
+                Spacer(Modifier.width(12.dp))
+                Icon(
+                    painter = painterResource(R.drawable.right_alignment),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(28.dp)
+                        .clickable {
+                            onSwitchToSortMode()
+                        }
+                )
+            } else {
+                IconButton(
+                    onClick = onAcceptSort
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+            }
         }
     }
 

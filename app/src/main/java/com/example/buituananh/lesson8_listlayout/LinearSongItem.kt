@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +43,7 @@ import com.example.buituananh.util.formatToString
 fun LinearSongItem(
     modifier: Modifier = Modifier,
     song: Song,
+    isSortMode: Boolean,
     onClick: (Pair<Offset, Song>) -> Unit
 ) {
 
@@ -50,7 +52,7 @@ fun LinearSongItem(
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(0.dp)
             .padding(horizontal = 16.dp),
@@ -98,18 +100,24 @@ fun LinearSongItem(
         Spacer(Modifier.width(8.dp))
         IconButton(
             onClick = {
-                onClick(iconOffset to song)
+                if(!isSortMode) onClick(iconOffset to song)
             },
-            modifier = Modifier.onGloballyPositioned { coords ->
-                val offset = coords.localToWindow(Offset.Zero)
-                iconOffset = offset
-            }
+            modifier = Modifier.then(
+                if(!isSortMode) {
+                    Modifier.onGloballyPositioned { coords ->
+                        val offset = coords.localToWindow(Offset.Zero)
+                        iconOffset = offset
+                    }
+                } else {
+                    Modifier
+                }
+            )
         ) {
             Icon(
-                imageVector = Icons.Default.MoreVert,
+                imageVector = if(!isSortMode) Icons.Default.MoreVert else Icons.Default.Menu,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
@@ -119,16 +127,16 @@ fun LinearSongItem(
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewLinearSongItem(modifier: Modifier = Modifier) {
-    BuiTuanAnhTheme {
-        LinearSongItem(
-            song = Song(
-                name = "graindy days",
-                author = "moody.",
-                duration = 4 to 30,
-                imageId = R.drawable.pic1,
-                id = 0
-            )
-        ) { }
-    }
+//    BuiTuanAnhTheme {
+//        LinearSongItem(
+//            song = Song(
+//                name = "graindy days",
+//                author = "moody.",
+//                duration = 4 to 30,
+//                imageId = R.drawable.pic1,
+//                id = 0
+//            )
+//        ) { }
+//    }
 
 }
