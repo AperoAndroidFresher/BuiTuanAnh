@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation ("com.airbnb.android:lottie:6.6.6")
     implementation ("com.airbnb.android:lottie-compose:6.6.6")
     implementation("androidx.navigation:navigation-compose:2.9.2")
