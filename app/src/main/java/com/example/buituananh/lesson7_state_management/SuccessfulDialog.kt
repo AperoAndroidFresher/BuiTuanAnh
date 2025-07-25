@@ -46,10 +46,7 @@ fun SuccessfulDialog(
             modifier = modifier
                 .fillMaxWidth()
                 .aspectRatio(1f),
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
+            shape = MaterialTheme.shapes.large
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),

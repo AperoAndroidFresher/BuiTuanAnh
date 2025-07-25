@@ -32,3 +32,5 @@ val Typography = Typography(
     )
     */
 )
+
+val AppTypography = androidx.compose.material3.Typography()
