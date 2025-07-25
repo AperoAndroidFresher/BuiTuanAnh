@@ -1,11 +1,10 @@
-package com.example.buituananh.lesson7_state_management
+package com.example.buituananh.presentation.profile
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,8 +39,8 @@ fun InformationSection(
     isClick: () -> Unit
 ) {
 
-    val rotationAngle by animateFloatAsState(targetValue = if(isDarkTheme) 0f else 180f)
-    val iconId = if(isDarkTheme) R.drawable.dark_them else R.drawable.light_theme
+    val rotationAngle by animateFloatAsState(targetValue = if(isDarkTheme) 180f else 0f)
+    val iconId = if(isDarkTheme) R.drawable.light_theme else R.drawable.dark_them
 
     Column(
         modifier = modifier

@@ -1,4 +1,4 @@
-package com.example.buituananh.lesson8_listlayout
+package com.example.buituananh.presentation.playlist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -34,9 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.buituananh.R
 import com.example.buituananh.model.Song
-import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.formatToString
 
 @Composable

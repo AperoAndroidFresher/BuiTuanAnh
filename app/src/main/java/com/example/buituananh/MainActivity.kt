@@ -1,14 +1,17 @@
 package com.example.buituananh
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.buituananh.lesson7_state_management.Screen1
+import androidx.compose.ui.Modifier
+import com.example.buituananh.presentation.navigation.NavigationHost
+import com.example.buituananh.presentation.profile.Screen1
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,14 +21,11 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember {
                 mutableStateOf(false)
             }
-            BuiTuanAnhTheme(
-                darkTheme = isDarkTheme
-            ) {
-                Screen1(
-                    isDarkTheme = isDarkTheme
-                ) {
-                    Log.d("A1", "running")
-                    isDarkTheme = !isDarkTheme
+            BuiTuanAnhTheme() {
+                Scaffold {
+                    NavigationHost(
+                        modifier = Modifier.padding(it)
+                    )
                 }
             }
         }

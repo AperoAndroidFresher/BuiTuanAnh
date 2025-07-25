@@ -1,4 +1,4 @@
-package com.example.buituananh.lesson7_state_management
+package com.example.buituananh.presentation.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
