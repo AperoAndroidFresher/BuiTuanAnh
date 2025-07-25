@@ -1,4 +1,4 @@
-package com.example.buituananh.lesson7_state_management
+package com.example.buituananh.presentation.profile
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -9,8 +9,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -45,7 +45,8 @@ fun InputField(
         Text(
             text = titleName.uppercase(),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.alpha(0.5f)
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.alpha(0.8f)
         )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
@@ -58,8 +59,12 @@ fun InputField(
                     modifier = Modifier.alpha(0.6f)
                 )
             },
-            colors = OutlinedTextFieldDefaults.colors(
-                ),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                focusedTextColor = MaterialTheme.colorScheme.primary,
+                unfocusedTextColor = MaterialTheme.colorScheme.primary
+            ),
             shape = MaterialTheme.shapes.medium,
             maxLines = maxLines,
             keyboardActions = KeyboardActions(

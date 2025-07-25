@@ -1,4 +1,4 @@
-package com.example.buituananh.lesson8_listlayout
+package com.example.buituananh.presentation.playlist
 
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf

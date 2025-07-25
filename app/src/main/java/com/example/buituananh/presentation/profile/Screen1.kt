@@ -1,4 +1,4 @@
-package com.example.buituananh.lesson7_state_management
+package com.example.buituananh.presentation.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -28,12 +28,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.buituananh.model.UserInformation
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.example.buituananh.ui.theme.background1
 import kotlinx.coroutines.delay
 
 @Composable
 fun Screen1(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDarkTheme: Boolean,
+    onThemeChange: () -> Unit
 ) {
 
     val currentFocusManager = LocalFocusManager.current
@@ -93,13 +94,15 @@ fun Screen1(
         modifier = Modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
-            .background(background1),
+            .background(MaterialTheme.colorScheme.surface),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(34.dp))
         //information section
         InformationSection(
-            enableEditor = enableEditor
+            enableEditor = enableEditor,
+            isDarkTheme = isDarkTheme,
+            onDarkThemeChange = onThemeChange
         ) {
             enableEditor = true
             focusRequester.requestFocus()
@@ -242,7 +245,7 @@ fun validateInput(
 @Composable
 fun PreviewComposeHoisting(modifier: Modifier = Modifier) {
     BuiTuanAnhTheme {
-        Screen1()
+//        Screen1()
     }
 }
 
