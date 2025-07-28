@@ -1,9 +1,7 @@
 package com.example.buituananh.presentation.signup.screen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,37 +15,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.buituananh.R
-import com.example.buituananh.presentation.login.LoginEvent
-import com.example.buituananh.presentation.login.LoginUiController
 import com.example.buituananh.presentation.login.item.InputTextField
-import com.example.buituananh.presentation.login.item.LogoSection
-import com.example.buituananh.presentation.login.item.RememberedCheckbox
 import com.example.buituananh.presentation.signup.SignupEvent
 import com.example.buituananh.presentation.signup.SignupUiController
 import com.example.buituananh.presentation.signup.item.SignUpLogoSection
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.example.buituananh.util.Route
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.buituananh.util.Destination
 
 @Composable
 fun SignupScreen(
     modifier: Modifier = Modifier,
     onPopBack: () -> Unit,
-    onNavigate: (String) -> Unit
+    onNavigate: (Destination) -> Unit
 ) {
 
     val uiLogicController = remember { SignupUiController() }
@@ -121,7 +106,7 @@ fun SignupScreen(
             onClick = {
                 val hasError = uiLogicController.onEvent(SignupEvent.Submit)
                 if (!hasError) {
-                    onNavigate(Route.LOGIN_SCREEN.toString())
+                    onNavigate(Destination.LoginScreen)
 
                 }
             },

@@ -2,11 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 android {
     namespace = "com.example.buituananh"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.buituananh"
@@ -40,8 +41,11 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.core)
     implementation ("androidx.compose.material:material-icons-extended:1.6.1")
-    implementation ("androidx.navigation:navigation-compose:2.9.2")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation ("com.airbnb.android:lottie:6.6.6")
     implementation ("com.airbnb.android:lottie-compose:6.6.6")
