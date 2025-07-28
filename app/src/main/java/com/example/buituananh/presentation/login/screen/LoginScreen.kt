@@ -28,12 +28,12 @@ import com.example.buituananh.presentation.login.item.InputTextField
 import com.example.buituananh.presentation.login.item.LogoSection
 import com.example.buituananh.presentation.login.item.RememberedCheckbox
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.example.buituananh.util.Route
+import com.example.buituananh.util.Destination
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onNavigate: (String) -> Unit
+    onNavigate: (Destination) -> Unit
 ) {
 
     val uiLogicController = remember { LoginUiController() }
@@ -81,7 +81,7 @@ fun LoginScreen(
                 val hasError = uiLogicController.onEvent(LoginEvent.Login)
                 if(!hasError) {
                     Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
-                    onNavigate(Route.PLAYLIST_SCREEN.toString())
+                    onNavigate(Destination.HomeScreen)
                 }
             },
             shape = MaterialTheme.shapes.extraLarge,
@@ -106,7 +106,7 @@ fun LoginScreen(
                 )
                 TextButton(
                     onClick = {
-                        onNavigate(Route.SIGNUP_SCREEN.toString())
+                        onNavigate(Destination.SignupScreen)
                     }
                 ) {
                     Text(

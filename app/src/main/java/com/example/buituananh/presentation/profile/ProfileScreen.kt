@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,9 +32,9 @@ import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import kotlinx.coroutines.delay
 
 @Composable
-fun Screen1(
+fun ProfileScreen(
     modifier: Modifier = Modifier,
-    isDarkTheme: Boolean,
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
     onThemeChange: () -> Unit
 ) {
 
