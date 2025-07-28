@@ -22,8 +22,14 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember {
                 mutableStateOf(false)
             }
-            BuiTuanAnhTheme() {
-                NavigationRoot()
+            BuiTuanAnhTheme(
+                darkTheme = isDarkTheme
+            ) {
+                NavigationRoot(
+                    isDarkTheme = isDarkTheme
+                ) {
+                    isDarkTheme = !isDarkTheme
+                }
             }
         }
     }

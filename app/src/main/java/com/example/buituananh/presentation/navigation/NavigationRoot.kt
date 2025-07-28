@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -28,11 +27,19 @@ import com.example.buituananh.presentation.splash.SplashScreen
 import com.example.buituananh.util.Destination
 
 @Composable
-fun NavigationRoot(modifier: Modifier = Modifier) {
+fun NavigationRoot(
+    modifier: Modifier = Modifier,
+    isDarkTheme: Boolean,
+    onThemeChange: () -> Unit
+) {
 
     val backStack = rememberNavBackStack(Destination.SplashScreen)
 
-    val currentDestination by remember {
+    var currentDestinationIdx by remember {
+        mutableIntStateOf(0)
+    }
+
+    val currentScreen by remember {
         derivedStateOf {
             backStack.last()
         }
@@ -41,10 +48,16 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            if (currentDestination is Destination.HomeScreen
-                || currentDestination is Destination.LibraryScreen
-                || currentDestination is Destination.PlaylistScreen) {
-                BottomBar { route ->
+            if (currentScreen is Destination.HomeScreen
+                || currentScreen is Destination.LibraryScreen
+                || currentScreen is Destination.PlaylistScreen) {
+                BottomBar(
+                    currentDestination = currentDestinationIdx,
+                    onDestinationChange = {
+                        currentDestinationIdx = it
+                    }
+                ) { route ->
+                    backStack.removeLastOrNull()
                     backStack.add(route)
                 }
             }
@@ -63,6 +76,7 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                     is Destination.SplashScreen -> {
                         NavEntry(key) {
                             SplashScreen {
+                                backStack.removeLastOrNull()
                                 backStack.add(Destination.LoginScreen)
                             }
                         }
@@ -71,7 +85,12 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                     is Destination.LoginScreen -> {
                         NavEntry(key) {
                             LoginScreen { route ->
-                                backStack.add(route)
+                                if(route is Destination.HomeScreen) {
+                                    while(backStack.isNotEmpty()) {
+                                        backStack.removeLastOrNull()
+                                    }
+                                }
+                                backStack.add(route) //home
                             }
                         }
                     }
@@ -111,9 +130,9 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                     is Destination.ProfileScreen -> {
                         NavEntry(key) {
                             ProfileScreen(
-                                isDarkTheme = isSystemInDarkTheme()
+                                isDarkTheme = isDarkTheme
                             ) {
-
+                                onThemeChange()
                             }
                         }
                     }

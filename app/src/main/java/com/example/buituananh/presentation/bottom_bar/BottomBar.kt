@@ -31,15 +31,13 @@ import com.example.buituananh.util.Destination
 @Composable
 fun BottomBar(
     modifier: Modifier = Modifier,
+    currentDestination: Int,
+    onDestinationChange: (Int) -> Unit,
     onClick: (Destination) -> Unit
 ) {
 
     val barItemLists = remember {
         mutableStateOf(bottomBarLists)
-    }
-
-    var selectedDestination by rememberSaveable {
-        mutableIntStateOf(0)
     }
 
     NavigationBar(
@@ -49,14 +47,14 @@ fun BottomBar(
 
         barItemLists.value.forEachIndexed { index, item ->
             NavigationBarItem(
-                selected = selectedDestination == index,
+                selected = currentDestination == index,
                 onClick = {
                     onClick(item.destination)
-                    selectedDestination = index
+                    onDestinationChange(index)
                 },
                 icon = {
                     Icon(
-                        imageVector = if (selectedDestination == index) item.selectedIcon else item.unselectedIcon,
+                        imageVector = if (currentDestination == index) item.selectedIcon else item.unselectedIcon,
                         contentDescription = null
                     )
                 },

@@ -53,11 +53,11 @@ fun PlaylistScreen(
         mutableStateOf<List<Song>>(emptyList())
     }
 
-    val state = rememberReorderableLazyGridState(
-        onMove = { from, to ->
-            listSongsState.add(to.index, listSongsState.removeAt(from.index))
-        }
-    )
+//    val state = rememberReorderableLazyGridState(
+//        onMove = { from, to ->
+//            listSongsState.add(to.index, listSongsState.removeAt(from.index))
+//        }
+//    )
 
     var isGridMode by remember {
         mutableStateOf(false)
@@ -128,29 +128,29 @@ fun PlaylistScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(if (isGridMode) 2 else 1),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                state = state.gridState,
+//                state = state.gridState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .reorderable(state)
+//                    .reorderable(state)
             ) {
                 items(listSongsState) { song: Song ->
                     if (!isGridMode) {
-                        ReorderableItem(
-                            reorderableState = state,
-                            key = song.id,
-                        ) { isDragging ->
-                            Log.d("A1", "${song.id}: $isDragging")
+//                        ReorderableItem(
+//                            reorderableState = state,
+//                            key = song.id,
+//                        ) { isDragging ->
+//                            Log.d("A1", "${song.id}: $isDragging")
                             LinearSongItem(
                                 modifier = Modifier
                                     .then(
                                         if (isSortMode) {
                                             Modifier
-                                                .detectReorderAfterLongPress(state)
-                                                .graphicsLayer {
-                                                    alpha = if (isDragging) 0.9f else 1f
-                                                    scaleX = if (isDragging) 1.2f else 1f
-                                                    scaleY = if (isDragging) 1.2f else 1f
-                                                }
+//                                                .detectReorderAfterLongPress(state)
+//                                                .graphicsLayer {
+//                                                    alpha = if (isDragging) 0.9f else 1f
+//                                                    scaleX = if (isDragging) 1.2f else 1f
+//                                                    scaleY = if (isDragging) 1.2f else 1f
+//                                                }
                                         } else {
                                             Modifier
                                         }
@@ -166,7 +166,7 @@ fun PlaylistScreen(
                                     showPopup = false
                                 }
                             }
-                        }
+//                        }
                     } else {
                         GridSongItem(
                             song = song
