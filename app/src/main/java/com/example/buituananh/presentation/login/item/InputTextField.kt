@@ -2,16 +2,10 @@ package com.example.buituananh.presentation.login.item
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -50,7 +43,7 @@ fun InputTextField(
     var isVisible by remember { mutableStateOf(false) }
 
     val rotationAngle by animateFloatAsState(targetValue = if (isVisible) 180f else 0f)
-    val visibilityIcon = if (isVisible) Icons.Filled.Visibility else Icons.Outlined.VisibilityOff
+    val visibilityIcon = if (isVisible) R.drawable.visibility else R.drawable.visibilityoff
 
     Column {
         OutlinedTextField(
@@ -75,9 +68,9 @@ fun InputTextField(
                         }
                     ) {
                         Icon(
-                            imageVector = visibilityIcon,
+                            painter = painterResource(visibilityIcon),
                             contentDescription = null,
-                            modifier = Modifier.graphicsLayer(
+                            modifier = Modifier.size(20.dp).graphicsLayer(
                                 rotationZ = rotationAngle
                             )
                         )

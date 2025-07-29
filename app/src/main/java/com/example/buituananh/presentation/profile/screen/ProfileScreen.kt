@@ -1,5 +1,12 @@
-package com.example.buituananh.presentation.profile
+package com.example.buituananh.presentation.profile.screen
 
+import android.graphics.Bitmap
+import android.media.MediaRouter.UserRouteInfo
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
@@ -10,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,11 +33,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.buituananh.model.UserInformation
+import com.example.buituananh.presentation.profile.item.InformationSection
+import com.example.buituananh.presentation.profile.item.InputField
+import com.example.buituananh.presentation.profile.item.SuccessfulDialog
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
+import com.example.buituananh.util.ImageUtils
 import kotlinx.coroutines.delay
 
 @Composable
@@ -83,6 +97,21 @@ fun ProfileScreen(
     }
 
     var enableEditor by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
+    var uriPicker by remember { mutableStateOf<Uri>(Uri.EMPTY) }
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if(uri == null) {
+                Toast.makeText(context, "Pick image unsuccessfully", Toast.LENGTH_LONG).show()
+            } else {
+                uriPicker = ImageUtils.resizeImage(
+                    context,
+                    uri
+                ) ?: Uri.EMPTY
+            }
+        }
 
     LaunchedEffect(isShowDialog) {
         if (isShowDialog) {
@@ -95,7 +124,8 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
-            .background(MaterialTheme.colorScheme.surface),
+            .background(MaterialTheme.colorScheme.surface)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(34.dp))
@@ -103,7 +133,11 @@ fun ProfileScreen(
         InformationSection(
             enableEditor = enableEditor,
             isDarkTheme = isDarkTheme,
-            onDarkThemeChange = onThemeChange
+            onDarkThemeChange = onThemeChange,
+            uri = uriPicker,
+            onAvatarChange = {
+                launcher.launch("image/*")
+            }
         ) {
             enableEditor = true
             focusRequester.requestFocus()
@@ -187,11 +221,11 @@ fun ProfileScreen(
                         name = inputNameField.trim(),
                         university = inputUniversityField.trim(),
                         phoneNumber = inputPhoneFieldField.trim(),
-                        onPhoneError = {isPhoneNumberError = true},
+                        onPhoneError = { isPhoneNumberError = true },
                         onNameError = { isNameError = true },
                         onUniversityError = { isUniversityError = true }
                     )
-                    if(!isNameError && !isUniversityError) {
+                    if (!isNameError && !isUniversityError) {
                         state = state.copy(
                             name = inputNameField.trim(),
                             phoneNumber = inputPhoneFieldField,
@@ -230,13 +264,13 @@ fun validateInput(
 ) {
 
     val regex = Regex("^[a-zA-Z]+( [a-zA-Z]+)*$")
-    if(!name.matches(regex)) {
+    if (!name.matches(regex)) {
         onNameError()
     }
-    if(!university.matches(regex)) {
+    if (!university.matches(regex)) {
         onUniversityError()
     }
-    if(phoneNumber.isEmpty()) {
+    if (phoneNumber.isEmpty()) {
         onPhoneError()
     }
 
