@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.profile
+package com.example.buituananh.presentation.profile.item
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
