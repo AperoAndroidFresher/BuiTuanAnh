@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             var isDarkTheme by remember {
-                mutableStateOf(false)
+                mutableStateOf(true)
             }
             BuiTuanAnhTheme(
                 darkTheme = isDarkTheme

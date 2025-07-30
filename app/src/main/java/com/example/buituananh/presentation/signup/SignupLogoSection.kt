@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.signup.item
+package com.example.buituananh.presentation.signup
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +21,7 @@ fun SignUpLogoSection(
 ) {
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
     ) {

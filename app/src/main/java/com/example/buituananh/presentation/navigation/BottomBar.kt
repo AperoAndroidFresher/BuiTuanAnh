@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.navigation.bottom_bar
+package com.example.buituananh.presentation.navigation
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -14,7 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.buituananh.R
-import com.example.buituananh.presentation.navigation.bottom_bar.BottomBarItemManager.Companion.bottomBarLists
+import com.example.buituananh.presentation.navigation.BottomBarItemManager.Companion.bottomBarLists
 import com.example.buituananh.util.Destination
 
 @Composable

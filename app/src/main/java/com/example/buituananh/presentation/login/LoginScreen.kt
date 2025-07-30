@@ -14,16 +14,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
-import com.example.buituananh.presentation.login.LoginEvent
-import com.example.buituananh.presentation.login.LoginUiController
+import com.example.buituananh.presentation.login.LoginEffect
+import com.example.buituananh.presentation.login.LoginIntent
+import com.example.buituananh.presentation.login.LoginState
+import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.item.InputTextField
 import com.example.buituananh.presentation.login.item.LogoSection
 import com.example.buituananh.presentation.login.item.RememberedCheckbox
@@ -31,15 +34,39 @@ import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
 
 @Composable
-fun LoginScreen(
+fun LoginScreenRoot(
     modifier: Modifier = Modifier,
+    viewModel: LoginViewModel,
     onNavigate: (Destination) -> Unit
 ) {
 
-    val uiLogicController = remember { LoginUiController() }
-    val state = uiLogicController.state.value
-
+    val state = viewModel.state.collectAsStateWithLifecycle(initialValue = LoginState()).value
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                LoginEffect.NavigateToHomeScreen -> onNavigate(Destination.HomeScreen)
+                LoginEffect.NavigateToSignupScreen -> onNavigate(Destination.SignupScreen)
+                is LoginEffect.ShowToast -> Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    LoginScreen(
+        modifier = modifier,
+        state = state,
+        onIntent = viewModel::onIntent
+    )
+
+}
+
+@Composable
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    state: LoginState,
+    onIntent: (LoginIntent) -> Unit
+) {
 
     Column(
         modifier = modifier
@@ -57,7 +84,7 @@ fun LoginScreen(
             errorName = state.usernameError,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            uiLogicController.onEvent(LoginEvent.OnUsernameChange(it))
+            onIntent(LoginIntent.OnUsernameChange(it))
         }
         Spacer(Modifier.height(14.dp))
         InputTextField(
@@ -69,26 +96,22 @@ fun LoginScreen(
             errorName = state.passwordError,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            uiLogicController.onEvent(LoginEvent.OnPasswordChange(it))
+            onIntent(LoginIntent.OnPasswordChange(it))
         }
         Spacer(Modifier.height(20.dp))
         RememberedCheckbox(value = state.isChecked) {
-            uiLogicController.onEvent(LoginEvent.OnCheckedChange(it))
+            onIntent(LoginIntent.OnCheckedChange(it))
         }
         Spacer(Modifier.height(20.dp))
         Button(
             onClick = {
-                val hasError = uiLogicController.onEvent(LoginEvent.Login)
-                if(!hasError) {
-                    Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
-                    onNavigate(Destination.HomeScreen)
-                }
+                onIntent(LoginIntent.OnLoginClick)
             },
             shape = MaterialTheme.shapes.extraLarge,
 
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal =  12.dp)
+                .padding(horizontal = 12.dp)
         ) {
             Text("Login", modifier = Modifier.padding(vertical = 10.dp))
         }
@@ -106,7 +129,7 @@ fun LoginScreen(
                 )
                 TextButton(
                     onClick = {
-                        onNavigate(Destination.SignupScreen)
+                        onIntent(LoginIntent.OnSignupClick)
                     }
                 ) {
                     Text(
@@ -127,7 +150,9 @@ fun LoginScreen(
 fun PreviewLoginScreen(modifier: Modifier = Modifier) {
 
     BuiTuanAnhTheme {
-        LoginScreen {
+        LoginScreen(
+            state = LoginState()
+        ) {
 
         }
     }
