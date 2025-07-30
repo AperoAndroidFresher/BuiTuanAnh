@@ -50,9 +50,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun ProfileScreenRoot(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel,
-    isDarkTheme: Boolean = isSystemInDarkTheme(),
-    onThemeChange: () -> Unit
+    viewModel: ProfileViewModel
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -88,8 +86,6 @@ fun ProfileScreenRoot(
         state = state,
         enableEditor = enableEditor,
         isShowDialog = isShowDialog,
-        isDarkTheme = isDarkTheme,
-        onThemeChange = onThemeChange,
         onIntent = viewModel::onIntent,
         onDismissDialog = { isShowDialog = false },
         onEnableEditorChange = { enableEditor = !enableEditor }
@@ -102,8 +98,6 @@ private fun ProfileScreen(
     state: ProfileState,
     enableEditor: Boolean,
     isShowDialog: Boolean,
-    isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
     onIntent: (ProfileIntent) -> Unit,
     onDismissDialog: () -> Unit,
     onEnableEditorChange: () -> Unit
@@ -138,8 +132,6 @@ private fun ProfileScreen(
         //information section
         InformationSection(
             enableEditor = enableEditor,
-            isDarkTheme = isDarkTheme,
-            onDarkThemeChange = onThemeChange,
             uri = state.uriPicker,
             onAvatarChange = {
                 launcher.launch("image/*")

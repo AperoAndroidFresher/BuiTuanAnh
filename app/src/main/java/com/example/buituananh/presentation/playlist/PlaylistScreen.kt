@@ -14,13 +14,17 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -31,45 +35,51 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.buituananh.model.Song
 import com.example.buituananh.model.listSongs
+import com.example.buituananh.presentation.playlist.item.CustomPopupSong
+import com.example.buituananh.presentation.playlist.item.GridSongItem
+import com.example.buituananh.presentation.playlist.item.HeaderSection
+import com.example.buituananh.presentation.playlist.item.LinearSongItem
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
+import com.example.buituananh.util.Destination
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlaylistScreen(
-    modifier: Modifier = Modifier
+fun PlaylistScreenRoot(
+    modifier: Modifier = Modifier,
+    viewModel: PlaylistViewModel
 ) {
 
-    val listSongsState = remember {
-        mutableStateListOf<Song>().apply { addAll(listSongs) }
-    }
-    var backingUpList by remember {
-        mutableStateOf<List<Song>>(emptyList())
+    val state = viewModel.state.collectAsState(initial = PlaylistState()).value
+
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(PlaylistIntent.LoadData)
     }
 
-    var isGridMode by remember {
-        mutableStateOf(false)
-    }
+    PlaylistScreen(
+        state = state,
+        onIntent = viewModel::onIntent
+    )
 
-    var isSortMode by remember {
-        mutableStateOf(false)
-    }
+}
+
+@Composable
+fun PlaylistScreen(
+    modifier: Modifier = Modifier,
+    state: PlaylistState,
+    onIntent: (PlaylistIntent) -> Unit
+) {
 
     var showPopup by remember {
         mutableStateOf(false)
     }
 
-    var currentOffset by remember {
-        mutableStateOf(Offset(0f, 0f))
-    }
-
-    var currentSong: Song? by remember {
-        mutableStateOf(null)
-    }
-
     val context = LocalContext.current
     val displayMetrics = remember {
         context.resources.displayMetrics
+    }
+    var currentOffset by remember {
+        mutableStateOf(Offset(0f, 0f))
     }
     val screenWidthPx = displayMetrics.widthPixels
     val popupWidthPx = with(LocalDensity.current) { 250.dp.toPx() }
@@ -80,49 +90,57 @@ fun PlaylistScreen(
         currentOffset.x - with(LocalDensity.current) { 50.dp.toPx() }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        showPopup = false
-                    })
-            }) {
+    if(state.isLoading) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            onIntent(PlaylistIntent.ToggleSortMode(false))
+                        })
+                }) {
 
-        Column {
-            Spacer(Modifier.height(12.dp))
+            Column {
+                Spacer(Modifier.height(12.dp))
 
-            HeaderSection(
-                isGridMode = isGridMode,
-                isSortMode = isSortMode,
-                onSwitchToSortMode = {
-                    isSortMode = true
-                    backingUpList = listSongsState.toList()
-                },
-                onCancelSort = {
-                    isSortMode = false
-                    listSongsState.clear()
-                    listSongsState.addAll(backingUpList)
-                },
-                onAcceptSort = {
-                    isSortMode = false
+                HeaderSection(
+                    isGridMode = state.isGridMode,
+                    isSortMode = state.isSortMode,
+                    onSwitchToSortMode = {
+                        onIntent(PlaylistIntent.ToggleSortMode(true))
+                    },
+                    onCancelSort = {
+                        onIntent(PlaylistIntent.CancelSortMode)
+                    },
+                    onAcceptSort = {
+                        onIntent(PlaylistIntent.SaveSortMode)
+                    }
+                ) {
+                    onIntent(PlaylistIntent.ToggleGridMode)
                 }
-            ) { isGridMode = !isGridMode }
 
-            Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(20.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(if (isGridMode) 2 else 1),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(if (state.isGridMode) 2 else 1),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
 //                state = state.gridState,
-                modifier = Modifier
-                    .fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
 //                    .reorderable(state)
-            ) {
-                items(listSongsState) { song: Song ->
-                    if (!isGridMode) {
+                ) {
+                    items(state.playlist) { song: Song ->
+                        if (!state.isGridMode) {
 //                        ReorderableItem(
 //                            reorderableState = state,
 //                            key = song.id,
@@ -131,7 +149,7 @@ fun PlaylistScreen(
                             LinearSongItem(
                                 modifier = Modifier
                                     .then(
-                                        if (isSortMode) {
+                                        if (state.isGridMode) {
                                             Modifier
 //                                                .detectReorderAfterLongPress(state)
 //                                                .graphicsLayer {
@@ -143,10 +161,10 @@ fun PlaylistScreen(
                                             Modifier
                                         }
                                     ),
-                                isSortMode = isSortMode,
+                                isSortMode = state.isSortMode,
                                 song = song
                             ) { (offset, song) ->
-                                currentSong = song
+                                onIntent(PlaylistIntent.SongPopupClick(song))
                                 if (currentOffset != offset) {
                                     currentOffset = offset
                                     showPopup = true
@@ -155,37 +173,37 @@ fun PlaylistScreen(
                                 }
                             }
 //                        }
-                    } else {
-                        GridSongItem(
-                            song = song
-                        ) { (offset, song) ->
-                            currentSong = song
-                            if (currentOffset != offset) {
-                                currentOffset = offset
-                                showPopup = true
-                            } else {
-                                showPopup = false
+                        } else {
+                            GridSongItem(
+                                song = song
+                            ) { (offset, song) ->
+                                onIntent(PlaylistIntent.SongPopupClick(song))
+                                if (currentOffset != offset) {
+                                    currentOffset = offset
+                                    showPopup = true
+                                } else {
+                                    showPopup = false
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        if (showPopup) {
-            CustomPopupSong(modifier = Modifier.offset {
-                IntOffset(
-                    safeOffsetX.roundToInt(), currentOffset.y.roundToInt()
-                )
-            }, onRemove = {
-                showPopup = false
-                listSongsState.remove(currentSong)
-                currentSong = null
-            }) {
-                //sharing feature
+            if (showPopup) {
+                CustomPopupSong(modifier = Modifier.offset {
+                    IntOffset(
+                        safeOffsetX.roundToInt(), currentOffset.y.roundToInt()
+                    )
+                }, onRemove = {
+                    showPopup = false
+                    onIntent(PlaylistIntent.RemoveSongFromPlaylist)
+                }) {
+                    //sharing feature
+                }
             }
-        }
 
+        }
     }
 
 }
@@ -196,7 +214,7 @@ fun PlaylistScreen(
 fun PreviewLinearPlaylistScreen(modifier: Modifier = Modifier) {
 
     BuiTuanAnhTheme {
-        PlaylistScreen()
+
     }
 
 }

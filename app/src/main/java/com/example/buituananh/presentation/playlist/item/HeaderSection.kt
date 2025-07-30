@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.playlist
+package com.example.buituananh.presentation.playlist.item
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

@@ -25,7 +25,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
+import com.example.buituananh.presentation.LocalAppThemeController
 import org.jetbrains.annotations.Async
 
 @Composable
@@ -48,10 +52,15 @@ fun InformationSection(
     enableEditor: Boolean,
     uri: Uri,
     onAvatarChange: () -> Unit,
-    isDarkTheme: Boolean,
-    onDarkThemeChange: () -> Unit,
     isClick: () -> Unit
 ) {
+
+    val themeController = LocalAppThemeController.current
+    val isDarkTheme by remember {
+        derivedStateOf {
+            themeController.isDarkTheme
+        }
+    }
 
     val rotationAngle by animateFloatAsState(targetValue = if (isDarkTheme) 180f else 0f)
     val iconId = if (isDarkTheme) R.drawable.light_theme else R.drawable.dark_them
@@ -70,7 +79,9 @@ fun InformationSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
-                onClick = onDarkThemeChange
+                onClick = {
+                    themeController.toggle()
+                }
             ) {
                 Icon(
                     painter = painterResource(iconId),

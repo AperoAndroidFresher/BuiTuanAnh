@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.playlist
+package com.example.buituananh.presentation.playlist.item
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
