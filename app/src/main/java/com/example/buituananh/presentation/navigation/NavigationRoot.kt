@@ -22,6 +22,8 @@ import com.example.buituananh.presentation.library.LibraryScreen
 import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.LoginScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistScreen
+import com.example.buituananh.presentation.playlist.PlaylistScreenRoot
+import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.presentation.profile.ProfileScreenRoot
 import com.example.buituananh.presentation.profile.ProfileViewModel
 import com.example.buituananh.presentation.signup.SignupScreenRoot
@@ -31,9 +33,7 @@ import com.example.buituananh.util.Destination
 
 @Composable
 fun NavigationRoot(
-    modifier: Modifier = Modifier,
-    isDarkTheme: Boolean,
-    onThemeChange: () -> Unit
+    modifier: Modifier = Modifier
 ) {
 
     val backStack = rememberNavBackStack(Destination.SplashScreen)
@@ -110,16 +110,15 @@ fun NavigationRoot(
                 entry<Destination.LibraryScreen> {
                     LibraryScreen()
                 }
-                entry<Destination.PlaylistScreen> {
-                    PlaylistScreen()
+                entry<Destination.PlaylistScreen> { key ->
+                    PlaylistScreenRoot(
+                        viewModel = viewModel(factory = PlaylistViewModel.Factory(key))
+                    )
                 }
                 entry<Destination.ProfileScreen> { key ->
                     ProfileScreenRoot(
                         viewModel = viewModel(factory = ProfileViewModel.Factory(key)),
-                        isDarkTheme = isDarkTheme
-                    ) {
-
-                    }
+                    )
                 }
             }
         )

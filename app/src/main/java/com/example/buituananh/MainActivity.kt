@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.buituananh.presentation.MyApp
 import com.example.buituananh.presentation.navigation.NavigationRoot
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 
@@ -16,18 +17,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var isDarkTheme by remember {
-                mutableStateOf(true)
-            }
-            BuiTuanAnhTheme(
-                darkTheme = isDarkTheme
-            ) {
-                NavigationRoot(
-                    isDarkTheme = isDarkTheme
-                ) {
-                    isDarkTheme = !isDarkTheme
-                }
-            }
+            MyApp()
         }
     }
 }
