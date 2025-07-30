@@ -9,18 +9,23 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation3.runtime.NavEntry
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.entry
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import com.example.buituananh.presentation.navigation.bottom_bar.BottomBar
 import com.example.buituananh.presentation.home.HomeScreen
 import com.example.buituananh.presentation.library.LibraryScreen
-import com.example.buituananh.presentation.login.screen.LoginScreen
+import com.example.buituananh.presentation.login.LoginViewModel
+import com.example.buituananh.presentation.login.LoginScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistScreen
-import com.example.buituananh.presentation.profile.screen.ProfileScreen
-import com.example.buituananh.presentation.signup.screen.SignupScreen
+import com.example.buituananh.presentation.profile.ProfileScreenRoot
+import com.example.buituananh.presentation.profile.ProfileViewModel
+import com.example.buituananh.presentation.signup.SignupScreenRoot
+import com.example.buituananh.presentation.signup.SignupViewModel
 import com.example.buituananh.presentation.splash.SplashScreen
 import com.example.buituananh.util.Destination
 
@@ -65,77 +70,56 @@ fun NavigationRoot(
             modifier = modifier.padding(pd),
             backStack = backStack,
             entryDecorators = listOf(
+                rememberSceneSetupNavEntryDecorator(),
                 rememberSavedStateNavEntryDecorator(),
-                rememberSceneSetupNavEntryDecorator()
+                rememberViewModelStoreNavEntryDecorator()
             ),
-            entryProvider = { key ->
-                when (key) {
-
-                    is Destination.SplashScreen -> {
-                        NavEntry(key) {
-                            SplashScreen {
+            entryProvider = entryProvider {
+                entry<Destination.SplashScreen> {
+                    SplashScreen {
+                        backStack.add(Destination.LoginScreen)
+                    }
+                }
+                entry<Destination.LoginScreen> { key: Destination.LoginScreen ->
+                    LoginScreenRoot(
+                        viewModel = viewModel(factory = LoginViewModel.Factory(key))
+                    ) { route ->
+                        if(route is Destination.HomeScreen) {
+                            while(backStack.isNotEmpty()) {
                                 backStack.removeLastOrNull()
-                                backStack.add(Destination.LoginScreen)
                             }
                         }
+                        backStack.add(route)
                     }
-
-                    is Destination.LoginScreen -> {
-                        NavEntry(key) {
-                            LoginScreen { route ->
-                                if(route is Destination.HomeScreen) {
-                                    while(backStack.isNotEmpty()) {
-                                        backStack.removeLastOrNull()
-                                    }
-                                }
-                                backStack.add(route) //home
-                            }
+                }
+                entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
+                    SignupScreenRoot(
+                        viewModel = viewModel(factory = SignupViewModel.Factory(System.currentTimeMillis())),
+                        onPopBack = {
+                            backStack.removeLastOrNull()
                         }
+                    ) {
+                        backStack.add(it)
                     }
-
-                    is Destination.SignupScreen -> {
-                        NavEntry(key) {
-                            SignupScreen(
-                                onPopBack = {
-                                    backStack.removeLastOrNull()
-                                }
-                            ) { route ->
-                                backStack.add(route)
-                            }
-                        }
+                }
+                entry<Destination.HomeScreen> {
+                    HomeScreen {
+                        backStack.add(it)
                     }
+                }
+                entry<Destination.LibraryScreen> {
+                    LibraryScreen()
+                }
+                entry<Destination.PlaylistScreen> {
+                    PlaylistScreen()
+                }
+                entry<Destination.ProfileScreen> { key ->
+                    ProfileScreenRoot(
+                        viewModel = viewModel(factory = ProfileViewModel.Factory(key)),
+                        isDarkTheme = isDarkTheme
+                    ) {
 
-                    is Destination.HomeScreen -> {
-                        NavEntry(key) {
-                            HomeScreen { route ->
-                                backStack.add(route)
-                            }
-                        }
                     }
-
-                    is Destination.LibraryScreen -> {
-                        NavEntry(key) {
-                            LibraryScreen()
-                        }
-                    }
-
-                    is Destination.PlaylistScreen -> {
-                        NavEntry(key) {
-                            PlaylistScreen()
-                        }
-                    }
-
-                    is Destination.ProfileScreen -> {
-                        NavEntry(key) {
-                            ProfileScreen(
-                                isDarkTheme = isDarkTheme
-                            ) {
-                                onThemeChange()
-                            }
-                        }
-                    }
-
-                    else -> throw RuntimeException("Invalid Navkey...")
                 }
             }
         )

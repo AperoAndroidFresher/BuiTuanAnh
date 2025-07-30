@@ -1,12 +1,12 @@
-package com.example.buituananh.presentation.profile.screen
+package com.example.buituananh.presentation.profile
 
-import android.graphics.Bitmap
-import android.media.MediaRouter.UserRouteInfo
 import android.net.Uri
+import android.provider.ContactsContract.Profile
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
@@ -36,7 +36,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.model.UserInformation
 import com.example.buituananh.presentation.profile.item.InformationSection
 import com.example.buituananh.presentation.profile.item.InputField
@@ -46,79 +48,83 @@ import com.example.buituananh.util.ImageUtils
 import kotlinx.coroutines.delay
 
 @Composable
-fun ProfileScreen(
+fun ProfileScreenRoot(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     onThemeChange: () -> Unit
 ) {
 
-    val currentFocusManager = LocalFocusManager.current
-    val currentWidthScreen = LocalConfiguration.current.screenWidthDp.dp
-
-    var state by remember {
-        mutableStateOf(UserInformation())
-    }
-
-    val focusRequester = remember {
-        FocusRequester()
-    }
+    val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
 
     var isShowDialog by remember {
         mutableStateOf(false)
     }
 
-    var inputNameField by remember {
-        mutableStateOf("")
-    }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                ProfileEffect.ShowDialog -> {
+                    isShowDialog = true
+                }
 
-    var isNameError by remember {
-        mutableStateOf(false)
-    }
-
-    var inputPhoneFieldField by remember {
-        mutableStateOf("")
-    }
-
-    var isPhoneNumberError by remember {
-        mutableStateOf(false)
-    }
-
-    var inputUniversityField by remember {
-        mutableStateOf("")
-    }
-
-    var isUniversityError by remember {
-        mutableStateOf(false)
-    }
-
-
-    var inputDescriptionField by remember {
-        mutableStateOf("")
+                is ProfileEffect.ShowToast -> {
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     var enableEditor by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
-    val context = LocalContext.current
-
-    var uriPicker by remember { mutableStateOf<Uri>(Uri.EMPTY) }
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            if(uri == null) {
-                Toast.makeText(context, "Pick image unsuccessfully", Toast.LENGTH_LONG).show()
-            } else {
-                uriPicker = ImageUtils.resizeImage(
-                    context,
-                    uri
-                ) ?: Uri.EMPTY
-            }
-        }
-
     LaunchedEffect(isShowDialog) {
         if (isShowDialog) {
             delay(2000L)
             isShowDialog = false
         }
     }
+
+    ProfileScreen(
+        state = state,
+        enableEditor = enableEditor,
+        isShowDialog = isShowDialog,
+        isDarkTheme = isDarkTheme,
+        onThemeChange = onThemeChange,
+        onIntent = viewModel::onIntent,
+        onDismissDialog = { isShowDialog = false },
+        onEnableEditorChange = { enableEditor = !enableEditor }
+    )
+
+}
+
+@Composable
+private fun ProfileScreen(
+    state: ProfileState,
+    enableEditor: Boolean,
+    isShowDialog: Boolean,
+    isDarkTheme: Boolean,
+    onThemeChange: () -> Unit,
+    onIntent: (ProfileIntent) -> Unit,
+    onDismissDialog: () -> Unit,
+    onEnableEditorChange: () -> Unit
+) {
+    val currentFocusManager = LocalFocusManager.current
+    val currentWidthScreen = LocalConfiguration.current.screenWidthDp.dp
+    val scrollState = rememberScrollState()
+    val focusRequester = remember {
+        FocusRequester()
+    }
+
+    val context = LocalContext.current
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                val uriPicker = ImageUtils.resizeImage(
+                    context,
+                    uri ?: Uri.EMPTY
+                ) ?: Uri.EMPTY
+                onIntent(ProfileIntent.PickImage(uriPicker))
+        }
 
     Column(
         modifier = Modifier
@@ -134,12 +140,12 @@ fun ProfileScreen(
             enableEditor = enableEditor,
             isDarkTheme = isDarkTheme,
             onDarkThemeChange = onThemeChange,
-            uri = uriPicker,
+            uri = state.uriPicker,
             onAvatarChange = {
                 launcher.launch("image/*")
             }
         ) {
-            enableEditor = true
+            onEnableEditorChange()
             focusRequester.requestFocus()
         }
         Spacer(Modifier.height(28.dp))
@@ -155,23 +161,23 @@ fun ProfileScreen(
                 modifier = Modifier.width((currentWidthScreen - 32.dp) / 2),
                 titleName = "Name",
                 placeholderText = "Enter your name...",
-                inputValue = inputNameField,
+                inputValue = state.name,
                 isEnabled = enableEditor,
-                isError = isNameError
+                isError = state.isNameError
             ) {
-                inputNameField = it
+                onIntent(ProfileIntent.OnNameChange(it))
             }
             Spacer(Modifier.width(8.dp))
             InputField(
                 modifier = Modifier.width((currentWidthScreen - 32.dp) / 2),
                 titleName = "Phone number",
                 placeholderText = "Your phone number...",
-                inputValue = inputPhoneFieldField,
+                inputValue = state.phoneNumber,
                 isEnabled = enableEditor,
                 isPhoneOptions = true,
-                isError = isPhoneNumberError
+                isError = state.isPhoneNumberError
             ) {
-                inputPhoneFieldField = it
+                onIntent(ProfileIntent.OnPhoneNumberChange(it))
             }
         }
         Spacer(Modifier.height(20.dp))
@@ -184,11 +190,11 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 titleName = "UNIVERSITY NAME",
                 placeholderText = "Your university name...",
-                inputValue = inputUniversityField,
+                inputValue = state.universityName,
                 isEnabled = enableEditor,
-                isError = isUniversityError
+                isError = state.isUniversityError
             ) {
-                inputUniversityField = it
+                onIntent(ProfileIntent.OnUniversityNameChange(it))
             }
         }
         Spacer(Modifier.height(20.dp))
@@ -201,12 +207,12 @@ fun ProfileScreen(
                     .padding(horizontal = 12.dp),
                 titleName = "DESCRIBE YOURSELF",
                 placeholderText = "Enter a description about yourself...",
-                inputValue = inputDescriptionField,
+                inputValue = state.description,
                 maxLines = 4,
                 isEnabled = enableEditor,
                 isLastOne = true
             ) {
-                inputDescriptionField = it
+                onIntent(ProfileIntent.OnDescriptionChange(it))
             }
         }
         Spacer(Modifier.height(20.dp))
@@ -214,26 +220,7 @@ fun ProfileScreen(
         if (enableEditor) {
             Button(
                 onClick = {
-//                    currentFocusManager.clearFocus()
-                    isNameError = false
-                    isUniversityError = false
-                    validateInput(
-                        name = inputNameField.trim(),
-                        university = inputUniversityField.trim(),
-                        phoneNumber = inputPhoneFieldField.trim(),
-                        onPhoneError = { isPhoneNumberError = true },
-                        onNameError = { isNameError = true },
-                        onUniversityError = { isUniversityError = true }
-                    )
-                    if (!isNameError && !isUniversityError) {
-                        state = state.copy(
-                            name = inputNameField.trim(),
-                            phoneNumber = inputPhoneFieldField,
-                            universityName = inputUniversityField.trim(),
-                            description = inputDescriptionField
-                        )
-                        isShowDialog = true
-                    }
+                    onIntent(ProfileIntent.OnSubmitClick)
                 },
                 shape = MaterialTheme.shapes.medium
             ) {
@@ -247,34 +234,12 @@ fun ProfileScreen(
         }
         if (isShowDialog) {
             SuccessfulDialog {
-                isShowDialog = false
+                onDismissDialog()
             }
         }
     }
-
 }
 
-fun validateInput(
-    name: String,
-    university: String,
-    onNameError: () -> Unit,
-    onUniversityError: () -> Unit,
-    onPhoneError: () -> Unit,
-    phoneNumber: String,
-) {
-
-    val regex = Regex("^[a-zA-Z]+( [a-zA-Z]+)*$")
-    if (!name.matches(regex)) {
-        onNameError()
-    }
-    if (!university.matches(regex)) {
-        onUniversityError()
-    }
-    if (phoneNumber.isEmpty()) {
-        onPhoneError()
-    }
-
-}
 
 @Preview(showSystemUi = true, showBackground = true, backgroundColor = 0xFFF4FAFC)
 @Composable

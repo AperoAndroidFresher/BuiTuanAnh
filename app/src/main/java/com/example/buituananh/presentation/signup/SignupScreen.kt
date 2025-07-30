@@ -1,5 +1,6 @@
-package com.example.buituananh.presentation.signup.screen
+package com.example.buituananh.presentation.signup
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,27 +17,53 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
 import com.example.buituananh.presentation.login.item.InputTextField
-import com.example.buituananh.presentation.signup.SignupEvent
-import com.example.buituananh.presentation.signup.SignupUiController
-import com.example.buituananh.presentation.signup.item.SignUpLogoSection
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
 
 @Composable
-fun SignupScreen(
+fun SignupScreenRoot(
     modifier: Modifier = Modifier,
+    viewModel: SignupViewModel,
     onPopBack: () -> Unit,
     onNavigate: (Destination) -> Unit
 ) {
 
-    val uiLogicController = remember { SignupUiController() }
-    val state = uiLogicController.state.value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                SignupEffect.NavigateToLoginScreen -> onNavigate(Destination.LoginScreen)
+                SignupEffect.PopBack -> onPopBack()
+                is SignupEffect.ShowToast -> Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    SignupScreen(
+        modifier = modifier,
+        state = state,
+        onIntent = viewModel::onIntent
+    )
+
+}
+
+@Composable
+fun SignupScreen(
+    modifier: Modifier = Modifier,
+    state: SignupState,
+    onIntent: (SignupIntent) -> Unit
+) {
 
     Column(
         modifier = modifier
@@ -45,7 +72,9 @@ fun SignupScreen(
     ) {
         Spacer(Modifier.height(24.dp))
         IconButton(
-            onClick = onPopBack
+            onClick = {
+                onIntent(SignupIntent.OnLoginClick)
+            }
         ) {
             Icon(
                 imageVector = Icons.Filled.KeyboardArrowLeft ,
@@ -64,7 +93,7 @@ fun SignupScreen(
             errorName = state.usernameError,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            uiLogicController.onEvent(SignupEvent.OnUsernameChange(it))
+            onIntent(SignupIntent.OnUsernameChange(it))
         }
         Spacer(Modifier.height(14.dp))
         InputTextField(
@@ -76,7 +105,7 @@ fun SignupScreen(
             errorName = state.passwordError,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            uiLogicController.onEvent(SignupEvent.OnPasswordChange(it))
+            onIntent(SignupIntent.OnPasswordChange(it))
         }
         Spacer(Modifier.height(14.dp))
         InputTextField(
@@ -88,7 +117,7 @@ fun SignupScreen(
             errorName = state.confirmedPasswordError,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            uiLogicController.onEvent(SignupEvent.OnConfirmedPasswordChange(it))
+            onIntent(SignupIntent.OnConfirmedPasswordChange(it))
         }
         Spacer(Modifier.height(14.dp))
         InputTextField(
@@ -99,16 +128,12 @@ fun SignupScreen(
             errorName = state.emailError,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            uiLogicController.onEvent(SignupEvent.OnEmailChange(it))
+            onIntent(SignupIntent.OnEmailChange(it))
         }
         Spacer(Modifier.weight(1f))
         Button(
             onClick = {
-                val hasError = uiLogicController.onEvent(SignupEvent.Submit)
-                if (!hasError) {
-                    onNavigate(Destination.LoginScreen)
-
-                }
+                onIntent(SignupIntent.OnSubmitClick)
             },
             shape = MaterialTheme.shapes.extraLarge,
 
@@ -121,6 +146,7 @@ fun SignupScreen(
         Spacer(Modifier.height(28.dp))
     }
 
+
 }
 
 @Preview(showSystemUi = true)
@@ -129,7 +155,7 @@ fun PreviewLoginScreen(modifier: Modifier = Modifier) {
 
     BuiTuanAnhTheme {
         SignupScreen(
-            onPopBack = {}
+            state = SignupState()
         ) {
 
         }
