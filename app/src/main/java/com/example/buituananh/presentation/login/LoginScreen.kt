@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.login.screen
+package com.example.buituananh.presentation.login
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -23,10 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
-import com.example.buituananh.presentation.login.LoginEffect
-import com.example.buituananh.presentation.login.LoginIntent
-import com.example.buituananh.presentation.login.LoginState
-import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.item.InputTextField
 import com.example.buituananh.presentation.login.item.LogoSection
 import com.example.buituananh.presentation.login.item.RememberedCheckbox

@@ -20,7 +20,7 @@ import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.example.buituananh.presentation.home.HomeScreen
 import com.example.buituananh.presentation.library.LibraryScreen
 import com.example.buituananh.presentation.login.LoginViewModel
-import com.example.buituananh.presentation.login.screen.LoginScreenRoot
+import com.example.buituananh.presentation.login.LoginScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistScreen
 import com.example.buituananh.presentation.profile.ProfileScreenRoot
 import com.example.buituananh.presentation.profile.ProfileViewModel

@@ -10,7 +10,6 @@ data class ProfileState(
     val isNameError: Boolean = false,
     val isPhoneNumberError: Boolean = false,
     val isUniversityError: Boolean = false,
-    val isDarkMode: Boolean = true,
     val uriPicker: Uri = Uri.EMPTY
 )
 
