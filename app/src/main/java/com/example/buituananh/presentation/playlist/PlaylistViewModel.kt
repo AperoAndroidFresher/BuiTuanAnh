@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
     val key: Destination.PlaylistScreen,
-    val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
@@ -46,6 +46,15 @@ class PlaylistViewModel(
             is PlaylistIntent.ToggleSortMode -> toggleSortMode(intent.currentSortMode)
             PlaylistIntent.LoadData -> loadFiles()
             is PlaylistIntent.SongPopupClick -> songPopupClick(intent.song)
+            is PlaylistIntent.OnDragging -> onDragging(intent.fromIndex, intent.toIndex)
+        }
+    }
+
+    private fun onDragging(fromIndex: Int, toIndex: Int) {
+        _state.update {
+            it.copy(
+                playlist = it.playlist.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+            )
         }
     }
 
@@ -104,17 +113,16 @@ class PlaylistViewModel(
         }
     }
 
-
     private fun saveSortMode() {
         _state.update {
-            it.copy(isSortMode = false)
+            it.copy(isSortMode = false, backingPlaylist = null)
         }
         //ongoing
     }
 
     private fun cancelSortMode() {
         _state.update {
-            it.copy(isSortMode = false)
+            it.copy(isSortMode = false, playlist = it.backingPlaylist ?: emptyList())
         }
         //ongoing
     }
@@ -134,7 +142,7 @@ class PlaylistViewModel(
 
     private fun toggleSortMode(currentSortMode: Boolean) {
         _state.update {
-            it.copy(isSortMode = currentSortMode)
+            it.copy(isSortMode = currentSortMode, backingPlaylist = it.playlist)
         }
     }
 

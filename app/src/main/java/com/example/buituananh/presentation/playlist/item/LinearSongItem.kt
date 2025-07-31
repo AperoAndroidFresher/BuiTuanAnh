@@ -40,6 +40,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
 import com.example.buituananh.model.Song
+import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString
 
 @Composable
@@ -64,8 +65,10 @@ fun LinearSongItem(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(song.image)
-                .size(200)
+                .data(ImageUtils.resizeBitmap(
+                    LocalContext.current,
+                    song.image
+                ))
                 .crossfade(true)
                 .error(R.drawable.default_song)
                 .build(),

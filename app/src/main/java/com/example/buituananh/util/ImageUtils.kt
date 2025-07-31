@@ -13,6 +13,7 @@ import androidx.core.net.toUri
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 object ImageUtils {
 
@@ -32,6 +33,21 @@ object ImageUtils {
             retriever.release()
         }
         return null
+    }
+
+    fun resizeBitmap(context: Context, bitmap: Bitmap?, reqWidth: Int = 100, reqHeight: Int = 100): Bitmap? {
+        if(bitmap == null) return null
+        val originalWidth = bitmap.width
+        val originalHeight = bitmap.height
+
+        val scaleWidth = reqWidth.toFloat() / originalWidth
+        val scaleHeight = reqHeight.toFloat() / originalHeight
+        val scale = minOf(scaleWidth, scaleHeight)
+
+        val newWidth = (originalWidth * scale).toInt()
+        val newHeight = (originalHeight * scale).toInt()
+
+        return bitmap.scale(newWidth, newHeight)
     }
 
     fun resizeImage(context: Context, uri: Uri, reqWidth: Int = 300, reqHeight: Int = 300): Uri? {

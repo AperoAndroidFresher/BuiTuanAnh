@@ -14,12 +14,13 @@ data class PlaylistState(
 sealed interface PlaylistIntent {
     data object LoadData : PlaylistIntent
     data object ToggleGridMode : PlaylistIntent
-    data class ToggleSortMode(val currentSortMode: Boolean) : PlaylistIntent
-    data object CancelSortMode : PlaylistIntent
-    data object SaveSortMode : PlaylistIntent
     data object RemoveSongFromPlaylist : PlaylistIntent
     data object SharingSong : PlaylistIntent
     data class SongPopupClick(val song: Song) : PlaylistIntent
+    data class ToggleSortMode(val currentSortMode: Boolean) : PlaylistIntent
+    data object CancelSortMode : PlaylistIntent
+    data object SaveSortMode : PlaylistIntent
+    data class OnDragging(val fromIndex: Int, val toIndex: Int) : PlaylistIntent
 }
 
 sealed interface PlaylistEffect {
