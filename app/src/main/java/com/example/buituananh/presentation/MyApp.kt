@@ -1,20 +1,22 @@
 package com.example.buituananh.presentation
 
+import android.content.ContentResolver
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.isPopupLayout
 import com.example.buituananh.presentation.navigation.NavigationRoot
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 
 @Composable
-fun MyApp(modifier: Modifier = Modifier) {
+fun MyApp(
+    modifier: Modifier = Modifier,
+    contentResolver: ContentResolver
+) {
 
     val themeController = remember { ThemeController() }
 
@@ -22,7 +24,7 @@ fun MyApp(modifier: Modifier = Modifier) {
         BuiTuanAnhTheme(
             darkTheme = themeController.isDarkTheme
         ) {
-            NavigationRoot()
+            NavigationRoot(contentResolver = contentResolver)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.playlist.item
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,12 +30,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.buituananh.R
 import com.example.buituananh.model.Song
+import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString
 
 @Composable
@@ -57,8 +63,15 @@ fun LinearSongItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Image(
-            painter = painterResource(song.imageId),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(ImageUtils.resizeBitmap(
+                    LocalContext.current,
+                    song.image
+                ))
+                .crossfade(true)
+                .error(R.drawable.default_song)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -73,25 +86,28 @@ fun LinearSongItem(
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(
-                text = song.name,
+                text = song.title ?: "null",
                 fontWeight = FontWeight.W500,
                 letterSpacing = 1.5.sp,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                minLines = 1,
+                modifier = Modifier.basicMarquee()
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = song.author,
+                text = song.artist ?: "null",
                 fontWeight = FontWeight.W500,
                 letterSpacing = 1.5.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.alpha(0.6f),
-                color = MaterialTheme.colorScheme.onSurface
-
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.alpha(0.6f).basicMarquee(),
             )
         }
+        Spacer(Modifier.width(3.dp))
         Text(
-            text = song.duration.formatToString(),
+            text = song.duration?.formatToString() ?: "00:00",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )

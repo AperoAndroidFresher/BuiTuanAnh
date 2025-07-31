@@ -1,8 +1,11 @@
 package com.example.buituananh.presentation.playlist
 
+import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,62 +14,92 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.model.Song
-import com.example.buituananh.model.listSongs
 import com.example.buituananh.presentation.playlist.item.CustomPopupSong
 import com.example.buituananh.presentation.playlist.item.GridSongItem
 import com.example.buituananh.presentation.playlist.item.HeaderSection
 import com.example.buituananh.presentation.playlist.item.LinearSongItem
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.example.buituananh.util.Destination
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.channels.Channel
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PlaylistScreenRoot(
     modifier: Modifier = Modifier,
     viewModel: PlaylistViewModel
 ) {
 
-    val state = viewModel.state.collectAsState(initial = PlaylistState()).value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
 
-    LaunchedEffect(Unit) {
-        viewModel.onIntent(PlaylistIntent.LoadData)
+    var permission = android.Manifest.permission.READ_EXTERNAL_STORAGE
+
+    permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        android.Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        android.Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+
+    val mediaPermissionState = rememberPermissionState(permission) { isGranted ->
+        if(isGranted) {
+
+        } else {
+
+        }
     }
 
     PlaylistScreen(
         state = state,
+        permissionState = mediaPermissionState,
         onIntent = viewModel::onIntent
     )
 
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PlaylistScreen(
     modifier: Modifier = Modifier,
     state: PlaylistState,
+    permissionState: PermissionState,
     onIntent: (PlaylistIntent) -> Unit
 ) {
 
@@ -75,6 +108,8 @@ fun PlaylistScreen(
     }
 
     val context = LocalContext.current
+
+    //popup calculation
     val displayMetrics = remember {
         context.resources.displayMetrics
     }
@@ -90,23 +125,44 @@ fun PlaylistScreen(
         currentOffset.x - with(LocalDensity.current) { 50.dp.toPx() }
     }
 
-    if(state.isLoading) {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator()
+    //dragging calculation
+    val stateList = rememberLazyListState()
+
+    var draggingItemIndex: Int? by remember {
+        mutableStateOf(null)
+    }
+
+    var delta: Float by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var draggingItem: LazyListItemInfo? by remember {
+        mutableStateOf(null)
+    }
+
+    val scrollChannel = Channel<Float>()
+
+    LaunchedEffect(stateList) {
+        while (true) {
+            val diff = scrollChannel.receive()
+            stateList.scrollBy(diff)
         }
-    } else {
+    }
+
+    if(permissionState.status.isGranted) {
+
+        LaunchedEffect(permissionState.status.isGranted) {
+            onIntent(PlaylistIntent.LoadData)
+        }
+
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
-                            onIntent(PlaylistIntent.ToggleSortMode(false))
+                            showPopup = false
                         })
                 }) {
 
@@ -131,51 +187,130 @@ fun PlaylistScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(if (state.isGridMode) 2 else 1),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-//                state = state.gridState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-//                    .reorderable(state)
-                ) {
-                    items(state.playlist) { song: Song ->
-                        if (!state.isGridMode) {
-//                        ReorderableItem(
-//                            reorderableState = state,
-//                            key = song.id,
-//                        ) { isDragging ->
-//                            Log.d("A1", "${song.id}: $isDragging")
-                            LinearSongItem(
-                                modifier = Modifier
-                                    .then(
-                                        if (state.isGridMode) {
-                                            Modifier
-//                                                .detectReorderAfterLongPress(state)
-//                                                .graphicsLayer {
-//                                                    alpha = if (isDragging) 0.9f else 1f
-//                                                    scaleX = if (isDragging) 1.2f else 1f
-//                                                    scaleY = if (isDragging) 1.2f else 1f
-//                                                }
-                                        } else {
-                                            Modifier
-                                        }
-                                    ),
-                                isSortMode = state.isSortMode,
-                                song = song
-                            ) { (offset, song) ->
-                                onIntent(PlaylistIntent.SongPopupClick(song))
-                                if (currentOffset != offset) {
-                                    currentOffset = offset
-                                    showPopup = true
-                                } else {
-                                    showPopup = false
+                if(state.isGridMode) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        items(state.playlist) { song: Song ->
+                                GridSongItem(
+                                    song = song,
+                                    modifier = Modifier.animateItem()
+                                ) { (offset, song) ->
+                                    onIntent(PlaylistIntent.SongPopupClick(song))
+                                    if (currentOffset != offset) {
+                                        currentOffset = offset
+                                        showPopup = true
+                                    } else {
+                                        showPopup = false
+                                    }
                                 }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        state = stateList,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier
+                            .then(
+                                if(state.isSortMode) {
+                                    Modifier
+                                        .pointerInput(key1 = stateList) {
+                                            detectDragGesturesAfterLongPress(
+                                                onDragStart = { offset ->
+                                                    stateList.layoutInfo.visibleItemsInfo
+                                                        .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
+                                                        ?.also {
+                                                            (it.contentType as? DraggableItem)?.let { draggableItem ->
+                                                                draggingItem = it
+                                                                draggingItemIndex = draggableItem.index
+                                                            }
+                                                        }
+                                                },
+                                                onDrag = { change, dragAmount ->
+                                                    change.consume()
+                                                    delta += dragAmount.y
+
+                                                    val currentDraggingItemIndex =
+                                                        draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                                                    val currentDraggingItem =
+                                                        draggingItem ?: return@detectDragGesturesAfterLongPress
+
+                                                    val startOffset = currentDraggingItem.offset + delta
+                                                    val endOffset =
+                                                        currentDraggingItem.offset + currentDraggingItem.size + delta
+                                                    val middleOffset = startOffset + (endOffset - startOffset) / 2
+
+                                                    val targetItem =
+                                                        stateList.layoutInfo.visibleItemsInfo.find { item ->
+                                                            middleOffset.toInt() in item.offset..item.offset + item.size &&
+                                                                    currentDraggingItem.index != item.index &&
+                                                                    item.contentType is DraggableItem
+                                                        }
+
+                                                    if (targetItem != null) {
+                                                        val targetIndex = (targetItem.contentType as DraggableItem).index
+                                                        onIntent(PlaylistIntent.OnDragging(currentDraggingItemIndex, targetIndex))
+                                                        draggingItemIndex = targetIndex
+                                                        delta += currentDraggingItem.offset - targetItem.offset
+                                                        draggingItem = targetItem
+                                                    } else {
+                                                        val startOffsetToTop =
+                                                            startOffset - stateList.layoutInfo.viewportStartOffset
+                                                        val endOffsetToBottom =
+                                                            endOffset - stateList.layoutInfo.viewportEndOffset
+                                                        val scroll =
+                                                            when {
+                                                                startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(0f)
+                                                                endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(0f)
+                                                                else -> 0f
+                                                            }
+                                                        val canScrollDown =
+                                                            currentDraggingItemIndex != state.playlist.size - 1 && endOffsetToBottom > 0
+                                                        val canScrollUp = currentDraggingItemIndex != 0 && startOffsetToTop < 0
+                                                        if (scroll != 0f && (canScrollUp || canScrollDown)) {
+                                                            scrollChannel.trySend(scroll)
+                                                        }
+                                                    }
+                                                },
+                                                onDragEnd = {
+                                                    draggingItem = null
+                                                    draggingItemIndex = null
+                                                    delta = 0f
+                                                },
+                                                onDragCancel = {
+                                                    draggingItem = null
+                                                    draggingItemIndex = null
+                                                    delta = 0f
+                                                },
+                                            )
+                                        }
+                                }
+                                else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        itemsIndexed(
+                            items = state.playlist,
+                            contentType = { index, song -> DraggableItem(index = index) }
+                        ) { index, song ->
+                            val linearModifier = if (draggingItemIndex == index) {
+                                Modifier
+                                    .zIndex(1f)
+                                    .graphicsLayer {
+                                        translationY = delta
+                                    }
+                            } else {
+                                Modifier.animateItem()
                             }
-//                        }
-                        } else {
-                            GridSongItem(
-                                song = song
+                            LinearSongItem(
+                                song = song,
+                                isSortMode = state.isSortMode,
+                                modifier = linearModifier.animateItem()
                             ) { (offset, song) ->
                                 onIntent(PlaylistIntent.SongPopupClick(song))
                                 if (currentOffset != offset) {
@@ -204,10 +339,24 @@ fun PlaylistScreen(
             }
 
         }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("The permission is needed to process the application.")
+            Button(onClick = {
+                permissionState.launchPermissionRequest()
+            }) {
+                Text("Request permission")
+            }
+        }
     }
 
 }
 
+data class DraggableItem(val index: Int)
 
 @Preview(showSystemUi = true)
 @Composable

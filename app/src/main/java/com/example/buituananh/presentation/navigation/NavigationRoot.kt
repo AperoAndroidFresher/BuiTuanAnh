@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.navigation
 
+import android.content.ContentResolver
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -33,10 +34,11 @@ import com.example.buituananh.util.Destination
 
 @Composable
 fun NavigationRoot(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentResolver: ContentResolver
 ) {
 
-    val backStack = rememberNavBackStack(Destination.SplashScreen)
+    val backStack = rememberNavBackStack(Destination.HomeScreen)
 
     var currentDestinationIdx by remember {
         mutableIntStateOf(0)
@@ -112,7 +114,7 @@ fun NavigationRoot(
                 }
                 entry<Destination.PlaylistScreen> { key ->
                     PlaylistScreenRoot(
-                        viewModel = viewModel(factory = PlaylistViewModel.Factory(key))
+                        viewModel = viewModel(factory = PlaylistViewModel.Factory(key, contentResolver))
                     )
                 }
                 entry<Destination.ProfileScreen> { key ->

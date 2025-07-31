@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +42,7 @@ fun HomeScreen(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Person,
+                        imageVector = Icons.Outlined.Settings,
                         contentDescription = null,
                         modifier = Modifier
                             .size(35.dp)

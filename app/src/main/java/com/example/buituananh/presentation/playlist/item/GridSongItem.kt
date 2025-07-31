@@ -2,6 +2,7 @@ package com.example.buituananh.presentation.playlist.item
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,13 +31,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.buituananh.R
 import com.example.buituananh.model.Song
+import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString
 
 @Composable
@@ -55,8 +61,18 @@ fun GridSongItem(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box {
-            Image(
-                painter = painterResource(song.imageId),
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(
+                        ImageUtils.resizeBitmap(
+                            LocalContext.current,
+                            bitmap = song.image
+                        )
+                    )
+                    .size(100)
+                    .crossfade(true)
+                    .error(R.drawable.default_song)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -97,14 +113,17 @@ fun GridSongItem(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            text = song.name,
+            text = song.title ?: "null",
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleLarge,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            minLines = 1,
+            modifier = Modifier.basicMarquee()
         )
         Text(
-            text = song.author,
+            text = song.artist ?: "null",
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 20.sp,
@@ -113,7 +132,7 @@ fun GridSongItem(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = song.duration.formatToString(),
+            text = song.duration?.formatToString() ?: "00:00",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
