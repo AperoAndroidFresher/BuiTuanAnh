@@ -15,3 +15,9 @@ fun Pair<Int, Int>.formatToString(): String {
     }
     return str.toString()
 }
+fun Long.toPairDuration(): Pair<Int, Int>  {
+    val totalSeconds = this / 1000
+    val minutes = (totalSeconds / 60).toInt()
+    val seconds = (totalSeconds % 60).toInt()
+    return minutes to seconds
+}
