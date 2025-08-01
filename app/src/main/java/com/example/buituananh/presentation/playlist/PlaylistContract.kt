@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.playlist
 
+import com.example.buituananh.model.Playlist
 import com.example.buituananh.model.Song
 
 data class PlaylistState(
@@ -8,11 +9,13 @@ data class PlaylistState(
     val isGridMode: Boolean = false,
     val isSortMode: Boolean = false,
     val chosenSong: Song? = null,
-    val backingPlaylist: List<Song>? = null
+    val backingPlaylist: List<Song>? = null,
+
+    val playlistList: List<Playlist> = emptyList()
 )
 
 sealed interface PlaylistIntent {
-    data object LoadData : PlaylistIntent
+    data object LoadPlaylist : PlaylistIntent
     data object ToggleGridMode : PlaylistIntent
     data object RemoveSongFromPlaylist : PlaylistIntent
     data object SharingSong : PlaylistIntent

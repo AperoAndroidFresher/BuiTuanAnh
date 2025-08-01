@@ -19,10 +19,11 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.example.buituananh.presentation.home.HomeScreen
-import com.example.buituananh.presentation.library.LibraryScreen
+import com.example.buituananh.presentation.library.LibraryScreenRoot
+import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.LoginScreenRoot
-import com.example.buituananh.presentation.playlist.PlaylistScreen
+import com.example.buituananh.presentation.playlist.DetailPlaylistScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.presentation.profile.ProfileScreenRoot
@@ -109,8 +110,12 @@ fun NavigationRoot(
                         backStack.add(it)
                     }
                 }
-                entry<Destination.LibraryScreen> {
-                    LibraryScreen()
+                entry<Destination.LibraryScreen> { key ->
+                    LibraryScreenRoot(
+                        viewModel = viewModel(factory = LibraryViewModel.Factory(key, contentResolver))
+                    ) {
+                        backStack.add(it)
+                    }
                 }
                 entry<Destination.PlaylistScreen> { key ->
                     PlaylistScreenRoot(

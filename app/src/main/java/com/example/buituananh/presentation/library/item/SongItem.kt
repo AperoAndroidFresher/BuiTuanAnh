@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.playlist.item
+package com.example.buituananh.presentation.library.item
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -45,15 +45,15 @@ import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString
 
 @Composable
-fun LinearSongItem(
+fun SongItem(
     modifier: Modifier = Modifier,
     song: Song,
-    isSortMode: Boolean,
-    onClick: (Pair<Offset, Song>) -> Unit
+    onAddToPlaylistClick: () -> Unit,
+    onShareClick: () -> Unit
 ) {
 
-    var iconOffset by remember {
-        mutableStateOf(Offset.Zero)
+    var expanded by remember {
+        mutableStateOf(false)
     }
 
     Row(
@@ -115,24 +115,28 @@ fun LinearSongItem(
         Spacer(Modifier.width(8.dp))
         IconButton(
             onClick = {
-                if(!isSortMode) onClick(iconOffset to song)
-            },
-            modifier = Modifier.then(
-                if(!isSortMode) {
-                    Modifier.onGloballyPositioned { coords ->
-                        val offset = coords.localToWindow(Offset.Zero)
-                        iconOffset = offset
-                    }
-                } else {
-                    Modifier
-                }
-            )
+                expanded = true
+            }
         ) {
             Icon(
-                imageVector = if(!isSortMode) Icons.Default.MoreVert else Icons.Default.Menu,
+                imageVector = Icons.Default.MoreVert,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(20.dp)
+            )
+            SongOptionsMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                },
+                onAddToPlaylistClick = {
+                    expanded = false
+                    onAddToPlaylistClick()
+                },
+                onShareClick = {
+                    expanded = false
+                    onShareClick()
+                }
             )
         }
     }
