@@ -54,11 +54,11 @@ class LibraryViewModel(
     }
 
     private fun loadingPlaylistList() {
-        _state.update {
-            it.copy(
-                playlistList = PlaylistStore.playlists
-            )
-        }
+//        _state.update {
+//            it.copy(
+//                playlistList = PlaylistStore.playlists
+//            )
+//        }
     }
 
     private fun addToPlayList(song: Song) {

@@ -8,7 +8,6 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,21 +34,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.presentation.library.item.PermissionModal
 import com.example.buituananh.presentation.library.item.SongItem
-import com.example.buituananh.presentation.library.item.SongOptionsMenu
-import com.example.buituananh.presentation.playlist.PlaylistIntent
-import com.example.buituananh.presentation.playlist.item.LinearSongItem
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import kotlin.math.exp
 
 @Composable
 fun LibraryScreenRoot(
@@ -107,10 +101,9 @@ fun LibraryScreen(
     var acceptedByUser by remember {
         mutableStateOf(false)
     }
-    var showModalPermission by remember { 
+    var showModalPermission by remember {
         mutableStateOf(false)
     }
-    var expanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(acceptedByUser) {
         if(acceptedByUser) {

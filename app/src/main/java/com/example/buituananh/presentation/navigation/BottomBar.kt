@@ -80,7 +80,7 @@ class BottomBarItemManager {
                 "Playlist",
                 R.drawable.filled_playlist,
                 R.drawable.outlined_playlist,
-                Destination.PlaylistScreen
+                Destination.PlaylistWrapper
             ),
         )
 

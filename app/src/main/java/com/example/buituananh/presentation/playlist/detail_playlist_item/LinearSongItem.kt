@@ -1,6 +1,5 @@
-package com.example.buituananh.presentation.playlist.item
+package com.example.buituananh.presentation.playlist.detail_playlist_item
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,7 +38,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
 import com.example.buituananh.model.Song
-import com.example.buituananh.presentation.library.item.SongOptionsMenu
 import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString
 

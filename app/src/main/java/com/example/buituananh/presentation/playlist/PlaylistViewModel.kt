@@ -1,37 +1,44 @@
 package com.example.buituananh.presentation.playlist
 
 import android.content.ContentResolver
-import android.content.ContentUris
-import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Media
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.buituananh.model.Playlist
 import com.example.buituananh.model.PlaylistStore
 import com.example.buituananh.model.Song
 import com.example.buituananh.util.Destination
-import com.example.buituananh.util.ImageUtils
-import com.example.buituananh.util.toPairDuration
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
-    val key: Destination.PlaylistScreen,
-    private val contentResolver: ContentResolver
+    val key: Destination.PlaylistWrapper
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
 
+    private val _effect = Channel<PlaylistEffect>()
+    val effect = _effect.receiveAsFlow()
+
     class Factory(
-        private val key: Destination.PlaylistScreen,
-        private val contentResolver: ContentResolver
+        private val key: Destination.PlaylistWrapper
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaylistViewModel(key, contentResolver) as T
+            return PlaylistViewModel(key) as T
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            PlaylistStore.playlists.collectLatest { updatedList ->
+                _state.update { it.copy(playlistList = updatedList) }
+            }
         }
     }
 
@@ -46,20 +53,56 @@ class PlaylistViewModel(
             PlaylistIntent.LoadPlaylist -> loadPlaylist()
             is PlaylistIntent.SongPopupClick -> songPopupClick(intent.song)
             is PlaylistIntent.OnDragging -> onDragging(intent.fromIndex, intent.toIndex)
+            is PlaylistIntent.CreateAPlaylist -> createAPlaylist(intent.name)
+            is PlaylistIntent.RemoveAPlaylist -> removeAPlaylist(intent.playlist)
+            is PlaylistIntent.RenamePlaylist -> renamePlaylist(intent.playlist, intent.name)
+            is PlaylistIntent.OnPlaylistClick -> onPlaylistClick(intent.id)
+            is PlaylistIntent.LoadPlaylistById -> loadPlaylistById(intent.id)
         }
     }
 
-    private fun onDragging(fromIndex: Int, toIndex: Int) {
-        _state.update {
-            it.copy(
-                playlist = it.playlist.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+    private fun loadPlaylistById(id: Long) {
+        viewModelScope.launch {
+           val playlist = PlaylistStore.findPlaylistById(id)
+            if(playlist != null) {
+                _state.update {
+                    it.copy(
+                        chosenPlaylist = playlist
+                    )
+                }
+            }
+        }
+    }
+
+    private fun onPlaylistClick(id: Long) {
+        sendEffect(PlaylistEffect.NavigateToDetailPlaylist(id))
+    }
+
+    private fun renamePlaylist(playlist: Playlist, name: String) {
+        viewModelScope.launch {
+            PlaylistStore.renamePlaylist(playlist, name)
+        }
+    }
+
+    private fun removeAPlaylist(playlist: Playlist) {
+        viewModelScope.launch {
+            PlaylistStore.removePlaylist(playlist)
+        }
+    }
+
+    private fun createAPlaylist(name: String) {
+        viewModelScope.launch {
+            PlaylistStore.createNewPlaylist(
+                Playlist(
+                    title = name
+                )
             )
-        }
+          }
     }
 
-    private fun loadPlaylist() = viewModelScope.launch(Dispatchers.IO) {
+    private fun loadPlaylist() = viewModelScope.launch {
         _state.update {
-            it.copy(playlistList = PlaylistStore.playlists)
+            it.copy(playlistList = PlaylistStore.getAllPlaylists())
         }
     }
 
@@ -72,25 +115,45 @@ class PlaylistViewModel(
     }
 
     private fun saveSortMode() {
-        _state.update {
-            it.copy(isSortMode = false, backingPlaylist = null)
+        val chosen = _state.value.chosenPlaylist
+
+        if (chosen != null) {
+            PlaylistStore.updatePlaylist(chosen)
         }
-        //ongoing
+        _state.update {
+            it.copy(
+                isSortMode = false,
+                backingPlaylist = null
+            )
+        }
     }
 
     private fun cancelSortMode() {
         _state.update {
-            it.copy(isSortMode = false, playlist = it.backingPlaylist ?: emptyList())
+            it.copy(isSortMode = false, chosenPlaylist = it.backingPlaylist)
         }
         //ongoing
     }
 
-    private fun removeSongFromPlaylist() {
-        _state.update {
-            it.copy(
-                playlist = it.playlist.filterNot { song -> song == it.chosenSong },
-                chosenSong = null
+    private fun onDragging(fromIndex: Int, toIndex: Int) {
+        _state.update { currentState ->
+
+            val playlist = currentState.chosenPlaylist ?: return@update currentState
+
+            val updatedSongs = playlist.songs.toMutableList().apply {
+                add(toIndex, removeAt(fromIndex))
+            }
+
+            currentState.copy(
+                chosenPlaylist = playlist.copy(songs = updatedSongs)
             )
+        }
+    }
+
+    private fun removeSongFromPlaylist() {
+        viewModelScope.launch {
+            PlaylistStore.removeSongFromPlaylist(_state.value.chosenSong, _state.value.chosenPlaylist)
+            loadPlaylist()
         }
     }
 
@@ -100,7 +163,7 @@ class PlaylistViewModel(
 
     private fun toggleSortMode(currentSortMode: Boolean) {
         _state.update {
-            it.copy(isSortMode = currentSortMode, backingPlaylist = it.playlist)
+            it.copy(isSortMode = currentSortMode, backingPlaylist = it.chosenPlaylist)
         }
     }
 
@@ -111,8 +174,10 @@ class PlaylistViewModel(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
+    private fun sendEffect(effect: PlaylistEffect) {
+        viewModelScope.launch {
+            _effect.send(effect)
+        }
     }
 
 }

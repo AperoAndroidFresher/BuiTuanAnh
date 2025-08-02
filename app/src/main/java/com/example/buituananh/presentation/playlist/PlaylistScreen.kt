@@ -1,9 +1,8 @@
 package com.example.buituananh.presentation.playlist
 
-import android.graphics.Paint.Align
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
@@ -20,23 +20,42 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.buituananh.presentation.library.LibraryIntent
-import com.example.buituananh.presentation.playlist.item.EmptyPlaylistNoti
+import com.example.buituananh.model.Playlist
+import com.example.buituananh.presentation.playlist.detail_playlist_item.EmptyPlaylistNoti
+import com.example.buituananh.presentation.playlist.playlist_item.NewPlaylistDialog
+import com.example.buituananh.presentation.playlist.playlist_item.PlaylistItem
+import com.example.buituananh.presentation.playlist.playlist_item.RenamePlaylistDialog
+import com.example.buituananh.util.Destination
 
 @Composable
 fun PlaylistScreenRoot(
     modifier: Modifier = Modifier,
-    viewModel: PlaylistViewModel
+    viewModel: PlaylistViewModel,
+    onNavigate: (Destination) -> Unit
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
 
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                is PlaylistEffect.NavigateToDetailPlaylist -> onNavigate(Destination.DetailPlaylistScreen(effect.id))
+            }
+        }
+    }
+
     PlaylistScreen(
+        modifier = modifier,
         state = state,
         onIntent = viewModel::onIntent
     )
@@ -52,6 +71,18 @@ fun PlaylistScreen(
 
     LaunchedEffect(Unit) {
         onIntent(PlaylistIntent.LoadPlaylist)
+    }
+
+    var showCreationDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var showRenameDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var chosenPlaylist by remember {
+        mutableStateOf<Playlist?>(null)
     }
 
     Scaffold(
@@ -71,7 +102,7 @@ fun PlaylistScreen(
                 )
                 IconButton(
                     onClick = {
-
+                        showCreationDialog = true
                     }
                 ) {
                     Icon(
@@ -88,16 +119,66 @@ fun PlaylistScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             if (state.playlistList.isEmpty()) {
                 item {
                     EmptyPlaylistNoti {
-
+                        showCreationDialog = true
                     }
                 }
             } else {
-
+                items(state.playlistList) { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        removePlaylist = {
+                            onIntent(PlaylistIntent.RemoveAPlaylist(playlist))
+                        },
+                        renamePlaylist = {
+                            showRenameDialog = true
+                            chosenPlaylist = playlist
+                        },
+                        modifier = Modifier.clickable {
+                            onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.id))
+                        }
+                    )
+                }
+            }
+        }
+       if(showCreationDialog) {
+           Dialog(
+               onDismissRequest = {
+                   showCreationDialog = false
+               }
+           ) {
+               NewPlaylistDialog(
+                   onCancel = {
+                       showCreationDialog = false
+                   }
+               ) {
+                    onIntent(PlaylistIntent.CreateAPlaylist(it))
+               }
+           }
+       }
+        if(showRenameDialog) {
+            Dialog(
+                onDismissRequest = {
+                    showCreationDialog = false
+                }
+            ) {
+                RenamePlaylistDialog(
+                    title = chosenPlaylist?.title ?: "",
+                    onCancel = {
+                        showRenameDialog = false
+                    }
+                ) { newName ->
+                    onIntent(PlaylistIntent.RenamePlaylist(
+                        name = newName,
+                        playlist = chosenPlaylist ?: Playlist(title = ""))
+                    )
+                }
             }
         }
     }

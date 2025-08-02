@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.playlist.item
+package com.example.buituananh.presentation.playlist.detail_playlist_item
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ import com.example.buituananh.R
 @Composable
 fun HeaderSection(
     modifier: Modifier = Modifier,
+    title: String,
     isGridMode: Boolean,
     isSortMode: Boolean,
     onSwitchToSortMode: () -> Unit,
@@ -59,7 +60,7 @@ fun HeaderSection(
         }
 
         Text(
-            text = if(isSortMode) "Sorting" else "My Playlist",
+            text = if(isSortMode) "Sorting" else title,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.W600,
             color = MaterialTheme.colorScheme.onSurface
