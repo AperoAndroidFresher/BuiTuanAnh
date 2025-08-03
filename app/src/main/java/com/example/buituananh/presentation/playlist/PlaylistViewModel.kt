@@ -1,38 +1,45 @@
 package com.example.buituananh.presentation.playlist
 
 import android.content.ContentResolver
-import android.content.ContentUris
-import android.content.Context
-import android.graphics.BitmapFactory
-import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Media
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.buituananh.model.Playlist
+import com.example.buituananh.model.PlaylistStore
 import com.example.buituananh.model.Song
 import com.example.buituananh.util.Destination
-import com.example.buituananh.util.ImageUtils
-import com.example.buituananh.util.toPairDuration
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
-    val key: Destination.PlaylistScreen,
-    private val contentResolver: ContentResolver
+    val key: Destination.PlaylistWrapper
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
 
+    private val _effect = Channel<PlaylistEffect>()
+    val effect = _effect.receiveAsFlow()
+
     class Factory(
-        private val key: Destination.PlaylistScreen,
-        private val contentResolver: ContentResolver
+        private val key: Destination.PlaylistWrapper
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaylistViewModel(key, contentResolver) as T
+            return PlaylistViewModel(key) as T
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            PlaylistStore.playlists.collectLatest { updatedList ->
+                _state.update { it.copy(playlistList = updatedList) }
+            }
         }
     }
 
@@ -41,67 +48,62 @@ class PlaylistViewModel(
             PlaylistIntent.CancelSortMode -> cancelSortMode()
             PlaylistIntent.RemoveSongFromPlaylist -> removeSongFromPlaylist()
             PlaylistIntent.SaveSortMode -> saveSortMode()
-            is PlaylistIntent.SharingSong -> sharingSong()
+            PlaylistIntent.SharingSong -> sharingSong()
             PlaylistIntent.ToggleGridMode -> toggleGridMode()
             is PlaylistIntent.ToggleSortMode -> toggleSortMode(intent.currentSortMode)
-            PlaylistIntent.LoadData -> loadFiles()
+            PlaylistIntent.LoadPlaylist -> loadPlaylist()
             is PlaylistIntent.SongPopupClick -> songPopupClick(intent.song)
             is PlaylistIntent.OnDragging -> onDragging(intent.fromIndex, intent.toIndex)
+            is PlaylistIntent.CreateAPlaylist -> createAPlaylist(intent.name)
+            is PlaylistIntent.RemoveAPlaylist -> removeAPlaylist(intent.playlist)
+            is PlaylistIntent.RenamePlaylist -> renamePlaylist(intent.playlist, intent.name)
+            is PlaylistIntent.OnPlaylistClick -> onPlaylistClick(intent.id)
+            is PlaylistIntent.LoadPlaylistById -> loadPlaylistById(intent.id)
         }
     }
 
-    private fun onDragging(fromIndex: Int, toIndex: Int) {
-        _state.update {
-            it.copy(
-                playlist = it.playlist.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
-            )
-        }
-    }
-
-    private fun loadFiles() = viewModelScope.launch(Dispatchers.IO) {
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.DATA,
-        )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-        val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} ASC"
-        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-
-        val cursor = contentResolver.query(uri, projection, selection, null, sortOrder)
-        cursor?.use {
-            val idColumn = it.getColumnIndexOrThrow(Media._ID)
-            val titleColumn = it.getColumnIndexOrThrow(Media.TITLE)
-            val artistColumn = it.getColumnIndexOrThrow(Media.ARTIST)
-            val durationColumn = it.getColumnIndexOrThrow(Media.DURATION)
-            val dataColumn = it.getColumnIndexOrThrow(Media.DATA)
-
-            while(it.moveToNext()) {
-                val id = it.getLong(idColumn)
-                val title = it.getString(titleColumn)
-                val artist = it.getString(artistColumn)
-                val duration = it.getLong(durationColumn)
-                val data = it.getString(dataColumn)
-
-                val audioUri = ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, id)
-                val artSong = ImageUtils.extractAlbumArt(contentResolver, audioUri)
-
-                val song = Song(
-                    id = id,
-                    title = title,
-                    artist = artist,
-                    duration = duration.toPairDuration(),
-                    filePath = data,
-                    image = artSong
-                )
-                _state.update { listState ->
-                    listState.copy(
-                        playlist = listState.playlist.toMutableList() + song
+    private fun loadPlaylistById(id: Long) {
+        viewModelScope.launch {
+           val playlist = PlaylistStore.findPlaylistById(id)
+            if(playlist != null) {
+                _state.update {
+                    it.copy(
+                        chosenPlaylist = playlist
                     )
                 }
             }
+        }
+    }
+
+    private fun onPlaylistClick(id: Long) {
+        sendEffect(PlaylistEffect.NavigateToDetailPlaylist(id))
+    }
+
+    private fun renamePlaylist(playlist: Playlist, name: String) {
+        viewModelScope.launch {
+            PlaylistStore.renamePlaylist(playlist, name)
+        }
+    }
+
+    private fun removeAPlaylist(playlist: Playlist) {
+        viewModelScope.launch {
+            PlaylistStore.removePlaylist(playlist)
+        }
+    }
+
+    private fun createAPlaylist(name: String) {
+        viewModelScope.launch {
+            PlaylistStore.createNewPlaylist(
+                Playlist(
+                    title = name
+                )
+            )
+          }
+    }
+
+    private fun loadPlaylist() = viewModelScope.launch {
+        _state.update {
+            it.copy(playlistList = PlaylistStore.getAllPlaylists())
         }
     }
 
@@ -114,35 +116,60 @@ class PlaylistViewModel(
     }
 
     private fun saveSortMode() {
-        _state.update {
-            it.copy(isSortMode = false, backingPlaylist = null)
-        }
-        //ongoing
-    }
+        val chosen = _state.value.chosenPlaylist
 
-    private fun cancelSortMode() {
-        _state.update {
-            it.copy(isSortMode = false, playlist = it.backingPlaylist ?: emptyList())
+        if (chosen != null) {
+            PlaylistStore.updatePlaylist(chosen)
         }
-        //ongoing
-    }
-
-    private fun removeSongFromPlaylist() {
         _state.update {
             it.copy(
-                playlist = it.playlist.filterNot { song -> song == it.chosenSong },
-                chosenSong = null
+                isSortMode = false,
+                backingPlaylist = null
             )
         }
     }
 
-    private fun sharingSong() {
+    private fun cancelSortMode() {
+        _state.update {
+            it.copy(isSortMode = false, chosenPlaylist = it.backingPlaylist)
+        }
         //ongoing
+    }
+
+    private fun onDragging(fromIndex: Int, toIndex: Int) {
+        _state.update { currentState ->
+
+            val playlist = currentState.chosenPlaylist ?: return@update currentState
+
+            val updatedSongs = playlist.songs.toMutableList().apply {
+                add(toIndex, removeAt(fromIndex))
+            }
+
+            currentState.copy(
+                chosenPlaylist = playlist.copy(songs = updatedSongs)
+            )
+        }
+    }
+
+    private fun removeSongFromPlaylist() {
+        viewModelScope.launch {
+            val chosen = _state.value.chosenPlaylist ?: return@launch
+            val song = _state.value.chosenSong ?: return@launch
+            PlaylistStore.removeSongFromPlaylist(song, chosen)
+            val updated = PlaylistStore.findPlaylistById(chosen.id)
+            _state.update {
+                it.copy(chosenPlaylist = updated)
+            }
+        }
+    }
+
+    private fun sharingSong() {
+        sendEffect(PlaylistEffect.SharingIntent(song = _state.value.chosenSong!!))
     }
 
     private fun toggleSortMode(currentSortMode: Boolean) {
         _state.update {
-            it.copy(isSortMode = currentSortMode, backingPlaylist = it.playlist)
+            it.copy(isSortMode = currentSortMode, backingPlaylist = it.chosenPlaylist)
         }
     }
 
@@ -153,8 +180,10 @@ class PlaylistViewModel(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
+    private fun sendEffect(effect: PlaylistEffect) {
+        viewModelScope.launch {
+            _effect.send(effect)
+        }
     }
 
 }

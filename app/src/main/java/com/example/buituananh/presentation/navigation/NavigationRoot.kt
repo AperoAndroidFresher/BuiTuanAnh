@@ -19,10 +19,11 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.example.buituananh.presentation.home.HomeScreen
-import com.example.buituananh.presentation.library.LibraryScreen
+import com.example.buituananh.presentation.library.LibraryScreenRoot
+import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.LoginScreenRoot
-import com.example.buituananh.presentation.playlist.PlaylistScreen
+import com.example.buituananh.presentation.playlist.DetailPlaylistScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.presentation.profile.ProfileScreenRoot
@@ -39,6 +40,7 @@ fun NavigationRoot(
 ) {
 
     val backStack = rememberNavBackStack(Destination.HomeScreen)
+    val backStack2 = rememberNavBackStack(Destination.PlaylistScreen)
 
     var currentDestinationIdx by remember {
         mutableIntStateOf(0)
@@ -55,7 +57,7 @@ fun NavigationRoot(
         bottomBar = {
             if (currentScreen is Destination.HomeScreen
                 || currentScreen is Destination.LibraryScreen
-                || currentScreen is Destination.PlaylistScreen) {
+                || currentScreen is Destination.PlaylistWrapper) {
                 BottomBar(
                     currentDestination = currentDestinationIdx,
                     onDestinationChange = {
@@ -109,12 +111,38 @@ fun NavigationRoot(
                         backStack.add(it)
                     }
                 }
-                entry<Destination.LibraryScreen> {
-                    LibraryScreen()
+                entry<Destination.LibraryScreen> { key ->
+                    LibraryScreenRoot(
+                        viewModel = viewModel(factory = LibraryViewModel.Factory(key, contentResolver))
+                    ) {
+                        backStack.add(it)
+                    }
                 }
-                entry<Destination.PlaylistScreen> { key ->
-                    PlaylistScreenRoot(
-                        viewModel = viewModel(factory = PlaylistViewModel.Factory(key, contentResolver))
+                entry<Destination.PlaylistWrapper> { key ->
+                    val viewModel = viewModel<PlaylistViewModel>(factory = PlaylistViewModel.Factory(key))
+                    NavDisplay(
+                        backStack = backStack2,
+                        onBack = {
+                            backStack2.removeLastOrNull()
+                        },
+                        entryDecorators = listOf(
+                            rememberSceneSetupNavEntryDecorator(),
+                            rememberSavedStateNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator()
+                        ),
+                        entryProvider = entryProvider {
+                            entry<Destination.PlaylistScreen> {
+                                PlaylistScreenRoot(viewModel = viewModel) {
+                                    backStack2.add(it)
+                                }
+                            }
+                            entry<Destination.DetailPlaylistScreen> {
+                                DetailPlaylistScreenRoot(
+                                    id = it.id,
+                                    viewModel = viewModel
+                                )
+                            }
+                        }
                     )
                 }
                 entry<Destination.ProfileScreen> { key ->

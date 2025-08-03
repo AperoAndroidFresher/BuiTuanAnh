@@ -3,25 +3,31 @@ package com.example.buituananh.util
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-sealed class Destination : NavKey {
+sealed interface Destination : NavKey {
     @Serializable
-    data object SplashScreen : Destination()
+    data object SplashScreen : Destination
 
     @Serializable
-    data object LoginScreen : Destination()
+    data object LoginScreen : Destination
 
     @Serializable
-    data object SignupScreen : Destination()
+    data object SignupScreen : Destination
 
     @Serializable
-    data object HomeScreen : Destination()
+    data object HomeScreen : Destination
 
     @Serializable
-    data object LibraryScreen : Destination()
+    data object LibraryScreen : Destination
 
     @Serializable
-    data object PlaylistScreen : Destination()
+    data object PlaylistScreen : Destination
 
     @Serializable
-    data object ProfileScreen : Destination()
+    data object ProfileScreen : Destination
+
+    @Serializable
+    data object PlaylistWrapper : Destination
+
+    @Serializable
+    data class DetailPlaylistScreen(val id: Long) : Destination
 }

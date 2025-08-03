@@ -1,4 +1,4 @@
-package com.example.buituananh.presentation.playlist.item
+package com.example.buituananh.presentation.library.item
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,20 +41,23 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
 import com.example.buituananh.model.Song
+import com.example.buituananh.presentation.library.item.SongOptionsMenu
 import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString
 
 @Composable
-fun LinearSongItem(
+fun SongItem(
     modifier: Modifier = Modifier,
     song: Song,
-    isSortMode: Boolean,
-    onClick: (Pair<Offset, Song>) -> Unit
+    onAddToPlaylistClick: () -> Unit,
+    onShareClick: () -> Unit
 ) {
 
-    var iconOffset by remember {
-        mutableStateOf(Offset.Zero)
+    var expanded by remember {
+        mutableStateOf(false)
     }
+
+    val sizeInPx = with(LocalDensity.current) { 60.dp.roundToPx() }
 
     Row(
         modifier = modifier
@@ -65,10 +69,8 @@ fun LinearSongItem(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(ImageUtils.resizeBitmap(
-                    LocalContext.current,
-                    song.image
-                ))
+                .data(song.image)
+                .size(sizeInPx)
                 .crossfade(true)
                 .error(R.drawable.default_song)
                 .build(),
@@ -114,24 +116,28 @@ fun LinearSongItem(
         Spacer(Modifier.width(8.dp))
         IconButton(
             onClick = {
-                if(!isSortMode) onClick(iconOffset to song)
-            },
-            modifier = Modifier.then(
-                if(!isSortMode) {
-                    Modifier.onGloballyPositioned { coords ->
-                        val offset = coords.localToWindow(Offset.Zero)
-                        iconOffset = offset
-                    }
-                } else {
-                    Modifier
-                }
-            )
+                expanded = true
+            }
         ) {
             Icon(
-                imageVector = if(!isSortMode) Icons.Default.MoreVert else Icons.Default.Menu,
+                imageVector = Icons.Default.MoreVert,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(20.dp)
+            )
+            SongOptionsMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                },
+                onAddToPlaylistClick = {
+                    expanded = false
+                    onAddToPlaylistClick()
+                },
+                onShareClick = {
+                    expanded = false
+                    onShareClick()
+                }
             )
         }
     }

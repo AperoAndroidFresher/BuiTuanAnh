@@ -1,369 +1,203 @@
 package com.example.buituananh.presentation.playlist
 
-import android.os.Build
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.scrollBy
+import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListItemInfo
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.window.Dialog
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.buituananh.model.Song
-import com.example.buituananh.presentation.playlist.item.CustomPopupSong
-import com.example.buituananh.presentation.playlist.item.GridSongItem
-import com.example.buituananh.presentation.playlist.item.HeaderSection
-import com.example.buituananh.presentation.playlist.item.LinearSongItem
-import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.coroutines.channels.Channel
-import kotlin.math.roundToInt
+import com.example.buituananh.model.Playlist
+import com.example.buituananh.presentation.playlist.detail_playlist_item.EmptyPlaylistNoti
+import com.example.buituananh.presentation.playlist.playlist_item.NewPlaylistDialog
+import com.example.buituananh.presentation.playlist.playlist_item.PlaylistItem
+import com.example.buituananh.presentation.playlist.playlist_item.RenamePlaylistDialog
+import com.example.buituananh.util.Destination
+import java.io.File
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PlaylistScreenRoot(
     modifier: Modifier = Modifier,
-    viewModel: PlaylistViewModel
+    viewModel: PlaylistViewModel,
+    onNavigate: (Destination) -> Unit
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
 
-    var permission = android.Manifest.permission.READ_EXTERNAL_STORAGE
-
-    permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        android.Manifest.permission.READ_MEDIA_AUDIO
-    } else {
-        android.Manifest.permission.READ_EXTERNAL_STORAGE
-    }
-
-    val mediaPermissionState = rememberPermissionState(permission) { isGranted ->
-        if(isGranted) {
-
-        } else {
-
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                is PlaylistEffect.NavigateToDetailPlaylist -> onNavigate(Destination.DetailPlaylistScreen(effect.id))
+                is PlaylistEffect.SharingIntent -> {
+                    val file = File(effect.song.filePath ?: "")
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "audio/*"
+                        putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(
+                        Intent.createChooser(intent, "Share audio")
+                    )
+                }
+            }
         }
     }
 
     PlaylistScreen(
+        modifier = modifier,
         state = state,
-        permissionState = mediaPermissionState,
         onIntent = viewModel::onIntent
     )
 
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PlaylistScreen(
     modifier: Modifier = Modifier,
     state: PlaylistState,
-    permissionState: PermissionState,
     onIntent: (PlaylistIntent) -> Unit
 ) {
 
-    var showPopup by remember {
+    LaunchedEffect(Unit) {
+        onIntent(PlaylistIntent.LoadPlaylist)
+    }
+
+    var showCreationDialog by remember {
         mutableStateOf(false)
     }
 
-    val context = LocalContext.current
-
-    //popup calculation
-    val displayMetrics = remember {
-        context.resources.displayMetrics
-    }
-    var currentOffset by remember {
-        mutableStateOf(Offset(0f, 0f))
-    }
-    val screenWidthPx = displayMetrics.widthPixels
-    val popupWidthPx = with(LocalDensity.current) { 250.dp.toPx() }
-
-    val safeOffsetX = if (currentOffset.x + popupWidthPx > screenWidthPx) {
-        currentOffset.x - popupWidthPx
-    } else {
-        currentOffset.x - with(LocalDensity.current) { 50.dp.toPx() }
+    var showRenameDialog by remember {
+        mutableStateOf(false)
     }
 
-    //dragging calculation
-    val stateList = rememberLazyListState()
-
-    var draggingItemIndex: Int? by remember {
-        mutableStateOf(null)
+    var chosenPlaylist by remember {
+        mutableStateOf<Playlist?>(null)
     }
 
-    var delta: Float by remember {
-        mutableFloatStateOf(0f)
-    }
+    Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(Modifier.size(30.dp))
 
-    var draggingItem: LazyListItemInfo? by remember {
-        mutableStateOf(null)
-    }
-
-    val scrollChannel = Channel<Float>()
-
-    LaunchedEffect(stateList) {
-        while (true) {
-            val diff = scrollChannel.receive()
-            stateList.scrollBy(diff)
-        }
-    }
-
-    if(permissionState.status.isGranted) {
-
-        LaunchedEffect(permissionState.status.isGranted) {
-            onIntent(PlaylistIntent.LoadData)
-        }
-
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            showPopup = false
-                        })
-                }) {
-
-            Column {
-                Spacer(Modifier.height(12.dp))
-
-                HeaderSection(
-                    isGridMode = state.isGridMode,
-                    isSortMode = state.isSortMode,
-                    onSwitchToSortMode = {
-                        onIntent(PlaylistIntent.ToggleSortMode(true))
-                    },
-                    onCancelSort = {
-                        onIntent(PlaylistIntent.CancelSortMode)
-                    },
-                    onAcceptSort = {
-                        onIntent(PlaylistIntent.SaveSortMode)
+                Text(
+                    text = "My Playlist",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                IconButton(
+                    onClick = {
+                        showCreationDialog = true
                     }
                 ) {
-                    onIntent(PlaylistIntent.ToggleGridMode)
-                }
-
-                Spacer(Modifier.height(20.dp))
-
-                if(state.isGridMode) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        items(state.playlist) { song: Song ->
-                                GridSongItem(
-                                    song = song,
-                                    modifier = Modifier.animateItem()
-                                ) { (offset, song) ->
-                                    onIntent(PlaylistIntent.SongPopupClick(song))
-                                    if (currentOffset != offset) {
-                                        currentOffset = offset
-                                        showPopup = true
-                                    } else {
-                                        showPopup = false
-                                    }
-                                }
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        state = stateList,
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .then(
-                                if(state.isSortMode) {
-                                    Modifier
-                                        .pointerInput(key1 = stateList) {
-                                            detectDragGesturesAfterLongPress(
-                                                onDragStart = { offset ->
-                                                    stateList.layoutInfo.visibleItemsInfo
-                                                        .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
-                                                        ?.also {
-                                                            (it.contentType as? DraggableItem)?.let { draggableItem ->
-                                                                draggingItem = it
-                                                                draggingItemIndex = draggableItem.index
-                                                            }
-                                                        }
-                                                },
-                                                onDrag = { change, dragAmount ->
-                                                    change.consume()
-                                                    delta += dragAmount.y
-
-                                                    val currentDraggingItemIndex =
-                                                        draggingItemIndex ?: return@detectDragGesturesAfterLongPress
-                                                    val currentDraggingItem =
-                                                        draggingItem ?: return@detectDragGesturesAfterLongPress
-
-                                                    val startOffset = currentDraggingItem.offset + delta
-                                                    val endOffset =
-                                                        currentDraggingItem.offset + currentDraggingItem.size + delta
-                                                    val middleOffset = startOffset + (endOffset - startOffset) / 2
-
-                                                    val targetItem =
-                                                        stateList.layoutInfo.visibleItemsInfo.find { item ->
-                                                            middleOffset.toInt() in item.offset..item.offset + item.size &&
-                                                                    currentDraggingItem.index != item.index &&
-                                                                    item.contentType is DraggableItem
-                                                        }
-
-                                                    if (targetItem != null) {
-                                                        val targetIndex = (targetItem.contentType as DraggableItem).index
-                                                        onIntent(PlaylistIntent.OnDragging(currentDraggingItemIndex, targetIndex))
-                                                        draggingItemIndex = targetIndex
-                                                        delta += currentDraggingItem.offset - targetItem.offset
-                                                        draggingItem = targetItem
-                                                    } else {
-                                                        val startOffsetToTop =
-                                                            startOffset - stateList.layoutInfo.viewportStartOffset
-                                                        val endOffsetToBottom =
-                                                            endOffset - stateList.layoutInfo.viewportEndOffset
-                                                        val scroll =
-                                                            when {
-                                                                startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(0f)
-                                                                endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(0f)
-                                                                else -> 0f
-                                                            }
-                                                        val canScrollDown =
-                                                            currentDraggingItemIndex != state.playlist.size - 1 && endOffsetToBottom > 0
-                                                        val canScrollUp = currentDraggingItemIndex != 0 && startOffsetToTop < 0
-                                                        if (scroll != 0f && (canScrollUp || canScrollDown)) {
-                                                            scrollChannel.trySend(scroll)
-                                                        }
-                                                    }
-                                                },
-                                                onDragEnd = {
-                                                    draggingItem = null
-                                                    draggingItemIndex = null
-                                                    delta = 0f
-                                                },
-                                                onDragCancel = {
-                                                    draggingItem = null
-                                                    draggingItemIndex = null
-                                                    delta = 0f
-                                                },
-                                            )
-                                        }
-                                }
-                                else {
-                                    Modifier
-                                }
-                            )
-                    ) {
-                        itemsIndexed(
-                            items = state.playlist,
-                            contentType = { index, song -> DraggableItem(index = index) }
-                        ) { index, song ->
-                            val linearModifier = if (draggingItemIndex == index) {
-                                Modifier
-                                    .zIndex(1f)
-                                    .graphicsLayer {
-                                        translationY = delta
-                                    }
-                            } else {
-                                Modifier.animateItem()
-                            }
-                            LinearSongItem(
-                                song = song,
-                                isSortMode = state.isSortMode,
-                                modifier = linearModifier.animateItem()
-                            ) { (offset, song) ->
-                                onIntent(PlaylistIntent.SongPopupClick(song))
-                                if (currentOffset != offset) {
-                                    currentOffset = offset
-                                    showPopup = true
-                                } else {
-                                    showPopup = false
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (showPopup) {
-                CustomPopupSong(modifier = Modifier.offset {
-                    IntOffset(
-                        safeOffsetX.roundToInt(), currentOffset.y.roundToInt()
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(30.dp)
                     )
-                }, onRemove = {
-                    showPopup = false
-                    onIntent(PlaylistIntent.RemoveSongFromPlaylist)
-                }) {
-                    //sharing feature
                 }
             }
-
-        }
-    } else {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        },
+        modifier = modifier.fillMaxSize()
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text("The permission is needed to process the application.")
-            Button(onClick = {
-                permissionState.launchPermissionRequest()
-            }) {
-                Text("Request permission")
+            if (state.playlistList.isEmpty()) {
+                item {
+                    EmptyPlaylistNoti {
+                        showCreationDialog = true
+                    }
+                }
+            } else {
+                items(state.playlistList) { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        removePlaylist = {
+                            onIntent(PlaylistIntent.RemoveAPlaylist(playlist))
+                        },
+                        renamePlaylist = {
+                            showRenameDialog = true
+                            chosenPlaylist = playlist
+                        },
+                        modifier = Modifier.clickable {
+                            onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.id))
+                        }
+                    )
+                }
             }
         }
-    }
-
-}
-
-data class DraggableItem(val index: Int)
-
-@Preview(showSystemUi = true)
-@Composable
-fun PreviewLinearPlaylistScreen(modifier: Modifier = Modifier) {
-
-    BuiTuanAnhTheme {
-
+       if(showCreationDialog) {
+           Dialog(
+               onDismissRequest = {
+                   showCreationDialog = false
+               }
+           ) {
+               NewPlaylistDialog(
+                   onCancel = {
+                       showCreationDialog = false
+                   }
+               ) {
+                    onIntent(PlaylistIntent.CreateAPlaylist(it))
+               }
+           }
+       }
+        if(showRenameDialog) {
+            Dialog(
+                onDismissRequest = {
+                    showCreationDialog = false
+                }
+            ) {
+                RenamePlaylistDialog(
+                    title = chosenPlaylist?.title ?: "",
+                    onCancel = {
+                        showRenameDialog = false
+                    }
+                ) { newName ->
+                    onIntent(PlaylistIntent.RenamePlaylist(
+                        name = newName,
+                        playlist = chosenPlaylist ?: Playlist(title = ""))
+                    )
+                }
+            }
+        }
     }
 
 }
