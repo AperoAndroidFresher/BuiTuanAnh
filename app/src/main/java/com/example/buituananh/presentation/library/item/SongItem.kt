@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +57,8 @@ fun SongItem(
         mutableStateOf(false)
     }
 
+    val sizeInPx = with(LocalDensity.current) { 60.dp.roundToPx() }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -66,10 +69,8 @@ fun SongItem(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(ImageUtils.resizeBitmap(
-                    LocalContext.current,
-                    song.image
-                ))
+                .data(song.image)
+                .size(sizeInPx)
                 .crossfade(true)
                 .error(R.drawable.default_song)
                 .build(),

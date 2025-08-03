@@ -35,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.buituananh.presentation.library.item.ChoosePlaylistDialog
 import com.example.buituananh.presentation.library.item.PermissionModal
 import com.example.buituananh.presentation.library.item.SongItem
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
@@ -44,6 +46,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import java.io.File
 
 @Composable
 fun LibraryScreenRoot(
@@ -67,17 +70,27 @@ fun LibraryScreenRoot(
     LaunchedEffect(Unit) {
         viewModel.channel.collect { effect ->
             when (effect) {
-                LibraryEffect.NavigateToPlaylistScreen -> onNavigate(Destination.PlaylistScreen)
+                LibraryEffect.NavigateToPlaylistScreen -> onNavigate(Destination.PlaylistWrapper)
                 is LibraryEffect.SharingIntent -> {
-                    Intent(Intent.ACTION_SEND).apply {
+                    val file = File(effect.song.filePath ?: "")
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
 
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "audio/*"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
+                    context.startActivity(Intent.createChooser(intent, "Share audio"))
                 }
                 is LibraryEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(LibraryIntent.LoadingPlaylistList)
     }
 
     LibraryScreen(
@@ -102,6 +115,10 @@ fun LibraryScreen(
         mutableStateOf(false)
     }
     var showModalPermission by remember {
+        mutableStateOf(false)
+    }
+
+    var showPlaylistDialog by remember {
         mutableStateOf(false)
     }
 
@@ -191,11 +208,28 @@ fun LibraryScreen(
                    SongItem(
                        song = song,
                        onAddToPlaylistClick = {
-                           onIntent(LibraryIntent.AddToPlayList(song))
+                           onIntent(LibraryIntent.AddToPlayListClick(song))
+                           showPlaylistDialog = true
                        }
                    ) {
                         onIntent(LibraryIntent.SharingSong(song))
                    }
+                }
+            }
+        }
+        if(showPlaylistDialog) {
+            Dialog(
+                onDismissRequest = {
+                    showPlaylistDialog = false
+                }
+            ) {
+                ChoosePlaylistDialog(
+                    playlists = state.playlistList,
+                    onAddNewPlaylist = {
+                        onIntent(LibraryIntent.OnAddNewPlaylistClick)
+                    }
+                ) { playlist ->
+                    onIntent(LibraryIntent.ChoosePlaylistToAdd(playlist))
                 }
             }
         }

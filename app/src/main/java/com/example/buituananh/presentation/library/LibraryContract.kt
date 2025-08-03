@@ -9,6 +9,7 @@ data class LibraryState(
     val isLocalSongs: Boolean = true,
     val remoteSongs: List<Song> = emptyList(),
     val playlistList: List<Playlist> = emptyList(),
+    val chosenSong: Song? = null,
     val isGrantedPermission: Boolean = false,
 )
 
@@ -17,9 +18,11 @@ sealed interface LibraryIntent {
     data object LoadSongFiles : LibraryIntent
     data object LoadNetworkingSong : LibraryIntent
     data object ToggleLocalSong : LibraryIntent
-    data class AddToPlayList(val song: Song) : LibraryIntent
+    data class AddToPlayListClick(val song: Song) : LibraryIntent
     data class SharingSong(val song: Song) : LibraryIntent
     data class UpdatePermissionState(val isGranted: Boolean) : LibraryIntent
+    data object OnAddNewPlaylistClick : LibraryIntent
+    data class ChoosePlaylistToAdd(val playlist: Playlist) : LibraryIntent
 }
 
 

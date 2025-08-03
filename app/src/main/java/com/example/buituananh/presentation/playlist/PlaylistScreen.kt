@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.playlist
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,9 +27,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.model.Playlist
 import com.example.buituananh.presentation.playlist.detail_playlist_item.EmptyPlaylistNoti
@@ -36,6 +39,7 @@ import com.example.buituananh.presentation.playlist.playlist_item.NewPlaylistDia
 import com.example.buituananh.presentation.playlist.playlist_item.PlaylistItem
 import com.example.buituananh.presentation.playlist.playlist_item.RenamePlaylistDialog
 import com.example.buituananh.util.Destination
+import java.io.File
 
 @Composable
 fun PlaylistScreenRoot(
@@ -45,11 +49,24 @@ fun PlaylistScreenRoot(
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when(effect) {
                 is PlaylistEffect.NavigateToDetailPlaylist -> onNavigate(Destination.DetailPlaylistScreen(effect.id))
+                is PlaylistEffect.SharingIntent -> {
+                    val file = File(effect.song.filePath ?: "")
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "audio/*"
+                        putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(
+                        Intent.createChooser(intent, "Share audio")
+                    )
+                }
             }
         }
     }

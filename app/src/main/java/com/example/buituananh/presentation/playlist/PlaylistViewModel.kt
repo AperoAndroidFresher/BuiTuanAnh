@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.playlist
 
 import android.content.ContentResolver
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -47,7 +48,7 @@ class PlaylistViewModel(
             PlaylistIntent.CancelSortMode -> cancelSortMode()
             PlaylistIntent.RemoveSongFromPlaylist -> removeSongFromPlaylist()
             PlaylistIntent.SaveSortMode -> saveSortMode()
-            is PlaylistIntent.SharingSong -> sharingSong()
+            PlaylistIntent.SharingSong -> sharingSong()
             PlaylistIntent.ToggleGridMode -> toggleGridMode()
             is PlaylistIntent.ToggleSortMode -> toggleSortMode(intent.currentSortMode)
             PlaylistIntent.LoadPlaylist -> loadPlaylist()
@@ -152,13 +153,18 @@ class PlaylistViewModel(
 
     private fun removeSongFromPlaylist() {
         viewModelScope.launch {
-            PlaylistStore.removeSongFromPlaylist(_state.value.chosenSong, _state.value.chosenPlaylist)
-            loadPlaylist()
+            val chosen = _state.value.chosenPlaylist ?: return@launch
+            val song = _state.value.chosenSong ?: return@launch
+            PlaylistStore.removeSongFromPlaylist(song, chosen)
+            val updated = PlaylistStore.findPlaylistById(chosen.id)
+            _state.update {
+                it.copy(chosenPlaylist = updated)
+            }
         }
     }
 
     private fun sharingSong() {
-        //ongoing
+        sendEffect(PlaylistEffect.SharingIntent(song = _state.value.chosenSong!!))
     }
 
     private fun toggleSortMode(currentSortMode: Boolean) {

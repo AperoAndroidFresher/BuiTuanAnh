@@ -2,6 +2,7 @@ package com.example.buituananh.presentation.playlist
 
 import com.example.buituananh.model.Playlist
 import com.example.buituananh.model.Song
+import com.example.buituananh.presentation.library.LibraryEffect
 
 data class PlaylistState(
     val isLoading: Boolean = false,
@@ -39,4 +40,5 @@ sealed interface PlaylistIntent {
 sealed interface PlaylistEffect {
     //Ongoing
     data class NavigateToDetailPlaylist(val id: Long) : PlaylistEffect
+    data class SharingIntent(val song: Song) : PlaylistEffect
 }

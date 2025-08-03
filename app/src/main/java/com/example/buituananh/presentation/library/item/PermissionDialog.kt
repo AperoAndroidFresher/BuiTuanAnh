@@ -31,8 +31,6 @@ fun PermissionModal(
     isAllowed: () -> Unit
 ) {
 
-    val currentWidth = LocalConfiguration.current.screenWidthDp.dp
-
     Card(
         modifier = Modifier.height(165.dp)
     ) {
@@ -67,7 +65,7 @@ fun PermissionModal(
             ) {
                 TextButton(
                     onClick = isDenied,
-                    modifier = Modifier.width((currentWidth - 20.dp) / 2).padding(horizontal = 10.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = "Don't Allow",
@@ -83,7 +81,7 @@ fun PermissionModal(
                 )
                 TextButton(
                     onClick = isAllowed,
-                    modifier = Modifier.width((currentWidth - 20.dp) / 2).padding(horizontal = 10.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = "OK",

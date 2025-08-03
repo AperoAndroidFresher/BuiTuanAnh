@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.playlist.playlist_item
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,8 @@ fun PlaylistItem(
         mutableStateOf(false)
     }
 
+    val sizeInPx = with(LocalDensity.current) { 70.dp.roundToPx() }
+
     Row(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface)
@@ -56,7 +60,7 @@ fun PlaylistItem(
                 .data(playlist.imageBitmap)
                 .crossfade(true)
                 .error(R.drawable.default_song)
-                .size(150)
+                .size(sizeInPx)
                 .build(),
             contentDescription = playlist.title,
             modifier = Modifier.size(70.dp)
@@ -68,13 +72,14 @@ fun PlaylistItem(
         ) {
             Text(
                 text = playlist.title,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp),
-                color = MaterialTheme.colorScheme.onSurface
+                fontWeight = FontWeight.W600,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.basicMarquee()
             )
             Text(
                 text = "${playlist.songs.size} songs",
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.W500,
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 16.sp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )

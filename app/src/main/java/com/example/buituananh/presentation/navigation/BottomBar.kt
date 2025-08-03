@@ -2,6 +2,7 @@ package com.example.buituananh.presentation.navigation
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
@@ -45,11 +46,15 @@ fun BottomBar(
                     Icon(
                         painter = painterResource(if (currentDestination == index) item.selectedIcon else item.unselectedIcon),
                         contentDescription = null,
-                        modifier = Modifier.size(28.dp)
+                        tint = if (currentDestination == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(25.dp)
                     )
                 },
                 label = {
-                    Text(item.title)
+                    Text(
+                        item.title,
+                        color = if (currentDestination == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
                 }
             )
         }

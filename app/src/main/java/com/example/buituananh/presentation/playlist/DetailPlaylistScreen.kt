@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.playlist
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -46,6 +47,7 @@ import com.example.buituananh.presentation.playlist.detail_playlist_item.GridSon
 import com.example.buituananh.presentation.playlist.detail_playlist_item.HeaderSection
 import com.example.buituananh.presentation.playlist.detail_playlist_item.LinearSongItem
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
+import com.example.buituananh.util.Destination
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.coroutines.channels.Channel
 import kotlin.math.roundToInt
@@ -58,12 +60,34 @@ fun DetailPlaylistScreenRoot(
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                is PlaylistEffect.NavigateToDetailPlaylist -> {
+
+                }
+                is PlaylistEffect.SharingIntent -> {
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "audio/*"
+                        putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(
+                        Intent.createChooser(intent, "Share audio")
+                    )
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.onIntent(PlaylistIntent.LoadPlaylistById(id))
     }
 
     DetailPlaylistScreen(
+        modifier = modifier,
         state = state,
         onIntent = viewModel::onIntent
     )
@@ -98,6 +122,8 @@ fun DetailPlaylistScreen(
     } else {
         currentOffset.x - with(LocalDensity.current) { 50.dp.toPx() }
     }
+
+
 
     //dragging calculation
     val stateList = rememberLazyListState()
@@ -327,7 +353,7 @@ fun DetailPlaylistScreen(
                 showPopup = false
                 onIntent(PlaylistIntent.RemoveSongFromPlaylist)
             }) {
-                //sharing feature
+                onIntent(PlaylistIntent.SharingSong)
             }
         }
 

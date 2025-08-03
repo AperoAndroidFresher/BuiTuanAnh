@@ -4,11 +4,12 @@ import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.Collections.list
 
 object PlaylistStore {
 
     private val _playlists = MutableStateFlow<List<Playlist>>(
-        listOf(
+        List(10) {
             Playlist(
                 title = "My favorite playlist",
                 songs = mutableListOf(
@@ -18,7 +19,8 @@ object PlaylistStore {
                     Song(4, "Song 4", "Artist 4", 5 to 50, null, null),
                 )
             )
-        )
+        }
+//        emptyList()
     )
     val playlists = _playlists.asStateFlow()
 
@@ -35,6 +37,7 @@ object PlaylistStore {
                 }
             }
         }
+        Log.d("PL3", "Store: " + _playlists.value.find { it.id == playlist.id }?.songs?.size.toString())
     }
 
     fun updatePlaylist(playlist: Playlist) {
@@ -47,20 +50,22 @@ object PlaylistStore {
 
     fun findPlaylistById(id: Long): Playlist? = _playlists.value.find { it.id == id }
 
-    fun addSongToPlaylist(song: Song?, playlist: Playlist): Boolean {
-        if (song == null) return false
+    fun addSongToPlaylist(song: Song?, playlist: Playlist): Pair<Boolean, String> {
+        if (song == null) return false to "Unknown error"
 
         var added = false
         _playlists.update { current ->
             current.map { p ->
                 if (p == playlist) {
                     val newSongs = p.songs.toMutableList()
+                    val foundSong = newSongs.find { it == song }
+                    if(foundSong != null) return false to "This song is already added"
                     added = newSongs.add(song)
                     p.copy(songs = newSongs)
                 } else p
             }
         }
-        return added
+        return added to "Add successfully"
     }
 
     fun createNewPlaylist(playlist: Playlist) {

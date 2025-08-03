@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -17,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,33 +45,44 @@ class LibraryViewModel(
 
     fun onIntent(intent: LibraryIntent) {
         when(intent) {
-            is LibraryIntent.AddToPlayList -> addToPlayList(intent.song)
+            is LibraryIntent.AddToPlayListClick -> addToPlayList(intent.song)
             LibraryIntent.LoadNetworkingSong -> loadNetworkingSong()
             LibraryIntent.LoadSongFiles -> loadSongFiles()
             is LibraryIntent.SharingSong -> sharingSong(intent.song)
             LibraryIntent.ToggleLocalSong -> toggleLocalSong()
             is LibraryIntent.UpdatePermissionState -> updatePermissionState(intent.isGranted)
             LibraryIntent.LoadingPlaylistList -> loadingPlaylistList()
+            LibraryIntent.OnAddNewPlaylistClick -> onAddNewPlayCLick()
+            is LibraryIntent.ChoosePlaylistToAdd -> choosePlaylistToAdd(intent.playlist)
         }
+    }
+
+    private fun choosePlaylistToAdd(playlist: Playlist) {
+        viewModelScope.launch {
+           val result =  PlaylistStore.addSongToPlaylist(
+               song = _state.value.chosenSong,
+               playlist = playlist
+           )
+            sendEffect(LibraryEffect.ShowToast(result.second))
+        }
+    }
+
+    private fun onAddNewPlayCLick() {
+        sendEffect(LibraryEffect.NavigateToPlaylistScreen)
     }
 
     private fun loadingPlaylistList() {
-//        _state.update {
-//            it.copy(
-//                playlistList = PlaylistStore.playlists
-//            )
-//        }
+        viewModelScope.launch {
+            PlaylistStore.playlists.collectLatest {updatedPlaylist ->
+                _state.update {
+                    it.copy(playlistList = updatedPlaylist)
+                }
+            }
+        }
     }
 
     private fun addToPlayList(song: Song) {
-        viewModelScope.launch {
-//            val result =  PlaylistStore.addSongToPlaylist(song = _state.value.chosenSong, playlist)
-//            if(result) {
-//                sendEffect(LibraryEffect.ShowToast("Add to playlist successfully"))
-//            } else {
-//                sendEffect(LibraryEffect.ShowToast("Add to playlist unsuccessfully"))
-//            }
-        }
+        _state.update { it.copy(chosenSong = song) }
     }
 
     private fun updatePermissionState(granted: Boolean) {
@@ -90,6 +103,9 @@ class LibraryViewModel(
 
 
     private fun loadSongFiles() = viewModelScope.launch(Dispatchers.IO) {
+        _state.update {
+            it.copy(localSongs = emptyList())
+        }
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
@@ -127,6 +143,13 @@ class LibraryViewModel(
                     filePath = data,
                     image = artSong
                 )
+                Log.d("Uri1", data.toString())
+                val inputStream = contentResolver.openInputStream(audioUri)
+                if (inputStream == null) {
+                    Log.e("Uri1", "URI không hợp lệ hoặc không có dữ liệu.")
+                } else {
+                    Log.d("Uri1", "URI hợp lệ, có thể đọc dữ liệu.")
+                }
                 _state.update { listState ->
                     listState.copy(
                         localSongs = listState.localSongs.toMutableList() + song
