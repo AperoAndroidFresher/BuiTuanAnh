@@ -25,6 +25,6 @@ data class PlaylistEntity(
     val createTime: Long = 0,
     val imageUri: Uri? = null,
     val isDeleted: Boolean = false,
-    val ownerId: String,
-    val musicId: Long
+    val ownerId: Long,
+    val musicId: Long = -1
 )

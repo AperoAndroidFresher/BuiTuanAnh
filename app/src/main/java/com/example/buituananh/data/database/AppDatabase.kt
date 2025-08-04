@@ -24,13 +24,13 @@ import com.example.buituananh.data.model.UserEntity
 @TypeConverters(UriConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun userDao() : UserDao
-    abstract fun playlistDao() : PlaylistDao
-    abstract fun songDao() : SongDao
-    abstract fun playlistMusicDao() : PlaylistMusicDao
+    abstract fun userDao(): UserDao
+    abstract fun playlistDao(): PlaylistDao
+    abstract fun songDao(): SongDao
+    abstract fun playlistMusicDao(): PlaylistMusicDao
 
     companion object {
-        private var INSTANCE : AppDatabase? = null
+        private var INSTANCE: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -38,7 +38,8 @@ abstract class AppDatabase : RoomDatabase() {
                     context,
                     AppDatabase::class.java,
                     "database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .build()
                 INSTANCE = instance
                 instance
             }
@@ -46,23 +47,26 @@ abstract class AppDatabase : RoomDatabase() {
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("""
+                db.execSQL(
+                    """
                 ALTER TABLE users
                 ADD COLUMN avatar_uri TEXT
-            """.trimIndent())
+            """.trimIndent()
+                )
             }
         }
 
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("""
+                db.execSQL(
+                    """
                     ALTER TABLE users
                     ADD COLUMN phone_number TEXT
-                """.trimIndent())
+                """.trimIndent()
+                )
             }
         }
     }
-
 
 
 }

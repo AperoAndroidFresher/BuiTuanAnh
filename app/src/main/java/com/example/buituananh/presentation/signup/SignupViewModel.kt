@@ -7,8 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.mapper.toEntity
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.User
-import com.example.buituananh.domain.model.UserTmp
-import com.example.buituananh.domain.model.UserStore
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
 import kotlinx.coroutines.channels.Channel
