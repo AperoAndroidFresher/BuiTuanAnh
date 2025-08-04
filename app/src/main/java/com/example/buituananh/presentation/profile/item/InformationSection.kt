@@ -50,7 +50,7 @@ import org.jetbrains.annotations.Async
 fun InformationSection(
     modifier: Modifier = Modifier,
     enableEditor: Boolean,
-    uri: Uri,
+    uri: Uri?,
     onAvatarChange: () -> Unit,
     isClick: () -> Unit
 ) {
@@ -131,6 +131,7 @@ fun InformationSection(
             AsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
                     .data(uri)
+                    .size(120)
                     .crossfade(true)
                     .placeholder(R.drawable.avatar)
                     .error(R.drawable.logo_no_text)

@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.buituananh.model.Playlist
+import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.presentation.playlist.detail_playlist_item.EmptyPlaylistNoti
 import com.example.buituananh.presentation.playlist.playlist_item.NewPlaylistDialog
 import com.example.buituananh.presentation.playlist.playlist_item.PlaylistItem
@@ -158,7 +158,7 @@ fun PlaylistScreen(
                             chosenPlaylist = playlist
                         },
                         modifier = Modifier.clickable {
-                            onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.id))
+                            onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.playlistId))
                         }
                     )
                 }
@@ -193,7 +193,8 @@ fun PlaylistScreen(
                 ) { newName ->
                     onIntent(PlaylistIntent.RenamePlaylist(
                         name = newName,
-                        playlist = chosenPlaylist ?: Playlist(title = ""))
+                        playlist = chosenPlaylist ?: Playlist(title = "")
+                    )
                     )
                 }
             }

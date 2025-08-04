@@ -1,4 +1,4 @@
-package com.example.buituananh.model
+package com.example.buituananh.domain.model
 
 data class UserInformation(
     val name: String = "",

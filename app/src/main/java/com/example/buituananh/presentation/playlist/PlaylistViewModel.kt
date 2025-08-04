@@ -1,13 +1,11 @@
 package com.example.buituananh.presentation.playlist
 
-import android.content.ContentResolver
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.buituananh.model.Playlist
-import com.example.buituananh.model.PlaylistStore
-import com.example.buituananh.model.Song
+import com.example.buituananh.domain.model.Playlist
+import com.example.buituananh.domain.model.PlaylistStore
+import com.example.buituananh.domain.model.Song
 import com.example.buituananh.util.Destination
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -156,7 +154,7 @@ class PlaylistViewModel(
             val chosen = _state.value.chosenPlaylist ?: return@launch
             val song = _state.value.chosenSong ?: return@launch
             PlaylistStore.removeSongFromPlaylist(song, chosen)
-            val updated = PlaylistStore.findPlaylistById(chosen.id)
+            val updated = PlaylistStore.findPlaylistById(chosen.playlistId)
             _state.update {
                 it.copy(chosenPlaylist = updated)
             }

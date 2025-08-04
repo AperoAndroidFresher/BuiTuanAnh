@@ -1,7 +1,7 @@
 package com.example.buituananh.presentation.playlist
 
-import com.example.buituananh.model.Playlist
-import com.example.buituananh.model.Song
+import com.example.buituananh.domain.model.Playlist
+import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.library.LibraryEffect
 
 data class PlaylistState(

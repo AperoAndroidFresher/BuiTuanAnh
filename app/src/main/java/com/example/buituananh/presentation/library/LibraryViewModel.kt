@@ -2,15 +2,16 @@ package com.example.buituananh.presentation.library
 
 import android.content.ContentResolver
 import android.content.ContentUris
+import android.net.Uri
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.buituananh.model.Playlist
-import com.example.buituananh.model.PlaylistStore
-import com.example.buituananh.model.Song
+import com.example.buituananh.domain.model.Playlist
+import com.example.buituananh.domain.model.PlaylistStore
+import com.example.buituananh.domain.model.Song
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.toPairDuration
@@ -73,7 +74,7 @@ class LibraryViewModel(
 
     private fun loadingPlaylistList() {
         viewModelScope.launch {
-            PlaylistStore.playlists.collectLatest {updatedPlaylist ->
+            PlaylistStore.playlists.collectLatest { updatedPlaylist ->
                 _state.update {
                     it.copy(playlistList = updatedPlaylist)
                 }
@@ -133,7 +134,7 @@ class LibraryViewModel(
                 val data = it.getString(dataColumn)
 
                 val audioUri = ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, id)
-                val artSong = ImageUtils.extractAlbumArt(contentResolver, audioUri)
+                val artSong = Uri.EMPTY
 
                 val song = Song(
                     id = id,
@@ -143,13 +144,6 @@ class LibraryViewModel(
                     filePath = data,
                     image = artSong
                 )
-                Log.d("Uri1", data.toString())
-                val inputStream = contentResolver.openInputStream(audioUri)
-                if (inputStream == null) {
-                    Log.e("Uri1", "URI không hợp lệ hoặc không có dữ liệu.")
-                } else {
-                    Log.d("Uri1", "URI hợp lệ, có thể đọc dữ liệu.")
-                }
                 _state.update { listState ->
                     listState.copy(
                         localSongs = listState.localSongs.toMutableList() + song

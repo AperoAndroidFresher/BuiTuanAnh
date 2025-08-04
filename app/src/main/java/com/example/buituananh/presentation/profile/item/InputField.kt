@@ -56,6 +56,7 @@ fun InputField(
                 Text(
                     text = placeholderText,
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.alpha(0.6f)
                 )
             },

@@ -39,7 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.buituananh.model.UserInformation
+import com.example.buituananh.domain.model.UserInformation
 import com.example.buituananh.presentation.profile.item.InformationSection
 import com.example.buituananh.presentation.profile.item.InputField
 import com.example.buituananh.presentation.profile.item.SuccessfulDialog
@@ -80,6 +80,10 @@ fun ProfileScreenRoot(
             delay(2000L)
             isShowDialog = false
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(ProfileIntent.LoadUserData)
     }
 
     ProfileScreen(
@@ -132,7 +136,7 @@ private fun ProfileScreen(
         //information section
         InformationSection(
             enableEditor = enableEditor,
-            uri = state.uriPicker,
+            uri = state.avatarUri,
             onAvatarChange = {
                 launcher.launch("image/*")
             }

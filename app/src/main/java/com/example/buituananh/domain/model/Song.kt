@@ -1,6 +1,6 @@
-package com.example.buituananh.model
+package com.example.buituananh.domain.model
 
-import android.graphics.Bitmap
+import android.net.Uri
 
 data class Song(
     val id: Long,
@@ -8,6 +8,6 @@ data class Song(
     val artist: String?,
     val duration: Pair<Int, Int>?,
     val filePath: String?,
-    val image: Bitmap?
+    val image: Uri?
 )
 

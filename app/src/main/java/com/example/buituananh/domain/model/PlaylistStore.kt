@@ -1,10 +1,9 @@
-package com.example.buituananh.model
+package com.example.buituananh.domain.model
 
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.Collections.list
 
 object PlaylistStore {
 
@@ -29,7 +28,7 @@ object PlaylistStore {
 
         _playlists.update { current ->
             current.map { p ->
-                if (p.id == playlist.id) {
+                if (p.playlistId == playlist.playlistId) {
                     val updatedSongs = p.songs.toMutableList().apply { remove(song) }
                     p.copy(songs = updatedSongs)
                 } else {
@@ -37,18 +36,18 @@ object PlaylistStore {
                 }
             }
         }
-        Log.d("PL3", "Store: " + _playlists.value.find { it.id == playlist.id }?.songs?.size.toString())
+        Log.d("PL3", "Store: " + _playlists.value.find { it.playlistId == playlist.playlistId }?.songs?.size.toString())
     }
 
     fun updatePlaylist(playlist: Playlist) {
         _playlists.update { list ->
             list.map {
-                if (it.id == playlist.id) playlist else it
+                if (it.playlistId == playlist.playlistId) playlist else it
             }
         }
     }
 
-    fun findPlaylistById(id: Long): Playlist? = _playlists.value.find { it.id == id }
+    fun findPlaylistById(id: Long): Playlist? = _playlists.value.find { it.playlistId == id }
 
     fun addSongToPlaylist(song: Song?, playlist: Playlist): Pair<Boolean, String> {
         if (song == null) return false to "Unknown error"

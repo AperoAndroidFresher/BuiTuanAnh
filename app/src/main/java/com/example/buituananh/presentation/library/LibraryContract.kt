@@ -1,7 +1,7 @@
 package com.example.buituananh.presentation.library
 
-import com.example.buituananh.model.Playlist
-import com.example.buituananh.model.Song
+import com.example.buituananh.domain.model.Playlist
+import com.example.buituananh.domain.model.Song
 
 data class LibraryState(
     val isLoading: Boolean = false,

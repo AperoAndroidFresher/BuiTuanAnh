@@ -49,7 +49,7 @@ fun InputTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = {
+            label = {
                 Text(hint, modifier = Modifier.alpha(0.5f))
             },
             leadingIcon = {
