@@ -23,7 +23,7 @@ import androidx.room.Index
     ],
     indices = [Index("playlistId"), Index("songId")]
 )
-data class PlaylistMusicCrossEntity(
+data class PlaylistMusicCrossRef(
     val playlistId: Long,
     val songId: Long
 )

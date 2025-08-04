@@ -5,9 +5,14 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.buituananh.data.model.PlaylistEntity
+import com.example.buituananh.data.model.PlaylistMusicCrossRef
+import com.example.buituananh.data.model.PlaylistWithSongs
+import com.example.buituananh.data.model.UserWithPlaylists
 import com.example.buituananh.domain.model.Playlist
+import com.example.buituananh.domain.model.Song
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,6 +20,31 @@ interface PlaylistDao {
 
      @Insert(onConflict = OnConflictStrategy.ABORT)
      suspend fun insertPlaylistByUserId(playlist: PlaylistEntity)
+
+     @Insert(onConflict = OnConflictStrategy.IGNORE)
+     suspend fun insertSongToPlaylist(crossRef: PlaylistMusicCrossRef)
+
+     @Query("""
+         DELETE FROM playlist_music_cross_ref
+          WHERE playlistId = :playlistId AND songId = :songId
+     """)
+     suspend fun deleteSongFromPlaylist(playlistId: Long, songId: Long)
+
+     @Transaction
+     @Query("""
+          SELECT *
+          FROM playlists
+          WHERE playlistId = :playlistId
+     """)
+     fun getPlaylistWithSongsById(playlistId: Long): Flow<PlaylistWithSongs>
+
+     @Transaction
+     @Query("""
+          SELECT *
+          FROM playlists
+          WHERE ownerId = :userId AND isDeleted = 0
+     """)
+     fun getPlaylistWithSongsByUserId(userId: Long): Flow<List<PlaylistWithSongs>>
 
      @Query("""
          UPDATE playlists

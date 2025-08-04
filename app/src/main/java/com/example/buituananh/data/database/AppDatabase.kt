@@ -9,16 +9,15 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.buituananh.data.database.converter.UriConverter
 import com.example.buituananh.data.database.dao.PlaylistDao
-import com.example.buituananh.data.database.dao.PlaylistMusicDao
 import com.example.buituananh.data.database.dao.SongDao
 import com.example.buituananh.data.database.dao.UserDao
 import com.example.buituananh.data.model.PlaylistEntity
-import com.example.buituananh.data.model.PlaylistMusicCrossEntity
+import com.example.buituananh.data.model.PlaylistMusicCrossRef
 import com.example.buituananh.data.model.SongEntity
 import com.example.buituananh.data.model.UserEntity
 
 @Database(
-    entities = [UserEntity::class, PlaylistEntity::class, SongEntity::class, PlaylistMusicCrossEntity::class],
+    entities = [UserEntity::class, PlaylistEntity::class, SongEntity::class, PlaylistMusicCrossRef::class],
     version = 3
 )
 @TypeConverters(UriConverter::class)
@@ -27,7 +26,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun playlistDao(): PlaylistDao
     abstract fun songDao(): SongDao
-    abstract fun playlistMusicDao(): PlaylistMusicDao
 
     companion object {
         private var INSTANCE: AppDatabase? = null

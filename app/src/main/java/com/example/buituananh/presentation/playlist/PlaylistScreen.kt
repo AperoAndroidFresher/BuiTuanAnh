@@ -1,8 +1,11 @@
 package com.example.buituananh.presentation.playlist
 
 import android.content.Intent
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,10 +17,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,14 +59,21 @@ fun PlaylistScreenRoot(
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
     val context = LocalContext.current
+    val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
-            when(effect) {
-                is PlaylistEffect.NavigateToDetailPlaylist -> onNavigate(Destination.DetailPlaylistScreen(effect.id))
+            when (effect) {
+                is PlaylistEffect.NavigateToDetailPlaylist -> onNavigate(
+                    Destination.DetailPlaylistScreen(
+                        effect.id
+                    )
+                )
+
                 is PlaylistEffect.SharingIntent -> {
                     val file = File(effect.song.filePath ?: "")
-                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val uri =
+                        FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "audio/*"
                         putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
@@ -67,6 +83,21 @@ fun PlaylistScreenRoot(
                         Intent.createChooser(intent, "Share audio")
                     )
                 }
+
+                is PlaylistEffect.ShowSnackBar -> {
+                    val result = snackBarHostState.showSnackbar(
+                        effect.message,
+                        actionLabel = "Undo",
+                        duration = SnackbarDuration.Long
+                    )
+                    if(result == SnackbarResult.ActionPerformed) {
+                        viewModel.onIntent(PlaylistIntent.UndoDeletePlaylist)
+                    }
+                }
+
+                is PlaylistEffect.ShowToast -> {
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -74,6 +105,7 @@ fun PlaylistScreenRoot(
     PlaylistScreen(
         modifier = modifier,
         state = state,
+        snackbarState = snackBarHostState,
         onIntent = viewModel::onIntent
     )
 
@@ -83,11 +115,13 @@ fun PlaylistScreenRoot(
 fun PlaylistScreen(
     modifier: Modifier = Modifier,
     state: PlaylistState,
+    snackbarState: SnackbarHostState,
     onIntent: (PlaylistIntent) -> Unit
 ) {
 
     LaunchedEffect(Unit) {
         onIntent(PlaylistIntent.LoadPlaylist)
+        Log.d("PL1", "loading")
     }
 
     var showCreationDialog by remember {
@@ -101,6 +135,7 @@ fun PlaylistScreen(
     var chosenPlaylist by remember {
         mutableStateOf<Playlist?>(null)
     }
+
 
     Scaffold(
         topBar = {
@@ -131,55 +166,68 @@ fun PlaylistScreen(
                 }
             }
         },
+        snackbarHost = {
+            SnackbarHost(snackbarState)
+        },
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            if (state.playlistList.isEmpty()) {
-                item {
-                    EmptyPlaylistNoti {
-                        showCreationDialog = true
-                    }
-                }
-            } else {
-                items(state.playlistList) { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        removePlaylist = {
-                            onIntent(PlaylistIntent.RemoveAPlaylist(playlist))
-                        },
-                        renamePlaylist = {
-                            showRenameDialog = true
-                            chosenPlaylist = playlist
-                        },
-                        modifier = Modifier.clickable {
-                            onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.playlistId))
+        if(state.isLoading) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                if (state.playlistList.isEmpty()) {
+                    item {
+                        EmptyPlaylistNoti {
+                            showCreationDialog = true
                         }
-                    )
+                    }
+                } else {
+                    items(state.playlistList) { playlist ->
+                        PlaylistItem(
+                            playlist = playlist,
+                            removePlaylist = {
+                                onIntent(PlaylistIntent.RemoveAPlaylist(playlist))
+                            },
+                            renamePlaylist = {
+                                showRenameDialog = true
+                                chosenPlaylist = playlist
+                            },
+                            modifier = Modifier.clickable {
+                                onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.playlistId))
+                            }
+                        )
+                    }
                 }
             }
         }
-       if(showCreationDialog) {
-           Dialog(
-               onDismissRequest = {
-                   showCreationDialog = false
-               }
-           ) {
-               NewPlaylistDialog(
-                   onCancel = {
-                       showCreationDialog = false
-                   }
-               ) {
+        if (showCreationDialog) {
+            Dialog(
+                onDismissRequest = {
+                    showCreationDialog = false
+                }
+            ) {
+                NewPlaylistDialog(
+                    onCancel = {
+                        showCreationDialog = false
+                    }
+                ) {
                     onIntent(PlaylistIntent.CreateAPlaylist(it))
-               }
-           }
-       }
-        if(showRenameDialog) {
+                }
+            }
+        }
+        if (showRenameDialog) {
             Dialog(
                 onDismissRequest = {
                     showCreationDialog = false
@@ -191,10 +239,11 @@ fun PlaylistScreen(
                         showRenameDialog = false
                     }
                 ) { newName ->
-                    onIntent(PlaylistIntent.RenamePlaylist(
-                        name = newName,
-                        playlist = chosenPlaylist ?: Playlist(title = "")
-                    )
+                    onIntent(
+                        PlaylistIntent.RenamePlaylist(
+                            name = newName,
+                            playlist = chosenPlaylist ?: Playlist(title = "")
+                        )
                     )
                 }
             }

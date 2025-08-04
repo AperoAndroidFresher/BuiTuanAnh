@@ -1,6 +1,7 @@
 package com.example.buituananh.data.mapper
 
 import com.example.buituananh.data.model.PlaylistEntity
+import com.example.buituananh.data.model.PlaylistWithSongs
 import com.example.buituananh.domain.model.Playlist
 
 fun PlaylistEntity.toPlaylist(): Playlist {
@@ -21,5 +22,16 @@ fun Playlist.toEntity(ownerId: Long): PlaylistEntity {
         imageUri = imageUri,
         isDeleted = isDeleted,
         ownerId =  ownerId
+    )
+}
+
+fun PlaylistWithSongs.toPlaylist(): Playlist {
+    return Playlist(
+        playlistId = this.playlist.playlistId,
+        title = this.playlist.title,
+        createTime = this.playlist.createTime,
+        imageUri = this.playlist.imageUri,
+        isDeleted = this.playlist.isDeleted,
+        songs = this.song.map { it.toSong() }
     )
 }

@@ -129,7 +129,6 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(isGranted) {
-        onIntent(LibraryIntent.UpdatePermissionState(isGranted))
         if(!isGranted) {
             showModalPermission = true
         } else {

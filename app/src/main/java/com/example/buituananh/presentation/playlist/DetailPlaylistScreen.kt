@@ -78,6 +78,14 @@ fun DetailPlaylistScreenRoot(
                         Intent.createChooser(intent, "Share audio")
                     )
                 }
+
+                is PlaylistEffect.ShowSnackBar -> {
+
+                }
+
+                is PlaylistEffect.ShowToast -> {
+
+                }
             }
         }
     }
@@ -165,7 +173,7 @@ fun DetailPlaylistScreen(
             Spacer(Modifier.height(12.dp))
 
             HeaderSection(
-                title =state.chosenPlaylist?.title ?: "null",
+                title = state.chosenPlaylist?.title ?: "null",
                 isGridMode = state.isGridMode,
                 isSortMode = state.isSortMode,
                 onSwitchToSortMode = {

@@ -3,11 +3,16 @@ package com.example.buituananh.presentation.playlist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.buituananh.data.mapper.toEntity
+import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.PlaylistStore
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.domain.repository.PlaylistRepository
+import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -16,7 +21,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
-    val key: Destination.PlaylistWrapper
+    private val key: Destination.PlaylistWrapper,
+    private val userRepository: UserRepository,
+    private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
@@ -26,10 +33,12 @@ class PlaylistViewModel(
     val effect = _effect.receiveAsFlow()
 
     class Factory(
-        private val key: Destination.PlaylistWrapper
+        private val key: Destination.PlaylistWrapper,
+        private val userRepository: UserRepository,
+        private val playlistRepository: PlaylistRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaylistViewModel(key) as T
+            return PlaylistViewModel(key, userRepository, playlistRepository) as T
         }
     }
 
@@ -57,17 +66,21 @@ class PlaylistViewModel(
             is PlaylistIntent.RenamePlaylist -> renamePlaylist(intent.playlist, intent.name)
             is PlaylistIntent.OnPlaylistClick -> onPlaylistClick(intent.id)
             is PlaylistIntent.LoadPlaylistById -> loadPlaylistById(intent.id)
+            is PlaylistIntent.UndoDeletePlaylist -> undoDeletePlaylistId()
         }
     }
 
-    private fun loadPlaylistById(id: Long) {
+    private fun undoDeletePlaylistId() {
         viewModelScope.launch {
-           val playlist = PlaylistStore.findPlaylistById(id)
-            if(playlist != null) {
+            playlistRepository.undoDeletePlaylist(_state.value.deletedPlaylistId)
+        }
+    }
+
+    private fun loadPlaylistById(playlistId: Long) {
+        viewModelScope.launch {
+            playlistRepository.getPlaylistWithSongById(playlistId).collectLatest {  playlist ->
                 _state.update {
-                    it.copy(
-                        chosenPlaylist = playlist
-                    )
+                    it.copy(chosenPlaylist = playlist)
                 }
             }
         }
@@ -79,29 +92,49 @@ class PlaylistViewModel(
 
     private fun renamePlaylist(playlist: Playlist, name: String) {
         viewModelScope.launch {
-            PlaylistStore.renamePlaylist(playlist, name)
+            playlistRepository.renamePlaylist(playlist.playlistId, name)
         }
     }
 
     private fun removeAPlaylist(playlist: Playlist) {
         viewModelScope.launch {
-            PlaylistStore.removePlaylist(playlist)
+            val result = playlistRepository.deletePlaylist(playlist.playlistId)
+            if(result is Result.Success) {
+                _state.update {
+                    it.copy(deletedPlaylistId = playlist.playlistId)
+                }
+                sendEffect(PlaylistEffect.ShowSnackBar("Delete successfully"))
+            } else {
+                sendEffect(PlaylistEffect.ShowSnackBar("Delete unsuccessfully"))
+            }
         }
     }
 
     private fun createAPlaylist(name: String) {
         viewModelScope.launch {
-            PlaylistStore.createNewPlaylist(
-                Playlist(
-                    title = name
-                )
-            )
+            val playlist = Playlist(title = name)
+            val userId = _state.value.userId
+            playlistRepository.insertPlaylist(playlist.toEntity(ownerId = userId))
           }
     }
 
     private fun loadPlaylist() = viewModelScope.launch {
         _state.update {
-            it.copy(playlistList = PlaylistStore.getAllPlaylists())
+            it.copy(isLoading = true)
+        }
+        delay(2000L)
+        userRepository.userIdFlow.collectLatest { userId ->
+            if(userId != null) {
+                playlistRepository.getPlaylistWithSongs(userId = userId).collect { list ->
+                    _state.update {
+                        it.copy(
+                            userId = userId,
+                            playlistList = list,
+                            isLoading = false
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -153,10 +186,14 @@ class PlaylistViewModel(
         viewModelScope.launch {
             val chosen = _state.value.chosenPlaylist ?: return@launch
             val song = _state.value.chosenSong ?: return@launch
-            PlaylistStore.removeSongFromPlaylist(song, chosen)
-            val updated = PlaylistStore.findPlaylistById(chosen.playlistId)
-            _state.update {
-                it.copy(chosenPlaylist = updated)
+            val result = playlistRepository.deleteSongFromPlaylist(
+                playlistId = chosen.playlistId,
+                songId = song.id
+            )
+            if(result is Result.Success) {
+                sendEffect(PlaylistEffect.ShowToast("Delete successfully"))
+            } else {
+                sendEffect(PlaylistEffect.ShowToast("Delete unsuccessfully"))
             }
         }
     }

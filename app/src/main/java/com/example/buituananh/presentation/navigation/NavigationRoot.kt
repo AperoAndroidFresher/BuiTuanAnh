@@ -59,7 +59,8 @@ fun NavigationRoot(
         bottomBar = {
             if (currentScreen is Destination.HomeScreen
                 || currentScreen is Destination.LibraryScreen
-                || currentScreen is Destination.PlaylistWrapper) {
+                || currentScreen is Destination.PlaylistWrapper
+            ) {
                 BottomBar(
                     currentDestination = currentDestinationIdx,
                     onDestinationChange = {
@@ -88,10 +89,15 @@ fun NavigationRoot(
                 }
                 entry<Destination.LoginScreen> { key: Destination.LoginScreen ->
                     LoginScreenRoot(
-                        viewModel = viewModel(factory = LoginViewModel.Factory(key, appContainer.userRepository))
+                        viewModel = viewModel(
+                            factory = LoginViewModel.Factory(
+                                key,
+                                appContainer.userRepository
+                            )
+                        )
                     ) { route ->
-                        if(route is Destination.HomeScreen) {
-                            while(backStack.isNotEmpty()) {
+                        if (route is Destination.HomeScreen) {
+                            while (backStack.isNotEmpty()) {
                                 backStack.removeLastOrNull()
                             }
                         }
@@ -100,7 +106,12 @@ fun NavigationRoot(
                 }
                 entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
                     SignupScreenRoot(
-                        viewModel = viewModel(factory = SignupViewModel.Factory(key, appContainer.userRepository)),
+                        viewModel = viewModel(
+                            factory = SignupViewModel.Factory(
+                                key,
+                                appContainer.userRepository
+                            )
+                        ),
                         onPopBack = {
                             backStack.removeLastOrNull()
                         }
@@ -115,13 +126,27 @@ fun NavigationRoot(
                 }
                 entry<Destination.LibraryScreen> { key ->
                     LibraryScreenRoot(
-                        viewModel = viewModel(factory = LibraryViewModel.Factory(key, contentResolver))
+                        viewModel = viewModel(
+                            factory = LibraryViewModel.Factory(
+                                key,
+                                contentResolver,
+                                appContainer.userRepository,
+                                appContainer.playlistRepository,
+                                appContainer.songRepository
+                            )
+                        )
                     ) {
                         backStack.add(it)
                     }
                 }
                 entry<Destination.PlaylistWrapper> { key ->
-                    val viewModel = viewModel<PlaylistViewModel>(factory = PlaylistViewModel.Factory(key))
+                    val viewModel = viewModel<PlaylistViewModel>(
+                        factory = PlaylistViewModel.Factory(
+                            key,
+                            appContainer.userRepository,
+                            appContainer.playlistRepository
+                        )
+                    )
                     NavDisplay(
                         backStack = backStack2,
                         onBack = {
@@ -149,7 +174,12 @@ fun NavigationRoot(
                 }
                 entry<Destination.ProfileScreen> { key ->
                     ProfileScreenRoot(
-                        viewModel = viewModel(factory = ProfileViewModel.Factory(key, appContainer.userRepository)),
+                        viewModel = viewModel(
+                            factory = ProfileViewModel.Factory(
+                                key,
+                                appContainer.userRepository
+                            )
+                        ),
                     )
                 }
             }
