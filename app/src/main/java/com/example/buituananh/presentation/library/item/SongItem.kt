@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
-import com.example.buituananh.model.Song
+import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.library.item.SongOptionsMenu
 import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.formatToString

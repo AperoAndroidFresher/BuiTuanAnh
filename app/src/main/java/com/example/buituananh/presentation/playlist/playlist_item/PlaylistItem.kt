@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
-import com.example.buituananh.model.Playlist
+import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 
 @Composable
@@ -57,7 +57,7 @@ fun PlaylistItem(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(playlist.imageBitmap)
+                .data(playlist.imageUri)
                 .crossfade(true)
                 .error(R.drawable.default_song)
                 .size(sizeInPx)

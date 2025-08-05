@@ -3,7 +3,8 @@ package com.example.buituananh.presentation.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.buituananh.model.UserStore
+import com.example.buituananh.data.util.Result
+import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    val key: Destination.LoginScreen
+    private val key: Destination.LoginScreen,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -24,10 +26,11 @@ class LoginViewModel(
     val effect = _effect.receiveAsFlow()
 
     class Factory(
-        private val key: Destination.LoginScreen
+        private val key: Destination.LoginScreen,
+        private val repository: UserRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LoginViewModel(key) as T
+            return LoginViewModel(key, repository) as T
         }
     }
 
@@ -74,68 +77,73 @@ class LoginViewModel(
     }
 
     private fun login() {
-        val usernameRegex = Regex("^[a-z\\d]*$")
-        val passwordRegex = Regex("^[a-zA-Z\\d]*$")
-        val username = _state.value.username
-        val password = _state.value.password
+        viewModelScope.launch {
+            val usernameRegex = Regex("^[a-z\\d]*$")
+            val passwordRegex = Regex("^[a-zA-Z\\d]*$")
+            val username = _state.value.username
+            val password = _state.value.password
 
-        var hasError = false
+            var hasError = false
 
-        if (!username.matches(usernameRegex) || username.isBlank()) {
-            hasError = true
-            _state.update {
-                it.copy(
-                    usernameError = "Invalid username format",
-                    username = ""
-                )
-            }
-        } else {
-            _state.update {
-                it.copy(
-                    usernameError = "",
-                    username = ""
-                )
-            }
-        }
-
-        if (!password.matches(passwordRegex) || password.isBlank()) {
-            hasError = true
-            _state.update {
-                it.copy(
-                    passwordError = "Invalid password format",
-                    password = ""
-                )
-            }
-        } else {
-            _state.update {
-                it.copy(
-                    passwordError = "",
-                )
-            }
-        }
-
-        if (!hasError) {
-            val matchedUser = UserStore.userList.find {
-                it.username == username && it.password == password
-            }
-
-            if (matchedUser == null) {
+            if (!username.matches(usernameRegex) || username.isBlank()) {
                 hasError = true
                 _state.update {
                     it.copy(
-                        username = "",
-                        password = "",
-                        usernameError = "Username or password is incorrect",
-                        passwordError = "Username or password is incorrect"
+                        usernameError = "Invalid username format",
+                        username = ""
+                    )
+                }
+            } else {
+                _state.update {
+                    it.copy(
+                        usernameError = "",
+                        username = ""
                     )
                 }
             }
-        }
 
-        if (!hasError) {
-            sendEvent(LoginEffect.NavigateToHomeScreen)
-        } else {
-            sendEvent(LoginEffect.ShowToast("Login unsuccessfully"))
+            if (!password.matches(passwordRegex) || password.isBlank()) {
+                hasError = true
+                _state.update {
+                    it.copy(
+                        passwordError = "Invalid password format",
+                        password = ""
+                    )
+                }
+            } else {
+                _state.update {
+                    it.copy(
+                        passwordError = "",
+                    )
+                }
+            }
+
+            if (!hasError) {
+                val matchedUser = userRepository.assertLogin(
+                    username = username,
+                    password = password
+                )
+
+                if (matchedUser is Result.Failure) {
+                    hasError = true
+                    _state.update {
+                        it.copy(
+                            username = "",
+                            password = "",
+                            usernameError = matchedUser.error.localizedMessage ?: "Unknown error",
+                            passwordError = matchedUser.error.localizedMessage ?: "Unknown error"
+                        )
+                    }
+                } else if(matchedUser is Result.Success) {
+                    userRepository.saveUserId(matchedUser.data.userId)
+                }
+            }
+
+            if (!hasError) {
+                sendEvent(LoginEffect.NavigateToHomeScreen)
+            } else {
+                sendEvent(LoginEffect.ShowToast("Login unsuccessfully"))
+            }
         }
     }
 

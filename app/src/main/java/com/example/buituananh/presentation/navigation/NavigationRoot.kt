@@ -18,6 +18,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import com.example.buituananh.di.AppContainer
 import com.example.buituananh.presentation.home.HomeScreen
 import com.example.buituananh.presentation.library.LibraryScreenRoot
 import com.example.buituananh.presentation.library.LibraryViewModel
@@ -36,10 +37,11 @@ import com.example.buituananh.util.Destination
 @Composable
 fun NavigationRoot(
     modifier: Modifier = Modifier,
-    contentResolver: ContentResolver
+    contentResolver: ContentResolver,
+    appContainer: AppContainer
 ) {
 
-    val backStack = rememberNavBackStack(Destination.HomeScreen)
+    val backStack = rememberNavBackStack(Destination.SplashScreen)
     val backStack2 = rememberNavBackStack(Destination.PlaylistScreen)
 
     var currentDestinationIdx by remember {
@@ -57,7 +59,8 @@ fun NavigationRoot(
         bottomBar = {
             if (currentScreen is Destination.HomeScreen
                 || currentScreen is Destination.LibraryScreen
-                || currentScreen is Destination.PlaylistWrapper) {
+                || currentScreen is Destination.PlaylistWrapper
+            ) {
                 BottomBar(
                     currentDestination = currentDestinationIdx,
                     onDestinationChange = {
@@ -86,10 +89,15 @@ fun NavigationRoot(
                 }
                 entry<Destination.LoginScreen> { key: Destination.LoginScreen ->
                     LoginScreenRoot(
-                        viewModel = viewModel(factory = LoginViewModel.Factory(key))
+                        viewModel = viewModel(
+                            factory = LoginViewModel.Factory(
+                                key,
+                                appContainer.userRepository
+                            )
+                        )
                     ) { route ->
-                        if(route is Destination.HomeScreen) {
-                            while(backStack.isNotEmpty()) {
+                        if (route is Destination.HomeScreen) {
+                            while (backStack.isNotEmpty()) {
                                 backStack.removeLastOrNull()
                             }
                         }
@@ -98,7 +106,12 @@ fun NavigationRoot(
                 }
                 entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
                     SignupScreenRoot(
-                        viewModel = viewModel(factory = SignupViewModel.Factory(System.currentTimeMillis())),
+                        viewModel = viewModel(
+                            factory = SignupViewModel.Factory(
+                                key,
+                                appContainer.userRepository
+                            )
+                        ),
                         onPopBack = {
                             backStack.removeLastOrNull()
                         }
@@ -113,13 +126,27 @@ fun NavigationRoot(
                 }
                 entry<Destination.LibraryScreen> { key ->
                     LibraryScreenRoot(
-                        viewModel = viewModel(factory = LibraryViewModel.Factory(key, contentResolver))
+                        viewModel = viewModel(
+                            factory = LibraryViewModel.Factory(
+                                key,
+                                contentResolver,
+                                appContainer.userRepository,
+                                appContainer.playlistRepository,
+                                appContainer.songRepository
+                            )
+                        )
                     ) {
                         backStack.add(it)
                     }
                 }
                 entry<Destination.PlaylistWrapper> { key ->
-                    val viewModel = viewModel<PlaylistViewModel>(factory = PlaylistViewModel.Factory(key))
+                    val viewModel = viewModel<PlaylistViewModel>(
+                        factory = PlaylistViewModel.Factory(
+                            key,
+                            appContainer.userRepository,
+                            appContainer.playlistRepository
+                        )
+                    )
                     NavDisplay(
                         backStack = backStack2,
                         onBack = {
@@ -147,7 +174,12 @@ fun NavigationRoot(
                 }
                 entry<Destination.ProfileScreen> { key ->
                     ProfileScreenRoot(
-                        viewModel = viewModel(factory = ProfileViewModel.Factory(key)),
+                        viewModel = viewModel(
+                            factory = ProfileViewModel.Factory(
+                                key,
+                                appContainer.userRepository
+                            )
+                        ),
                     )
                 }
             }

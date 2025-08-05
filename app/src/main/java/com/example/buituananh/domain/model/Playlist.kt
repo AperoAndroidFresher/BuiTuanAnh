@@ -1,15 +1,14 @@
-package com.example.buituananh.model
+package com.example.buituananh.domain.model
 
-import android.graphics.Bitmap
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.net.Uri
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 data class Playlist(
-    val id: Long = System.currentTimeMillis(),
+    val playlistId: Long = System.currentTimeMillis(),
     var title: String,
     val songs: List<Song> = emptyList(),
     val createTime: Long = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
-    val imageBitmap: Bitmap? = null
+    val imageUri: Uri? = null,
+    val isDeleted: Boolean = false,
 )

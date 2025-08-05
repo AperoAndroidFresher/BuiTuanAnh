@@ -89,10 +89,6 @@ fun LibraryScreenRoot(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.onIntent(LibraryIntent.LoadingPlaylistList)
-    }
-
     LibraryScreen(
         modifier = modifier,
         state = state,
@@ -129,7 +125,6 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(isGranted) {
-        onIntent(LibraryIntent.UpdatePermissionState(isGranted))
         if(!isGranted) {
             showModalPermission = true
         } else {

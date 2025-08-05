@@ -9,13 +9,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import com.example.buituananh.di.AppContainer
 import com.example.buituananh.presentation.navigation.NavigationRoot
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 
 @Composable
 fun MyApp(
     modifier: Modifier = Modifier,
-    contentResolver: ContentResolver
+    contentResolver: ContentResolver,
+    appContainer: AppContainer
 ) {
 
     val themeController = remember { ThemeController() }
@@ -24,7 +26,10 @@ fun MyApp(
         BuiTuanAnhTheme(
             darkTheme = themeController.isDarkTheme
         ) {
-            NavigationRoot(contentResolver = contentResolver)
+            NavigationRoot(
+                contentResolver = contentResolver,
+                appContainer = appContainer
+            )
         }
     }
 

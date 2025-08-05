@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.buituananh.model.Song
+import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.playlist.detail_playlist_item.CustomPopupSong
 import com.example.buituananh.presentation.playlist.detail_playlist_item.GridSongItem
 import com.example.buituananh.presentation.playlist.detail_playlist_item.HeaderSection
@@ -77,6 +77,14 @@ fun DetailPlaylistScreenRoot(
                     context.startActivity(
                         Intent.createChooser(intent, "Share audio")
                     )
+                }
+
+                is PlaylistEffect.ShowSnackBar -> {
+
+                }
+
+                is PlaylistEffect.ShowToast -> {
+
                 }
             }
         }
@@ -165,7 +173,7 @@ fun DetailPlaylistScreen(
             Spacer(Modifier.height(12.dp))
 
             HeaderSection(
-                title =state.chosenPlaylist?.title ?: "null",
+                title = state.chosenPlaylist?.title ?: "null",
                 isGridMode = state.isGridMode,
                 isSortMode = state.isSortMode,
                 onSwitchToSortMode = {
