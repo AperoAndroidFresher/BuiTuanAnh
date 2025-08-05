@@ -2,19 +2,17 @@ package com.example.buituananh.presentation.playlist
 
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.Song
-import com.example.buituananh.presentation.library.LibraryEffect
 
 data class PlaylistState(
     val isLoading: Boolean = false,
-    //detail playlist state
-    val chosenPlaylist: Playlist? = null,
     val isGridMode: Boolean = false,
     val isSortMode: Boolean = false,
-    val chosenSong: Song? = null,
+    
+    val selectedPlaylist: Playlist? = null,
+    val selectedSong: Song? = null,
     val backingPlaylist: Playlist? = null,
-
-    //playlist state
-    val playlistList: List<Playlist> = emptyList(),
+    
+    val playlists: List<Playlist> = emptyList(),
     val userId: Long = -1,
     val deletedPlaylistId: Long = -1
 )
@@ -41,7 +39,6 @@ sealed interface PlaylistIntent {
 }
 
 sealed interface PlaylistEffect {
-    //Ongoing
     data class NavigateToDetailPlaylist(val id: Long) : PlaylistEffect
     data class SharingIntent(val song: Song) : PlaylistEffect
     data class ShowSnackBar(val message: String) : PlaylistEffect

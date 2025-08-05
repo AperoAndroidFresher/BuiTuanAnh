@@ -1,7 +1,6 @@
 package com.example.buituananh.presentation.playlist
 
 import android.content.Intent
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -47,8 +46,6 @@ import com.example.buituananh.presentation.playlist.detail_playlist_item.GridSon
 import com.example.buituananh.presentation.playlist.detail_playlist_item.HeaderSection
 import com.example.buituananh.presentation.playlist.detail_playlist_item.LinearSongItem
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.example.buituananh.util.Destination
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.coroutines.channels.Channel
 import kotlin.math.roundToInt
 
@@ -173,7 +170,7 @@ fun DetailPlaylistScreen(
             Spacer(Modifier.height(12.dp))
 
             HeaderSection(
-                title = state.chosenPlaylist?.title ?: "null",
+                title = state.selectedPlaylist?.title ?: "null",
                 isGridMode = state.isGridMode,
                 isSortMode = state.isSortMode,
                 onSwitchToSortMode = {
@@ -199,9 +196,9 @@ fun DetailPlaylistScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    val songList = state.chosenPlaylist?.songs
+                    val songList = state.selectedPlaylist?.songs
                     if(songList != null) {
-                        items(state.chosenPlaylist.songs) { song: Song ->
+                        items(state.selectedPlaylist.songs) { song: Song ->
                             GridSongItem(
                                 song = song,
                                 modifier = Modifier.animateItem()
@@ -295,7 +292,7 @@ fun DetailPlaylistScreen(
                                                             else -> 0f
                                                         }
                                                     val canScrollDown =
-                                                        currentDraggingItemIndex != (state.chosenPlaylist?.songs?.size
+                                                        currentDraggingItemIndex != (state.selectedPlaylist?.songs?.size
                                                             ?: (1 - 1)) && endOffsetToBottom > 0
                                                     val canScrollUp =
                                                         currentDraggingItemIndex != 0 && startOffsetToTop < 0
@@ -322,7 +319,7 @@ fun DetailPlaylistScreen(
                         )
                 ) {
                     itemsIndexed(
-                        items = state.chosenPlaylist?.songs ?: emptyList(),
+                        items = state.selectedPlaylist?.songs ?: emptyList(),
                         contentType = { index, song -> DraggableItem(index = index) }
                     ) { index, song ->
                         val linearModifier = if (draggingItemIndex == index) {

@@ -35,7 +35,7 @@ class PlaylistViewModel(
     init {
         viewModelScope.launch {
             PlaylistStore.playlists.collectLatest { updatedList ->
-                _state.update { it.copy(playlistList = updatedList) }
+                _state.update { it.copy(playlists = updatedList) }
             }
         }
     }
@@ -70,7 +70,7 @@ class PlaylistViewModel(
         viewModelScope.launch {
             playlistRepository.getPlaylistWithSongById(playlistId).collectLatest { playlist ->
                 _state.update {
-                    it.copy(chosenPlaylist = playlist)
+                    it.copy(selectedPlaylist = playlist)
                 }
             }
         }
@@ -119,7 +119,7 @@ class PlaylistViewModel(
                     _state.update {
                         it.copy(
                             userId = userId,
-                            playlistList = list,
+                            playlists = list,
                             isLoading = false,
                         )
                     }
@@ -136,12 +136,12 @@ class PlaylistViewModel(
 
     private fun songPopupClick(song: Song) {
         _state.update {
-            it.copy(chosenSong = song)
+            it.copy(selectedSong = song)
         }
     }
 
     private fun saveSortMode() {
-        val chosen = _state.value.chosenPlaylist
+        val chosen = _state.value.selectedPlaylist
 
         if (chosen != null) {
             PlaylistStore.updatePlaylist(chosen)
@@ -156,26 +156,26 @@ class PlaylistViewModel(
 
     private fun cancelSortMode() {
         _state.update {
-            it.copy(isSortMode = false, chosenPlaylist = it.backingPlaylist)
+            it.copy(isSortMode = false, selectedPlaylist = it.backingPlaylist)
         }
     }
 
     private fun onDragging(fromIndex: Int, toIndex: Int) {
         _state.update { currentState ->
-            val playlist = currentState.chosenPlaylist ?: return@update currentState
+            val playlist = currentState.selectedPlaylist ?: return@update currentState
             val updatedSongs = playlist.songs.toMutableList().apply {
                 add(toIndex, removeAt(fromIndex))
             }
             currentState.copy(
-                chosenPlaylist = playlist.copy(songs = updatedSongs),
+                selectedPlaylist = playlist.copy(songs = updatedSongs),
             )
         }
     }
 
     private fun removeSongFromPlaylist() {
         viewModelScope.launch {
-            val chosen = _state.value.chosenPlaylist ?: return@launch
-            val song = _state.value.chosenSong ?: return@launch
+            val chosen = _state.value.selectedPlaylist ?: return@launch
+            val song = _state.value.selectedSong ?: return@launch
             val result = playlistRepository.deleteSongFromPlaylist(
                 playlistId = chosen.playlistId,
                 songId = song.id,
@@ -189,12 +189,12 @@ class PlaylistViewModel(
     }
 
     private fun sharingSong() {
-        sendEffect(PlaylistEffect.SharingIntent(song = _state.value.chosenSong!!))
+        sendEffect(PlaylistEffect.SharingIntent(song = _state.value.selectedSong!!))
     }
 
     private fun toggleSortMode(currentSortMode: Boolean) {
         _state.update {
-            it.copy(isSortMode = currentSortMode, backingPlaylist = it.chosenPlaylist)
+            it.copy(isSortMode = currentSortMode, backingPlaylist = it.selectedPlaylist)
         }
     }
 
