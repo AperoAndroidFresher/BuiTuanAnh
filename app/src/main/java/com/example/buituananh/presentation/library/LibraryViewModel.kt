@@ -1,11 +1,7 @@
 package com.example.buituananh.presentation.library
 
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.Context
-import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Media
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -16,16 +12,10 @@ import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
-import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.MediaStoreHelper
-import com.example.buituananh.util.toPairDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
@@ -33,7 +23,7 @@ class LibraryViewModel(
     private val contentResolver: ContentResolver,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
-    private val songRepository: SongRepository
+    private val songRepository: SongRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
@@ -41,73 +31,58 @@ class LibraryViewModel(
 
     private val _channel = Channel<LibraryEffect>()
     val channel = _channel.receiveAsFlow()
-    
+
     fun onIntent(intent: LibraryIntent) {
         when (intent) {
-            is LibraryIntent.AddToPlayListClick -> addToPlayListClick(intent.song)
-            LibraryIntent.LoadNetworkingSong -> loadNetworkingSong()
-            is LibraryIntent.LoadSongFiles -> loadSongFiles(intent.context)
-            is LibraryIntent.SharingSong -> sharingSong(intent.song)
-            LibraryIntent.ToggleLocalSong -> toggleLocalSong()
-            LibraryIntent.OnAddNewPlaylistClick -> onAddNewPlayCLick()
-            is LibraryIntent.ChoosePlaylistToAdd -> choosePlaylistToAdd(intent.playlist)
+            is LibraryIntent.ClickSongOptions -> clickSongOptions(intent.song)
+            LibraryIntent.LoadNetworkSongs -> loadNetworkSongs()
+            is LibraryIntent.LoadLocalSongs -> loadLocalSongs(intent.context)
+            is LibraryIntent.ShareSong -> shareSong(intent.song)
+            LibraryIntent.ToggleLocalMode -> toggleLocalSong()
+            LibraryIntent.ClickNewPlaylist -> clickNewPlaylist()
+            is LibraryIntent.ClickPlaylist -> clickPlaylist(intent.playlist)
         }
     }
 
-    private fun choosePlaylistToAdd(playlist: Playlist) {
+    private fun clickPlaylist(playlist: Playlist) {
         viewModelScope.launch {
-            val songId = _state.value.chosenSong?.songId ?: return@launch
+            val songId = _state.value.selectedSong?.songId ?: return@launch
             val isSongInPlaylist = playlistRepository.isSongInPlaylist(playlist.playlistId, songId)
-            if(isSongInPlaylist) {
+            if (isSongInPlaylist) {
                 sendEffect(LibraryEffect.ShowToast("Song is already added"))
             } else {
                 val result = playlistRepository.insertSongToPlaylist(
                     playlistId = playlist.playlistId,
-                    songId = songId
+                    songId = songId,
                 )
-                when(result) {
-                    is Result.Success -> {
-                        sendEffect(LibraryEffect.ShowToast(result.data))
-                    }
-                    is Result.Failure -> {
-                        sendEffect(LibraryEffect.ShowToast(result.error.message ?: "Unknown error"))
-                    }
-                }
+                notifyIntentResult(result)
             }
 
         }
     }
 
-    private fun onAddNewPlayCLick() {
+    private fun clickNewPlaylist() {
         sendEffect(LibraryEffect.NavigateToPlaylistScreen)
     }
 
-    private fun addToPlayListClick(song: Song) {
-        _state.update { it.copy(chosenSong = song) }
+    private fun clickSongOptions(song: Song) {
+        _state.update { it.copy(selectedSong = song) }
     }
 
     private fun toggleLocalSong() {
-        _state.update {
-            it.copy(isLocalSongs = !it.isLocalSongs)
-        }
+        _state.update { it.copy(isLocalMode = !it.isLocalMode) }
     }
 
-    private fun loadNetworkingSong() {
+    private fun loadNetworkSongs() {
         //ongoing
     }
 
-
-    private fun loadSongFiles(context: Context) = viewModelScope.launch(Dispatchers.IO) {
+    private fun loadLocalSongs(context: Context) = viewModelScope.launch(Dispatchers.IO) {
         launch(Dispatchers.Default) {
-            _state.update {
-                it.copy(
-                    localSongs = emptyList(),
-                    isLoading = true
-                )
-            }
+            _state.update { it.copy( localSongs = emptyList(), isLoading = true) }
             val songs = MediaStoreHelper.loadLocalAudios(
                 contentResolver = contentResolver,
-                context = context
+                context = context,
             )
             insertSongIfNotExist(songs)
             getAlSongs()
@@ -115,44 +90,45 @@ class LibraryViewModel(
         loadPlaylistWithSongs()
     }
 
-    private fun sharingSong(song: Song) {
-        sendEffect(LibraryEffect.SharingIntent(song))
+    private fun shareSong(song: Song) {
+        sendEffect(LibraryEffect.ShareSongIntent(song))
     }
 
     private suspend fun insertSongIfNotExist(songs: List<Song>) {
-        for(song in songs) {
-            if(songRepository.isSongExisted(song.filePath ?: "") == null) {
+        for (song in songs) {
+            if (songRepository.isSongExisted(song.filePath ?: "") == null) {
                 songRepository.insertSong(song)
             }
         }
     }
-    
+
     private suspend fun getAlSongs() {
         songRepository.getAllSongs().collectLatest { list ->
-            _state.update {
-                it.copy(
-                    localSongs = list,
-                    isLoading = false
-                )
-            }
+            _state.update { it.copy(localSongs = list, isLoading = false) }
         }
     }
 
     private suspend fun loadPlaylistWithSongs() {
-        userRepository.userIdFlow.collectLatest { userId ->
-            if (userId != null) {
-                playlistRepository.getPlaylistWithSongs(userId).collect { list ->
-                    _state.update {
-                        it.copy(playlistList = list, userId = userId)
-                    }
-                }
+        userRepository.userIdFlow
+            .filterNotNull().flatMapLatest { userId ->
+                playlistRepository.getPlaylistWithSongs(userId)
+                    .map { playlists -> userId to playlists }
             }
-        }
+            .collect { (userId, playlists) ->
+                _state.update { it.copy(userId = userId, playlists = playlists) }
+            }
     }
-    
+
     private fun sendEffect(effect: LibraryEffect) {
         viewModelScope.launch {
             _channel.send(effect)
+        }
+    }
+
+    private fun notifyIntentResult(result: Result<String, Exception>) {
+        when (result) {
+            is Result.Failure -> sendEffect(LibraryEffect.ShowToast(result.error.message ?: "Unknown error"))
+            is Result.Success -> sendEffect(LibraryEffect.ShowToast(result.data))
         }
     }
 
@@ -161,7 +137,7 @@ class LibraryViewModel(
         private val contentResolver: ContentResolver,
         private val userRepository: UserRepository,
         private val playlistRepository: PlaylistRepository,
-        private val songRepository: SongRepository
+        private val songRepository: SongRepository,
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return LibraryViewModel(
@@ -169,11 +145,10 @@ class LibraryViewModel(
                 contentResolver,
                 userRepository,
                 playlistRepository,
-                songRepository
+                songRepository,
             ) as T
         }
     }
-    
 }
 
 

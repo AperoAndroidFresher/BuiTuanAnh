@@ -7,26 +7,26 @@ import com.example.buituananh.domain.model.Song
 data class LibraryState(
     val isLoading: Boolean = false,
     val localSongs: List<Song> = emptyList(),
-    val isLocalSongs: Boolean = true,
+    val isLocalMode: Boolean = true,
     val remoteSongs: List<Song> = emptyList(),
-    val playlistList: List<Playlist> = emptyList(),
-    val chosenSong: Song? = null,
+    val playlists: List<Playlist> = emptyList(),
+    val selectedSong: Song? = null,
     val userId: Long = -1
 )
 
 sealed interface LibraryIntent {
-    data class LoadSongFiles(val context: Context) : LibraryIntent
-    data object LoadNetworkingSong : LibraryIntent
-    data object ToggleLocalSong : LibraryIntent
-    data class AddToPlayListClick(val song: Song) : LibraryIntent
-    data class SharingSong(val song: Song) : LibraryIntent
-    data object OnAddNewPlaylistClick : LibraryIntent
-    data class ChoosePlaylistToAdd(val playlist: Playlist) : LibraryIntent
+    data class LoadLocalSongs(val context: Context) : LibraryIntent
+    data object LoadNetworkSongs : LibraryIntent
+    data object ToggleLocalMode : LibraryIntent
+    data class ClickSongOptions(val song: Song) : LibraryIntent
+    data class ShareSong(val song: Song) : LibraryIntent
+    data object ClickNewPlaylist : LibraryIntent
+    data class ClickPlaylist(val playlist: Playlist) : LibraryIntent
 }
 
 
 sealed interface LibraryEffect {
     data object NavigateToPlaylistScreen : LibraryEffect
     data class ShowToast(val message: String) : LibraryEffect
-    data class SharingIntent(val song: Song) : LibraryEffect
+    data class ShareSongIntent(val song: Song) : LibraryEffect
 }

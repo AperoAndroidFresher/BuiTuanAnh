@@ -72,7 +72,7 @@ fun LibraryScreenRoot(
         viewModel.channel.collect { effect ->
             when (effect) {
                 LibraryEffect.NavigateToPlaylistScreen -> onNavigate(Destination.PlaylistWrapper)
-                is LibraryEffect.SharingIntent -> {
+                is LibraryEffect.ShareSongIntent -> {
                     val file = File(effect.song.filePath ?: "")
                     val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
 
@@ -131,12 +131,12 @@ fun LibraryScreen(
         if(!isGranted) {
             showModalPermission = true
         } else {
-            onIntent(LibraryIntent.LoadSongFiles(context = context))
+            onIntent(LibraryIntent.LoadLocalSongs(context = context))
         }
     }
     
     LaunchedEffect(Unit) {
-        onIntent(LibraryIntent.LoadSongFiles(context = context))
+        onIntent(LibraryIntent.LoadLocalSongs(context = context))
     }
 
     Scaffold(
@@ -172,49 +172,49 @@ fun LibraryScreen(
                 ) {
                     Button(
                         onClick = {
-                            onIntent(LibraryIntent.ToggleLocalSong)
+                            onIntent(LibraryIntent.ToggleLocalMode)
                         },
                         shape = MaterialTheme.shapes.large,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (state.isLocalSongs) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+                            containerColor = if (state.isLocalMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
                         modifier = Modifier.width(130.dp)
                     ) {
                         Text(
                             text = "Local",
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = if (state.isLocalSongs) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            color = if (state.isLocalMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Button(
                         onClick = {
-                            onIntent(LibraryIntent.ToggleLocalSong)
+                            onIntent(LibraryIntent.ToggleLocalMode)
                         },
                         shape = MaterialTheme.shapes.large,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (!state.isLocalSongs) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+                            containerColor = if (!state.isLocalMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
                         modifier = Modifier.width(130.dp)
                     ) {
                         Text(
                             text = "Remote",
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = if (!state.isLocalSongs) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            color = if (!state.isLocalMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
                 Spacer(Modifier.height(6.dp))
             }
-            if (state.isLocalSongs) {
+            if (state.isLocalMode) {
                 items(state.localSongs) { song ->
                    SongItem(
                        song = song,
                        onAddToPlaylistClick = {
-                           onIntent(LibraryIntent.AddToPlayListClick(song))
+                           onIntent(LibraryIntent.ClickSongOptions(song))
                            showPlaylistDialog = true
                        }
                    ) {
-                        onIntent(LibraryIntent.SharingSong(song))
+                        onIntent(LibraryIntent.ShareSong(song))
                    }
                 }
             }
@@ -226,12 +226,12 @@ fun LibraryScreen(
                 }
             ) {
                 ChoosePlaylistDialog(
-                    playlists = state.playlistList,
+                    playlists = state.playlists,
                     onAddNewPlaylist = {
-                        onIntent(LibraryIntent.OnAddNewPlaylistClick)
+                        onIntent(LibraryIntent.ClickNewPlaylist)
                     }
                 ) { playlist ->
-                    onIntent(LibraryIntent.ChoosePlaylistToAdd(playlist))
+                    onIntent(LibraryIntent.ClickPlaylist(playlist))
                 }
             }
         }
