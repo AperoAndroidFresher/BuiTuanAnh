@@ -134,6 +134,10 @@ fun LibraryScreen(
             onIntent(LibraryIntent.LoadSongFiles(context = context))
         }
     }
+    
+    LaunchedEffect(Unit) {
+        onIntent(LibraryIntent.LoadSongFiles(context = context))
+    }
 
     Scaffold(
         topBar = {

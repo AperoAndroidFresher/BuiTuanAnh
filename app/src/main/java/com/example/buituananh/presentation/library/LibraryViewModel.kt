@@ -17,6 +17,7 @@ import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.ImageUtils
+import com.example.buituananh.util.MediaStoreHelper
 import com.example.buituananh.util.toPairDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -40,9 +41,7 @@ class LibraryViewModel(
 
     private val _channel = Channel<LibraryEffect>()
     val channel = _channel.receiveAsFlow()
-
     
-
     fun onIntent(intent: LibraryIntent) {
         when (intent) {
             is LibraryIntent.AddToPlayListClick -> addToPlayListClick(intent.song)
@@ -57,7 +56,7 @@ class LibraryViewModel(
 
     private fun choosePlaylistToAdd(playlist: Playlist) {
         viewModelScope.launch {
-            val songId = _state.value.chosenSong?.id ?: return@launch
+            val songId = _state.value.chosenSong?.songId ?: return@launch
             val isSongInPlaylist = playlistRepository.isSongInPlaylist(playlist.playlistId, songId)
             if(isSongInPlaylist) {
                 sendEffect(LibraryEffect.ShowToast("Song is already added"))
@@ -106,64 +105,43 @@ class LibraryViewModel(
                     isLoading = true
                 )
             }
-            val projection = arrayOf(
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.DATA,
+            val songs = MediaStoreHelper.loadLocalAudios(
+                contentResolver = contentResolver,
+                context = context
             )
-            val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-            val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} ASC"
-            val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+            insertSongIfNotExist(songs)
+            getAlSongs()
+        }
+        loadPlaylistWithSongs()
+    }
 
-            val cursor = contentResolver.query(uri, projection, selection, null, sortOrder)
-            cursor?.use {
-                val idColumn = it.getColumnIndexOrThrow(Media._ID)
-                val titleColumn = it.getColumnIndexOrThrow(Media.TITLE)
-                val artistColumn = it.getColumnIndexOrThrow(Media.ARTIST)
-                val durationColumn = it.getColumnIndexOrThrow(Media.DURATION)
-                val dataColumn = it.getColumnIndexOrThrow(Media.DATA)
+    private fun sharingSong(song: Song) {
+        sendEffect(LibraryEffect.SharingIntent(song))
+    }
 
-                while (it.moveToNext()) {
-                    val id = it.getLong(idColumn)
-                    val title = it.getString(titleColumn)
-                    val artist = it.getString(artistColumn)
-                    val duration = it.getLong(durationColumn)
-                    val data = it.getString(dataColumn)
-                    val contentUri = ContentUris.withAppendedId(
-                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
-                    )
-                    val artSong = ImageUtils.getEmbeddedPicture(context, contentUri)
-
-                    val song = Song(
-                        id = id,
-                        title = title,
-                        artist = artist,
-                        duration = duration.toPairDuration(),
-                        filePath = data,
-                        image = artSong
-                    )
-
-                    val checked = songRepository.isSongExisted(filePath = data)
-                    if (checked == null) {
-                        songRepository.insertSong(song)
-                    }
-                }
-            }
-            songRepository.getAllSongs().collectLatest { list ->
-                _state.update {
-                    it.copy(
-                        localSongs = list,
-                        isLoading = false
-                    )
-                }
+    private suspend fun insertSongIfNotExist(songs: List<Song>) {
+        for(song in songs) {
+            if(songRepository.isSongExisted(song.filePath ?: "") == null) {
+                songRepository.insertSong(song)
             }
         }
+    }
+    
+    private suspend fun getAlSongs() {
+        songRepository.getAllSongs().collectLatest { list ->
+            _state.update {
+                it.copy(
+                    localSongs = list,
+                    isLoading = false
+                )
+            }
+        }
+    }
+
+    private suspend fun loadPlaylistWithSongs() {
         userRepository.userIdFlow.collectLatest { userId ->
             if (userId != null) {
                 playlistRepository.getPlaylistWithSongs(userId).collect { list ->
-                    Log.d("PL2", list.toString())
                     _state.update {
                         it.copy(playlistList = list, userId = userId)
                     }
@@ -171,11 +149,7 @@ class LibraryViewModel(
             }
         }
     }
-
-    private fun sharingSong(song: Song) {
-        sendEffect(LibraryEffect.SharingIntent(song))
-    }
-
+    
     private fun sendEffect(effect: LibraryEffect) {
         viewModelScope.launch {
             _channel.send(effect)

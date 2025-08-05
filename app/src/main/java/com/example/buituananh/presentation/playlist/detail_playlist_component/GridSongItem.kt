@@ -60,7 +60,7 @@ fun GridSongItem(
         Box {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(song.image)
+                    .data(song.imageUri)
                     .size(100)
                     .crossfade(true)
                     .error(R.drawable.default_song)

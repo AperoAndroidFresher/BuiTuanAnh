@@ -6,24 +6,24 @@ import com.example.buituananh.util.toPairDuration
 
 fun SongEntity.toSong(): Song {
     return Song(
-        id = songId,
+        songId = songId,
         title = title,
         artist = artist,
         duration = duration?.toPairDuration(),
         filePath = data,
-        image = imageUri
+        imageUri = imageUri
     )
 }
 
 fun Song.toEntity(): SongEntity {
     return SongEntity(
-        songId = id,
+        songId = songId,
         title = title,
         artist = artist,
         duration = duration?.let { (minutes, seconds) ->
             (minutes * 60 + seconds) * 1000L
         },
         data = filePath,
-        imageUri = image
+        imageUri = imageUri
     )
 }

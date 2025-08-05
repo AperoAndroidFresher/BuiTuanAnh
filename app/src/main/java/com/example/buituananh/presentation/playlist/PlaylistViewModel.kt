@@ -178,7 +178,7 @@ class PlaylistViewModel(
             val song = _state.value.selectedSong ?: return@launch
             val result = playlistRepository.deleteSongFromPlaylist(
                 playlistId = chosen.playlistId,
-                songId = song.id,
+                songId = song.songId,
             )
             if (result is Result.Success) {
                 sendEffect(PlaylistEffect.ShowToast("Delete successfully"))

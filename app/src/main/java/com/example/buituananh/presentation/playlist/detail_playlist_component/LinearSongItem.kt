@@ -62,7 +62,7 @@ fun LinearSongItem(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(song.image)
+                .data(song.imageUri)
                 .crossfade(true)
                 .error(R.drawable.default_song)
                 .build(),

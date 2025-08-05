@@ -62,7 +62,7 @@ fun SongItem(
 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(song.image)
+                .data(song.imageUri)
                 .size(sizeInPx)
                 .crossfade(true)
                 .error(R.drawable.default_song)
