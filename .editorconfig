@@ -1,0 +1,121 @@
+# EditorConfig is awesome: https://EditorConfig.org
+# This is a standardized configuration file for maintaining consistent coding styles across different editors and IDEs
+root = true  # Indicates this is the top-most EditorConfig file; no need to look in parent directories
+
+##############################################
+# Common settings for all files
+##############################################
+[*]
+charset = utf-8               # Use UTF-8 character encoding for all files
+end_of_line = lf              # Use Unix-style line endings (LF)
+insert_final_newline = true   # Ensures file ends with an empty line (POSIX compliance)
+trim_trailing_whitespace = false  # Remove trailing whitespace (cleaner diffs and prevents git noise)
+indent_style = space          # Use spaces for indentation instead of tabs
+indent_size = 2               # Default indentation size of 2 spaces for most files
+max_line_length = 120         # Limit line length to 120 characters for readability
+
+##############################################
+# Kotlin-specific settings
+##############################################
+[*.{kt,kts}]
+indent_size = 4               # 4 spaces is the official Kotlin style guide recommendation
+ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL  # Use Kotlin's official styling rules
+
+# IntelliJ IDEA specific settings for Kotlin imports
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^  # Custom import ordering: all imports, then java, javax, kotlin, and static imports last
+ij_kotlin_name_count_to_use_star_import = 5              # Use wildcard imports after 5 imports from the same package
+ij_kotlin_name_count_to_use_star_import_for_members = 3  # Use wildcard imports after 3 members from the same class
+ij_kotlin_packages_to_use_import_on_demand =             # No packages are always imported with wildcards (empty list)
+
+# Alignment settings - controls how lines are aligned for readability
+ij_kotlin_align_in_columns_case_branch = false           # Don't align values in when/switch cases (more maintainable)
+ij_kotlin_align_multiline_parameters = true              # Align parameters in multi-line function declarations
+ij_kotlin_align_multiline_parameters_in_calls = true     # Align parameters in multi-line function calls
+ij_kotlin_align_multiline_binary_operation = true        # Align operators in multi-line expressions
+
+# Wrapping behavior - determines when and how to wrap long code lines
+ij_kotlin_call_parameters_wrap = on_every_item           # Put each parameter on a new line in long function calls
+ij_kotlin_method_parameters_wrap = on_every_item         # Put each parameter on a new line in method declarations
+ij_kotlin_extends_list_wrap = normal                     # Wrap long lists of extended interfaces/classes
+ij_kotlin_binary_operation_wrap = normal                 # Wrap long binary expressions (a + b + c + ...)
+ij_kotlin_assignment_wrap = normal                       # Wrap long assignment expressions
+
+# Trailing commas - modern Kotlin style that makes diffs cleaner and adding elements easier
+ij_kotlin_allow_trailing_comma = true                    # Allow trailing commas in lists, arrays, etc.
+ij_kotlin_allow_trailing_comma_on_call_site = true       # Allow trailing commas in function/method calls
+
+# Formatting around braces and keywords - modern style prefers compact code
+ij_kotlin_else_on_new_line = false                       # Keep "else" on the same line as the closing brace
+ij_kotlin_catch_on_new_line = false                      # Keep "catch" on the same line as the closing brace
+ij_kotlin_finally_on_new_line = false                    # Keep "finally" on the same line as the closing brace
+
+# Keep code compact where sensible - reduces unnecessary whitespace
+ij_kotlin_keep_blank_lines_in_declarations = 1           # Max consecutive blank lines in declarations
+ij_kotlin_keep_blank_lines_in_code = 1                   # Max consecutive blank lines in code
+ij_kotlin_keep_blank_lines_before_right_brace = 0        # No blank line before closing brace
+ij_kotlin_keep_simple_blocks_in_one_line = true          # Allow simple blocks like { return x } on one line
+ij_kotlin_keep_simple_methods_in_one_line = true         # Allow simple methods on one line
+ij_kotlin_keep_simple_lambdas_in_one_line = true         # Allow simple lambdas on one line
+ij_kotlin_keep_simple_classes_in_one_line = true         # Allow simple classes on one line
+
+# Class/function structure - spacing around type declarations
+ij_kotlin_space_before_type_colon = false                # No space before colon in type declarations (name:Type)
+ij_kotlin_space_after_type_colon = true                  # Space after colon in type declarations (name: Type)
+ij_kotlin_insert_whitespaces_in_simple_one_line_method = true  # Ensure proper spacing in one-line methods
+
+##############################################
+# XML files - Android layouts, manifest, etc.
+##############################################
+[*.{xml,xsd,xsl,xslt,svg}]
+indent_style = space
+indent_size = 4               # Standard 4-space indent for XML files
+
+##############################################
+# HTML and related files - Web content
+##############################################
+[*.{html,htm,css,scss,sass,less}]
+indent_style = space
+indent_size = 2               # Smaller 2-space indent for web content files
+
+##############################################
+# Markdown and documentation
+##############################################
+[*.md]
+trim_trailing_whitespace = false  # Preserves trailing spaces which have meaning in Markdown
+max_line_length = 0               # Disables line length checking for Markdown (0 = no limit)
+
+##############################################
+# YAML configuration files
+##############################################
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2               # Standard 2-space indent for YAML files
+
+##############################################
+# Gradle files - Build configuration
+##############################################
+[*.{gradle,gradle.kts}]
+indent_style = space
+indent_size = 4               # Standard 4-space indent for Gradle files
+
+##############################################
+# JSON files - Data interchange
+##############################################
+[*.{json,json5}]
+indent_style = space
+indent_size = 2               # Standard 2-space indent for JSON
+
+##############################################
+# Properties files - Configuration
+##############################################
+[*.properties]
+indent_style = space
+indent_size = 2               # Standard 2-space indent for properties files
+
+##############################################
+# Shell scripts
+##############################################
+[*.{sh,bash,zsh}]
+indent_style = space
+indent_size = 2               # Standard 2-space indent for shell scripts
+end_of_line = lf              # LF is critical for shell scripts to run properly

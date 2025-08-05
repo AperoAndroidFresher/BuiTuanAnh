@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class PlaylistViewModel(
     private val key: Destination.PlaylistWrapper,
     private val userRepository: UserRepository,
-    private val playlistRepository: PlaylistRepository
+    private val playlistRepository: PlaylistRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
@@ -31,16 +31,6 @@ class PlaylistViewModel(
 
     private val _effect = Channel<PlaylistEffect>()
     val effect = _effect.receiveAsFlow()
-
-    class Factory(
-        private val key: Destination.PlaylistWrapper,
-        private val userRepository: UserRepository,
-        private val playlistRepository: PlaylistRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaylistViewModel(key, userRepository, playlistRepository) as T
-        }
-    }
 
     init {
         viewModelScope.launch {
@@ -51,14 +41,14 @@ class PlaylistViewModel(
     }
 
     fun onIntent(intent: PlaylistIntent) {
-        when(intent) {
+        when (intent) {
             PlaylistIntent.CancelSortMode -> cancelSortMode()
             PlaylistIntent.RemoveSongFromPlaylist -> removeSongFromPlaylist()
             PlaylistIntent.SaveSortMode -> saveSortMode()
             PlaylistIntent.SharingSong -> sharingSong()
             PlaylistIntent.ToggleGridMode -> toggleGridMode()
-            is PlaylistIntent.ToggleSortMode -> toggleSortMode(intent.currentSortMode)
             PlaylistIntent.LoadPlaylist -> loadPlaylist()
+            is PlaylistIntent.ToggleSortMode -> toggleSortMode(intent.currentSortMode)
             is PlaylistIntent.SongPopupClick -> songPopupClick(intent.song)
             is PlaylistIntent.OnDragging -> onDragging(intent.fromIndex, intent.toIndex)
             is PlaylistIntent.CreateAPlaylist -> createAPlaylist(intent.name)
@@ -78,7 +68,7 @@ class PlaylistViewModel(
 
     private fun loadPlaylistById(playlistId: Long) {
         viewModelScope.launch {
-            playlistRepository.getPlaylistWithSongById(playlistId).collectLatest {  playlist ->
+            playlistRepository.getPlaylistWithSongById(playlistId).collectLatest { playlist ->
                 _state.update {
                     it.copy(chosenPlaylist = playlist)
                 }
@@ -99,7 +89,7 @@ class PlaylistViewModel(
     private fun removeAPlaylist(playlist: Playlist) {
         viewModelScope.launch {
             val result = playlistRepository.deletePlaylist(playlist.playlistId)
-            if(result is Result.Success) {
+            if (result is Result.Success) {
                 _state.update {
                     it.copy(deletedPlaylistId = playlist.playlistId)
                 }
@@ -115,7 +105,7 @@ class PlaylistViewModel(
             val playlist = Playlist(title = name)
             val userId = _state.value.userId
             playlistRepository.insertPlaylist(playlist.toEntity(ownerId = userId))
-          }
+        }
     }
 
     private fun loadPlaylist() = viewModelScope.launch {
@@ -124,25 +114,29 @@ class PlaylistViewModel(
         }
         delay(400L)
         userRepository.userIdFlow.collectLatest { userId ->
-            if(userId != null) {
+            if (userId != null) {
                 playlistRepository.getPlaylistWithSongs(userId = userId).collect { list ->
                     _state.update {
                         it.copy(
                             userId = userId,
                             playlistList = list,
-                            isLoading = false
+                            isLoading = false,
                         )
                     }
                 }
+            } else {
+                sendEffect(PlaylistEffect.ShowToast("Please login"))
+                _state.update { 
+                    it.copy(isLoading = false)
+                }
+                return@collectLatest
             }
         }
     }
 
     private fun songPopupClick(song: Song) {
         _state.update {
-            it.copy(
-                chosenSong = song
-            )
+            it.copy(chosenSong = song)
         }
     }
 
@@ -155,7 +149,7 @@ class PlaylistViewModel(
         _state.update {
             it.copy(
                 isSortMode = false,
-                backingPlaylist = null
+                backingPlaylist = null,
             )
         }
     }
@@ -168,15 +162,12 @@ class PlaylistViewModel(
 
     private fun onDragging(fromIndex: Int, toIndex: Int) {
         _state.update { currentState ->
-
             val playlist = currentState.chosenPlaylist ?: return@update currentState
-
             val updatedSongs = playlist.songs.toMutableList().apply {
                 add(toIndex, removeAt(fromIndex))
             }
-
             currentState.copy(
-                chosenPlaylist = playlist.copy(songs = updatedSongs)
+                chosenPlaylist = playlist.copy(songs = updatedSongs),
             )
         }
     }
@@ -187,9 +178,9 @@ class PlaylistViewModel(
             val song = _state.value.chosenSong ?: return@launch
             val result = playlistRepository.deleteSongFromPlaylist(
                 playlistId = chosen.playlistId,
-                songId = song.id
+                songId = song.id,
             )
-            if(result is Result.Success) {
+            if (result is Result.Success) {
                 sendEffect(PlaylistEffect.ShowToast("Delete successfully"))
             } else {
                 sendEffect(PlaylistEffect.ShowToast("Delete unsuccessfully"))
@@ -220,4 +211,13 @@ class PlaylistViewModel(
         }
     }
 
+    class Factory(
+        private val key: Destination.PlaylistWrapper,
+        private val userRepository: UserRepository,
+        private val playlistRepository: PlaylistRepository,
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return PlaylistViewModel(key, userRepository, playlistRepository) as T
+        }
+    }
 }
