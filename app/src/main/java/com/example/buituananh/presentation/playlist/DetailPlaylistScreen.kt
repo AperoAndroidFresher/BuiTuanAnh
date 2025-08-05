@@ -65,7 +65,7 @@ fun DetailPlaylistScreenRoot(
                 is PlaylistEffect.NavigateToDetailPlaylist -> {
 
                 }
-                is PlaylistEffect.SharingIntent -> {
+                is PlaylistEffect.ShareSongIntent -> {
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "audio/*"
                         putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
@@ -76,7 +76,7 @@ fun DetailPlaylistScreenRoot(
                     )
                 }
 
-                is PlaylistEffect.ShowSnackBar -> {
+                is PlaylistEffect.ShowDeleteSnackBar -> {
 
                 }
 
@@ -88,7 +88,7 @@ fun DetailPlaylistScreenRoot(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.onIntent(PlaylistIntent.LoadPlaylistById(id))
+        viewModel.onIntent(PlaylistIntent.LoadPlaylistDetail(id))
     }
 
     DetailPlaylistScreen(
@@ -203,7 +203,7 @@ fun DetailPlaylistScreen(
                                 song = song,
                                 modifier = Modifier.animateItem()
                             ) { (offset, song) ->
-                                onIntent(PlaylistIntent.SongPopupClick(song))
+                                onIntent(PlaylistIntent.ClickSongPopup(song))
                                 if (currentOffset != offset) {
                                     currentOffset = offset
                                     showPopup = true
@@ -266,7 +266,7 @@ fun DetailPlaylistScreen(
                                                     val targetIndex =
                                                         (targetItem.contentType as DraggableItem).index
                                                     onIntent(
-                                                        PlaylistIntent.OnDragging(
+                                                        PlaylistIntent.DragSong(
                                                             currentDraggingItemIndex,
                                                             targetIndex
                                                         )
@@ -336,7 +336,7 @@ fun DetailPlaylistScreen(
                             isSortMode = state.isSortMode,
                             modifier = linearModifier.animateItem()
                         ) { (offset, song) ->
-                            onIntent(PlaylistIntent.SongPopupClick(song))
+                            onIntent(PlaylistIntent.ClickSongPopup(song))
                             if (currentOffset != offset) {
                                 currentOffset = offset
                                 showPopup = true
@@ -356,9 +356,9 @@ fun DetailPlaylistScreen(
                 )
             }, onRemove = {
                 showPopup = false
-                onIntent(PlaylistIntent.RemoveSongFromPlaylist)
+                onIntent(PlaylistIntent.RemoveSong)
             }) {
-                onIntent(PlaylistIntent.SharingSong)
+                onIntent(PlaylistIntent.ShareSong)
             }
         }
 

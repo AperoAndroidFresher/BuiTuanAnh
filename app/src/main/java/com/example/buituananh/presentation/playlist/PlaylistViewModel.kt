@@ -43,30 +43,30 @@ class PlaylistViewModel(
     fun onIntent(intent: PlaylistIntent) {
         when (intent) {
             PlaylistIntent.CancelSortMode -> cancelSortMode()
-            PlaylistIntent.RemoveSongFromPlaylist -> removeSongFromPlaylist()
+            PlaylistIntent.RemoveSong -> removeSong()
             PlaylistIntent.SaveSortMode -> saveSortMode()
-            PlaylistIntent.SharingSong -> sharingSong()
+            PlaylistIntent.ShareSong -> shareRong()
             PlaylistIntent.ToggleGridMode -> toggleGridMode()
             PlaylistIntent.LoadPlaylist -> loadPlaylist()
             is PlaylistIntent.ToggleSortMode -> toggleSortMode(intent.currentSortMode)
-            is PlaylistIntent.SongPopupClick -> songPopupClick(intent.song)
-            is PlaylistIntent.OnDragging -> onDragging(intent.fromIndex, intent.toIndex)
-            is PlaylistIntent.CreateAPlaylist -> createAPlaylist(intent.name)
-            is PlaylistIntent.RemoveAPlaylist -> removeAPlaylist(intent.playlist)
+            is PlaylistIntent.ClickSongPopup -> clickSongPopup(intent.song)
+            is PlaylistIntent.DragSong -> dragSong(intent.fromIndex, intent.toIndex)
+            is PlaylistIntent.CreatePlaylist -> createPlaylist(intent.name)
+            is PlaylistIntent.RemovePlaylist -> removePlaylist(intent.playlist)
             is PlaylistIntent.RenamePlaylist -> renamePlaylist(intent.playlist, intent.name)
-            is PlaylistIntent.OnPlaylistClick -> onPlaylistClick(intent.id)
-            is PlaylistIntent.LoadPlaylistById -> loadPlaylistById(intent.id)
-            is PlaylistIntent.UndoDeletePlaylist -> undoDeletePlaylistId()
+            is PlaylistIntent.SelectPlaylist -> selectPlaylist(intent.id)
+            is PlaylistIntent.LoadPlaylistDetail -> loadPlaylistDetail(intent.id)
+            is PlaylistIntent.UndoRemovePlaylist -> undoRemovePlaylist()
         }
     }
 
-    private fun undoDeletePlaylistId() {
+    private fun undoRemovePlaylist() {
         viewModelScope.launch {
             playlistRepository.undoDeletePlaylist(_state.value.deletedPlaylistId)
         }
     }
 
-    private fun loadPlaylistById(playlistId: Long) {
+    private fun loadPlaylistDetail(playlistId: Long) {
         viewModelScope.launch {
             playlistRepository.getPlaylistWithSongById(playlistId).collectLatest { playlist ->
                 _state.update {
@@ -76,7 +76,7 @@ class PlaylistViewModel(
         }
     }
 
-    private fun onPlaylistClick(id: Long) {
+    private fun selectPlaylist(id: Long) {
         sendEffect(PlaylistEffect.NavigateToDetailPlaylist(id))
     }
 
@@ -86,21 +86,21 @@ class PlaylistViewModel(
         }
     }
 
-    private fun removeAPlaylist(playlist: Playlist) {
+    private fun removePlaylist(playlist: Playlist) {
         viewModelScope.launch {
             val result = playlistRepository.deletePlaylist(playlist.playlistId)
             if (result is Result.Success) {
                 _state.update {
                     it.copy(deletedPlaylistId = playlist.playlistId)
                 }
-                sendEffect(PlaylistEffect.ShowSnackBar("Delete successfully"))
+                sendEffect(PlaylistEffect.ShowDeleteSnackBar("Delete successfully"))
             } else {
-                sendEffect(PlaylistEffect.ShowSnackBar("Delete unsuccessfully"))
+                sendEffect(PlaylistEffect.ShowDeleteSnackBar("Delete unsuccessfully"))
             }
         }
     }
 
-    private fun createAPlaylist(name: String) {
+    private fun createPlaylist(name: String) {
         viewModelScope.launch {
             val playlist = Playlist(title = name)
             val userId = _state.value.userId
@@ -134,7 +134,7 @@ class PlaylistViewModel(
         }
     }
 
-    private fun songPopupClick(song: Song) {
+    private fun clickSongPopup(song: Song) {
         _state.update {
             it.copy(selectedSong = song)
         }
@@ -160,7 +160,7 @@ class PlaylistViewModel(
         }
     }
 
-    private fun onDragging(fromIndex: Int, toIndex: Int) {
+    private fun dragSong(fromIndex: Int, toIndex: Int) {
         _state.update { currentState ->
             val playlist = currentState.selectedPlaylist ?: return@update currentState
             val updatedSongs = playlist.songs.toMutableList().apply {
@@ -172,7 +172,7 @@ class PlaylistViewModel(
         }
     }
 
-    private fun removeSongFromPlaylist() {
+    private fun removeSong() {
         viewModelScope.launch {
             val chosen = _state.value.selectedPlaylist ?: return@launch
             val song = _state.value.selectedSong ?: return@launch
@@ -188,8 +188,8 @@ class PlaylistViewModel(
         }
     }
 
-    private fun sharingSong() {
-        sendEffect(PlaylistEffect.SharingIntent(song = _state.value.selectedSong!!))
+    private fun shareRong() {
+        sendEffect(PlaylistEffect.ShareSongIntent(song = _state.value.selectedSong!!))
     }
 
     private fun toggleSortMode(currentSortMode: Boolean) {

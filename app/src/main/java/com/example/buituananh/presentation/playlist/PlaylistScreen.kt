@@ -69,7 +69,7 @@ fun PlaylistScreenRoot(
                     )
                 )
 
-                is PlaylistEffect.SharingIntent -> {
+                is PlaylistEffect.ShareSongIntent -> {
                     val file = File(effect.song.filePath ?: "")
                     val uri =
                         FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
@@ -83,14 +83,14 @@ fun PlaylistScreenRoot(
                     )
                 }
 
-                is PlaylistEffect.ShowSnackBar -> {
+                is PlaylistEffect.ShowDeleteSnackBar -> {
                     val result = snackBarHostState.showSnackbar(
                         effect.message,
                         actionLabel = "Undo",
                         duration = SnackbarDuration.Long
                     )
                     if(result == SnackbarResult.ActionPerformed) {
-                        viewModel.onIntent(PlaylistIntent.UndoDeletePlaylist)
+                        viewModel.onIntent(PlaylistIntent.UndoRemovePlaylist)
                     }
                 }
 
@@ -197,14 +197,14 @@ fun PlaylistScreen(
                         PlaylistItem(
                             playlist = playlist,
                             removePlaylist = {
-                                onIntent(PlaylistIntent.RemoveAPlaylist(playlist))
+                                onIntent(PlaylistIntent.RemovePlaylist(playlist))
                             },
                             renamePlaylist = {
                                 showRenameDialog = true
                                 chosenPlaylist = playlist
                             },
                             modifier = Modifier.clickable {
-                                onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.playlistId))
+                                onIntent(PlaylistIntent.SelectPlaylist(id = playlist.playlistId))
                             }
                         )
                     }
@@ -222,7 +222,7 @@ fun PlaylistScreen(
                         showCreationDialog = false
                     }
                 ) {
-                    onIntent(PlaylistIntent.CreateAPlaylist(it))
+                    onIntent(PlaylistIntent.CreatePlaylist(it))
                 }
             }
         }
