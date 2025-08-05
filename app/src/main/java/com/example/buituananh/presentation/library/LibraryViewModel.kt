@@ -2,7 +2,7 @@ package com.example.buituananh.presentation.library
 
 import android.content.ContentResolver
 import android.content.ContentUris
-import android.net.Uri
+import android.content.Context
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Media
 import android.util.Log
@@ -16,6 +16,7 @@ import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
+import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.toPairDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -40,29 +41,13 @@ class LibraryViewModel(
     private val _channel = Channel<LibraryEffect>()
     val channel = _channel.receiveAsFlow()
 
-    class Factory(
-        private val key: Destination.LibraryScreen,
-        private val contentResolver: ContentResolver,
-        private val userRepository: UserRepository,
-        private val playlistRepository: PlaylistRepository,
-        private val songRepository: SongRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LibraryViewModel(
-                key,
-                contentResolver,
-                userRepository,
-                playlistRepository,
-                songRepository
-            ) as T
-        }
-    }
+    
 
     fun onIntent(intent: LibraryIntent) {
         when (intent) {
             is LibraryIntent.AddToPlayListClick -> addToPlayListClick(intent.song)
             LibraryIntent.LoadNetworkingSong -> loadNetworkingSong()
-            LibraryIntent.LoadSongFiles -> loadSongFiles()
+            is LibraryIntent.LoadSongFiles -> loadSongFiles(intent.context)
             is LibraryIntent.SharingSong -> sharingSong(intent.song)
             LibraryIntent.ToggleLocalSong -> toggleLocalSong()
             LibraryIntent.OnAddNewPlaylistClick -> onAddNewPlayCLick()
@@ -113,7 +98,7 @@ class LibraryViewModel(
     }
 
 
-    private fun loadSongFiles() = viewModelScope.launch(Dispatchers.IO) {
+    private fun loadSongFiles(context: Context) = viewModelScope.launch(Dispatchers.IO) {
         launch(Dispatchers.Default) {
             _state.update {
                 it.copy(
@@ -146,9 +131,10 @@ class LibraryViewModel(
                     val artist = it.getString(artistColumn)
                     val duration = it.getLong(durationColumn)
                     val data = it.getString(dataColumn)
-
-                    val audioUri = ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, id)
-                    val artSong = Uri.EMPTY
+                    val contentUri = ContentUris.withAppendedId(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
+                    )
+                    val artSong = ImageUtils.getEmbeddedPicture(context, contentUri)
 
                     val song = Song(
                         id = id,
@@ -196,6 +182,24 @@ class LibraryViewModel(
         }
     }
 
+    class Factory(
+        private val key: Destination.LibraryScreen,
+        private val contentResolver: ContentResolver,
+        private val userRepository: UserRepository,
+        private val playlistRepository: PlaylistRepository,
+        private val songRepository: SongRepository
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return LibraryViewModel(
+                key,
+                contentResolver,
+                userRepository,
+                playlistRepository,
+                songRepository
+            ) as T
+        }
+    }
+    
 }
 
 

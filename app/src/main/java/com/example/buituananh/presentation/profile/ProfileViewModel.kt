@@ -5,14 +5,12 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.ViewModelFactoryDsl
 import com.example.buituananh.data.mapper.toEntity
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.User
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow

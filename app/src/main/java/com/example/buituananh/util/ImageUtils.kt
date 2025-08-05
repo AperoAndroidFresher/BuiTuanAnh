@@ -1,38 +1,37 @@
 package com.example.buituananh.util
 
-import android.annotation.SuppressLint
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.scale
-import androidx.core.graphics.createBitmap
 
 object ImageUtils {
 
-    fun extractAlbumArt(contentResolver: ContentResolver, audioUri: Uri): Bitmap? {
+    fun getEmbeddedPicture(context: Context, uri: Uri): Uri? {
         val retriever = MediaMetadataRetriever()
-        try {
-            contentResolver.openFileDescriptor(audioUri, "r")?.use { pfd ->
-                retriever.setDataSource(pfd.fileDescriptor)
-                val artBytes = retriever.embeddedPicture
-                if (artBytes != null) {
-                    return BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
-                }
+        return try {
+            retriever.setDataSource(context, uri)
+            val art = retriever.embeddedPicture
+            if (art != null) {
+                val file = File(context.cacheDir, "${System.currentTimeMillis()}.jpg")
+                file.writeBytes(art)
+                Uri.fromFile(file) 
+            } else {
+                Log.d("AlbumArt", "No embedded image found")
+                null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("AlbumArt", "Error: ${e.message}")
+            null
         } finally {
             retriever.release()
         }
-        return null
     }
 
     fun resizeBitmap(context: Context, bitmap: Bitmap?, reqWidth: Int = 100, reqHeight: Int = 100): Bitmap? {

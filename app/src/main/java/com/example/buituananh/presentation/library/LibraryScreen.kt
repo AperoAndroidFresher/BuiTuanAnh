@@ -107,6 +107,8 @@ fun LibraryScreen(
 ) {
 
     val isGranted = permissionState?.status?.isGranted ?: false
+    val context = LocalContext.current
+    
     var acceptedByUser by remember {
         mutableStateOf(false)
     }
@@ -128,7 +130,7 @@ fun LibraryScreen(
         if(!isGranted) {
             showModalPermission = true
         } else {
-            onIntent(LibraryIntent.LoadSongFiles)
+            onIntent(LibraryIntent.LoadSongFiles(context = context))
         }
     }
 

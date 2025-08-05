@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.library
 
+import android.content.Context
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.Song
 
@@ -14,7 +15,7 @@ data class LibraryState(
 )
 
 sealed interface LibraryIntent {
-    data object LoadSongFiles : LibraryIntent
+    data class LoadSongFiles(val context: Context) : LibraryIntent
     data object LoadNetworkingSong : LibraryIntent
     data object ToggleLocalSong : LibraryIntent
     data class AddToPlayListClick(val song: Song) : LibraryIntent
