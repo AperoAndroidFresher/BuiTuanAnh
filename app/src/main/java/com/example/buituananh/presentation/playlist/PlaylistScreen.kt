@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -70,7 +69,7 @@ fun PlaylistScreenRoot(
                     )
                 )
 
-                is PlaylistEffect.SharingIntent -> {
+                is PlaylistEffect.ShareSongIntent -> {
                     val file = File(effect.song.filePath ?: "")
                     val uri =
                         FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
@@ -84,14 +83,14 @@ fun PlaylistScreenRoot(
                     )
                 }
 
-                is PlaylistEffect.ShowSnackBar -> {
+                is PlaylistEffect.ShowDeleteSnackBar -> {
                     val result = snackBarHostState.showSnackbar(
                         effect.message,
                         actionLabel = "Undo",
                         duration = SnackbarDuration.Long
                     )
                     if(result == SnackbarResult.ActionPerformed) {
-                        viewModel.onIntent(PlaylistIntent.UndoDeletePlaylist)
+                        viewModel.onIntent(PlaylistIntent.UndoRemovePlaylist)
                     }
                 }
 
@@ -187,25 +186,25 @@ fun PlaylistScreen(
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                if (state.playlistList.isEmpty()) {
+                if (state.playlists.isEmpty()) {
                     item {
                         EmptyPlaylistNoti {
                             showCreationDialog = true
                         }
                     }
                 } else {
-                    items(state.playlistList) { playlist ->
+                    items(state.playlists) { playlist ->
                         PlaylistItem(
                             playlist = playlist,
                             removePlaylist = {
-                                onIntent(PlaylistIntent.RemoveAPlaylist(playlist))
+                                onIntent(PlaylistIntent.RemovePlaylist(playlist))
                             },
                             renamePlaylist = {
                                 showRenameDialog = true
                                 chosenPlaylist = playlist
                             },
                             modifier = Modifier.clickable {
-                                onIntent(PlaylistIntent.OnPlaylistClick(id = playlist.playlistId))
+                                onIntent(PlaylistIntent.SelectPlaylist(id = playlist.playlistId))
                             }
                         )
                     }
@@ -223,7 +222,7 @@ fun PlaylistScreen(
                         showCreationDialog = false
                     }
                 ) {
-                    onIntent(PlaylistIntent.CreateAPlaylist(it))
+                    onIntent(PlaylistIntent.CreatePlaylist(it))
                 }
             }
         }
