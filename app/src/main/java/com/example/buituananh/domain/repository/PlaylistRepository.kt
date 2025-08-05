@@ -23,4 +23,6 @@ interface PlaylistRepository {
     suspend fun deleteSongFromPlaylist(playlistId: Long, songId: Long): Result<String, Exception>
 
     suspend fun getPlaylistWithSongById(playlistId: Long) : Flow<Playlist>
+
+    suspend fun isSongInPlaylist(playlistId: Long, songId: Long): Boolean
 }

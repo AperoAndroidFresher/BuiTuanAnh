@@ -18,11 +18,19 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PlaylistDao {
 
+     @Insert(onConflict = OnConflictStrategy.IGNORE)
+     suspend fun insertSongToPlaylist(crossRef: PlaylistMusicCrossRef)
+
      @Insert(onConflict = OnConflictStrategy.ABORT)
      suspend fun insertPlaylistByUserId(playlist: PlaylistEntity)
 
-     @Insert(onConflict = OnConflictStrategy.IGNORE)
-     suspend fun insertSongToPlaylist(crossRef: PlaylistMusicCrossRef)
+     @Query("""
+          SELECT EXISTS(
+            SELECT 1 FROM playlist_music_cross_ref
+            WHERE playlistId = :playlistId AND songId = :songId
+          )
+     """)
+     suspend fun isSongInPlaylist(playlistId: Long, songId: Long): Boolean
 
      @Query("""
          DELETE FROM playlist_music_cross_ref

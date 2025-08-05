@@ -11,13 +11,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.Playlist
-import com.example.buituananh.domain.model.PlaylistStore
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
-import com.example.buituananh.util.ImageUtils
 import com.example.buituananh.util.toPairDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -50,18 +48,23 @@ class LibraryViewModel(
         private val songRepository: SongRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LibraryViewModel(key, contentResolver, userRepository, playlistRepository, songRepository) as T
+            return LibraryViewModel(
+                key,
+                contentResolver,
+                userRepository,
+                playlistRepository,
+                songRepository
+            ) as T
         }
     }
 
     fun onIntent(intent: LibraryIntent) {
-        when(intent) {
-            is LibraryIntent.AddToPlayListClick -> addToPlayList(intent.song)
+        when (intent) {
+            is LibraryIntent.AddToPlayListClick -> addToPlayListClick(intent.song)
             LibraryIntent.LoadNetworkingSong -> loadNetworkingSong()
             LibraryIntent.LoadSongFiles -> loadSongFiles()
             is LibraryIntent.SharingSong -> sharingSong(intent.song)
             LibraryIntent.ToggleLocalSong -> toggleLocalSong()
-            LibraryIntent.LoadingPlaylistList -> loadingPlaylistList()
             LibraryIntent.OnAddNewPlaylistClick -> onAddNewPlayCLick()
             is LibraryIntent.ChoosePlaylistToAdd -> choosePlaylistToAdd(intent.playlist)
         }
@@ -70,15 +73,24 @@ class LibraryViewModel(
     private fun choosePlaylistToAdd(playlist: Playlist) {
         viewModelScope.launch {
             val songId = _state.value.chosenSong?.id ?: return@launch
-           val result =  playlistRepository.insertSongToPlaylist(
-               playlistId = playlist.playlistId,
-               songId = songId
-           )
-            if(result is Result.Success) {
-                sendEffect(LibraryEffect.ShowToast(result.data))
-            } else if(result is Result.Failure) {
-                sendEffect(LibraryEffect.ShowToast(result.error.message ?: "Unknown error"))
+            val isSongInPlaylist = playlistRepository.isSongInPlaylist(playlist.playlistId, songId)
+            if(isSongInPlaylist) {
+                sendEffect(LibraryEffect.ShowToast("Song is already added"))
+            } else {
+                val result = playlistRepository.insertSongToPlaylist(
+                    playlistId = playlist.playlistId,
+                    songId = songId
+                )
+                when(result) {
+                    is Result.Success -> {
+                        sendEffect(LibraryEffect.ShowToast(result.data))
+                    }
+                    is Result.Failure -> {
+                        sendEffect(LibraryEffect.ShowToast(result.error.message ?: "Unknown error"))
+                    }
+                }
             }
+
         }
     }
 
@@ -86,18 +98,7 @@ class LibraryViewModel(
         sendEffect(LibraryEffect.NavigateToPlaylistScreen)
     }
 
-    private fun loadingPlaylistList() {
-        viewModelScope.launch {
-            val userId = _state.value.userId
-            playlistRepository.getPlaylistWithSongs(userId).collect {list ->
-                _state.update {
-                    it.copy(playlistList = list)
-                }
-            }
-        }
-    }
-
-    private fun addToPlayList(song: Song) {
+    private fun addToPlayListClick(song: Song) {
         _state.update { it.copy(chosenSong = song) }
     }
 
@@ -139,7 +140,7 @@ class LibraryViewModel(
                 val durationColumn = it.getColumnIndexOrThrow(Media.DURATION)
                 val dataColumn = it.getColumnIndexOrThrow(Media.DATA)
 
-                while(it.moveToNext()) {
+                while (it.moveToNext()) {
                     val id = it.getLong(idColumn)
                     val title = it.getString(titleColumn)
                     val artist = it.getString(artistColumn)
@@ -159,7 +160,7 @@ class LibraryViewModel(
                     )
 
                     val checked = songRepository.isSongExisted(filePath = data)
-                    if(checked == null) {
+                    if (checked == null) {
                         songRepository.insertSong(song)
                     }
                 }
@@ -174,8 +175,13 @@ class LibraryViewModel(
             }
         }
         userRepository.userIdFlow.collectLatest { userId ->
-            if(userId != null) {
-                _state.update { it.copy(userId = userId) }
+            if (userId != null) {
+                playlistRepository.getPlaylistWithSongs(userId).collect { list ->
+                    Log.d("PL2", list.toString())
+                    _state.update {
+                        it.copy(playlistList = list, userId = userId)
+                    }
+                }
             }
         }
     }

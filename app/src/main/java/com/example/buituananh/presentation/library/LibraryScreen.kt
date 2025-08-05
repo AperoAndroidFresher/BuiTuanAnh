@@ -89,10 +89,6 @@ fun LibraryScreenRoot(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.onIntent(LibraryIntent.LoadingPlaylistList)
-    }
-
     LibraryScreen(
         modifier = modifier,
         state = state,

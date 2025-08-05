@@ -122,7 +122,7 @@ class PlaylistViewModel(
         _state.update {
             it.copy(isLoading = true)
         }
-        delay(2000L)
+        delay(400L)
         userRepository.userIdFlow.collectLatest { userId ->
             if(userId != null) {
                 playlistRepository.getPlaylistWithSongs(userId = userId).collect { list ->
@@ -164,7 +164,6 @@ class PlaylistViewModel(
         _state.update {
             it.copy(isSortMode = false, chosenPlaylist = it.backingPlaylist)
         }
-        //ongoing
     }
 
     private fun onDragging(fromIndex: Int, toIndex: Int) {

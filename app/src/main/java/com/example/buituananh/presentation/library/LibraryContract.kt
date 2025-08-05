@@ -14,7 +14,6 @@ data class LibraryState(
 )
 
 sealed interface LibraryIntent {
-    data object LoadingPlaylistList : LibraryIntent
     data object LoadSongFiles : LibraryIntent
     data object LoadNetworkingSong : LibraryIntent
     data object ToggleLocalSong : LibraryIntent
