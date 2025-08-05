@@ -2,9 +2,9 @@ package com.example.buituananh.data.repository
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
-import com.example.buituananh.data.database.AppDatabase
-import com.example.buituananh.data.mapper.toDomain
-import com.example.buituananh.data.model.UserEntity
+import com.example.buituananh.data.local.AppDatabase
+import com.example.buituananh.data.local.mapper.toDomain
+import com.example.buituananh.data.local.model.UserEntity
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.User
 import com.example.buituananh.domain.repository.UserRepository

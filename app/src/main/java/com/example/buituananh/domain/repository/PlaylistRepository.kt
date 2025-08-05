@@ -1,7 +1,7 @@
 package com.example.buituananh.domain.repository
 
-import com.example.buituananh.data.model.PlaylistEntity
-import com.example.buituananh.data.model.PlaylistWithSongs
+import com.example.buituananh.data.local.model.PlaylistEntity
+import com.example.buituananh.data.local.model.PlaylistWithSongs
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.Playlist
 import kotlinx.coroutines.flow.Flow

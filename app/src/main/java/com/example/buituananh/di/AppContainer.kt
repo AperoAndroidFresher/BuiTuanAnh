@@ -1,7 +1,7 @@
 package com.example.buituananh.di
 
 import android.content.Context
-import com.example.buituananh.data.database.AppDatabase
+import com.example.buituananh.data.local.AppDatabase
 import com.example.buituananh.data.repository.PlaylistRepositoryImpl
 import com.example.buituananh.data.repository.SongRepositoryImpl
 import com.example.buituananh.data.repository.UserRepositoryImpl

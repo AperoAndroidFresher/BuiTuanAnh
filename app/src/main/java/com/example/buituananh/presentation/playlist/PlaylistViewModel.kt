@@ -3,7 +3,7 @@ package com.example.buituananh.presentation.playlist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.buituananh.data.mapper.toEntity
+import com.example.buituananh.data.local.mapper.toEntity
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.PlaylistStore

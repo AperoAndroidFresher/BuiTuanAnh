@@ -1,6 +1,6 @@
 package com.example.buituananh.domain.repository
 
-import com.example.buituananh.data.model.UserEntity
+import com.example.buituananh.data.local.model.UserEntity
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.User
 import kotlinx.coroutines.flow.Flow
