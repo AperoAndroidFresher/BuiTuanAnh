@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalPermissionsApi::class)
+@file:OptIn(ExperimentalPermissionsApi::class, ExperimentalPermissionsApi::class)
 
 package com.example.buituananh.presentation.library.component
 
@@ -147,7 +147,7 @@ fun LibraryScreen(
             ButtonSection(state = state, onIntent = onIntent, modifier = Modifier)
             if (state.isLoading) {
                 LoadingAnimation()
-            } else if (state.networkError != null) {
+            } else if (state.networkError != null && !state.isLocalMode) {
                 NoInternetSection(
                     fetchSongAgain = {
                         onIntent(LibraryIntent.LoadNetworkSongs)
@@ -342,9 +342,56 @@ private fun NoInternetSection(
 
 @Preview(showSystemUi = true)
 @Composable
-fun PreviewLibrary(modifier: Modifier = Modifier) {
-
+private fun PreviewLibrary(modifier: Modifier = Modifier) {
     BuiTuanAnhTheme {
-        LibraryScreen(state = LibraryState(), onIntent = {})
+        LibraryScreen(state = LibraryState(
+            isLocalMode = true,
+            localSongs = listOf(
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+            )
+        ), onIntent = {})
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRemoteLibrary() {
+    BuiTuanAnhTheme {
+        LibraryScreen(state = LibraryState(
+            isLocalMode = false,
+            remoteSongs = listOf(
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+            )
+        ), onIntent = {})
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewNetworkError() {
+    BuiTuanAnhTheme {
+        LibraryScreen(state = LibraryState(
+            isLocalMode = false,
+            networkError = "Error"
+        ), onIntent = {})
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewLoadingLibrary() {
+    BuiTuanAnhTheme {
+        LibraryScreen(state = LibraryState(
+            isLocalMode = false,
+            isLoading = true
+        ), onIntent = {})
     }
 }
