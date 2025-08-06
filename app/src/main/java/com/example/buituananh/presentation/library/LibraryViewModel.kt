@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
-    val key: Destination.LibraryScreen,
+    private val key: Destination.LibraryScreen,
     private val contentResolver: ContentResolver,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
