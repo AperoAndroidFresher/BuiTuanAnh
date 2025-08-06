@@ -2,10 +2,13 @@ package com.example.buituananh.presentation.library
 
 import android.content.ContentResolver
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.util.Result
+import com.example.buituananh.data.util.onError
+import com.example.buituananh.data.util.onSuccess
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
@@ -15,11 +18,12 @@ import com.example.buituananh.util.Destination
 import com.example.buituananh.util.MediaStoreHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
-    val key: Destination.LibraryScreen,
+    private val key: Destination.LibraryScreen,
     private val contentResolver: ContentResolver,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
@@ -74,12 +78,23 @@ class LibraryViewModel(
     }
 
     private fun loadNetworkSongs() {
-        //ongoing
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true, networkError = null, remoteSongs = emptyList()) }
+            delay(2000L)
+            songRepository.getRemoteSongs().apply {
+                onSuccess { remoteSongs ->
+                    _state.update { it.copy(isLoading = false, remoteSongs = remoteSongs) }
+                }
+                onError { exception ->
+                    _state.update { it.copy(isLoading = false, networkError = exception.message) }
+                }
+            }
+        }
     }
 
     private fun loadLocalSongs(context: Context) = viewModelScope.launch(Dispatchers.IO) {
         launch(Dispatchers.Default) {
-            _state.update { it.copy( localSongs = emptyList(), isLoading = true) }
+            _state.update { it.copy(localSongs = emptyList(), isLoading = true) }
             val songs = MediaStoreHelper.loadLocalAudios(
                 contentResolver = contentResolver,
                 context = context,
@@ -103,7 +118,7 @@ class LibraryViewModel(
     }
 
     private suspend fun getAlSongs() {
-        songRepository.getAllSongs().collectLatest { list ->
+        songRepository.getLocalSongs().collectLatest { list ->
             _state.update { it.copy(localSongs = list, isLoading = false) }
         }
     }

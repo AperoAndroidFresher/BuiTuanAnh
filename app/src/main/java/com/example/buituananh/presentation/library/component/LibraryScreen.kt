@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalPermissionsApi::class)
+@file:OptIn(ExperimentalPermissionsApi::class, ExperimentalPermissionsApi::class)
 
 package com.example.buituananh.presentation.library.component
 
@@ -7,36 +7,26 @@ import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.buituananh.R
+import com.example.buituananh.domain.model.Song
+import com.example.buituananh.presentation.components.LoadingAnimation
+import com.example.buituananh.presentation.components.TopBar
 import com.example.buituananh.presentation.library.LibraryEffect
 import com.example.buituananh.presentation.library.LibraryIntent
 import com.example.buituananh.presentation.library.LibraryState
@@ -53,7 +43,7 @@ import java.io.File
 fun LibraryScreenRoot(
     modifier: Modifier = Modifier,
     viewModel: LibraryViewModel,
-    onNavigate: (Destination) -> Unit
+    onNavigate: (Destination) -> Unit,
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -83,6 +73,7 @@ fun LibraryScreenRoot(
                     }
                     context.startActivity(Intent.createChooser(intent, "Share audio"))
                 }
+
                 is LibraryEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
@@ -94,22 +85,21 @@ fun LibraryScreenRoot(
         modifier = modifier,
         state = state,
         permissionState = mediaPermissionState,
-        onIntent = viewModel::onIntent
+        onIntent = viewModel::onIntent,
     )
-
 }
 
 @Composable
 fun LibraryScreen(
-    modifier: Modifier = Modifier,
     state: LibraryState,
+    onIntent: (LibraryIntent) -> Unit,
+    modifier: Modifier = Modifier,
     permissionState: PermissionState? = null,
-    onIntent: (LibraryIntent) -> Unit
 ) {
 
     val isGranted = permissionState?.status?.isGranted ?: false
     val context = LocalContext.current
-    
+
     var acceptedByUser by remember {
         mutableStateOf(false)
     }
@@ -122,129 +112,83 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(acceptedByUser) {
-        if(acceptedByUser) {
+        if (acceptedByUser) {
             permissionState?.launchPermissionRequest()
         }
     }
 
     LaunchedEffect(isGranted) {
-        if(!isGranted) {
+        if (!isGranted) {
             showModalPermission = true
         } else {
-            onIntent(LibraryIntent.LoadLocalSongs(context = context))
+            if (state.localSongs.isEmpty()) {
+                onIntent(LibraryIntent.LoadLocalSongs(context = context))
+            }
         }
     }
-    
-    LaunchedEffect(Unit) {
-        onIntent(LibraryIntent.LoadLocalSongs(context = context))
+
+    LaunchedEffect(state.isLocalMode) {
+        if (!state.isLocalMode && state.remoteSongs.isEmpty()) {
+            onIntent(LibraryIntent.LoadNetworkSongs)
+        }
     }
 
     Scaffold(
         topBar = {
-            Row(
-                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Library",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            TopBar(title = "Library")
         },
-        modifier = modifier
+        modifier = modifier,
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
                 .padding(it),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 40.dp),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    Button(
-                        onClick = {
-                            onIntent(LibraryIntent.ToggleLocalMode)
-                        },
-                        shape = MaterialTheme.shapes.large,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (state.isLocalMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        modifier = Modifier.width(130.dp)
-                    ) {
-                        Text(
-                            text = "Local",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = if (state.isLocalMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            onIntent(LibraryIntent.ToggleLocalMode)
-                        },
-                        shape = MaterialTheme.shapes.large,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (!state.isLocalMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                        modifier = Modifier.width(130.dp)
-                    ) {
-                        Text(
-                            text = "Remote",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = if (!state.isLocalMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-                Spacer(Modifier.height(6.dp))
-            }
-            if (state.isLocalMode) {
-                items(state.localSongs) { song ->
-                   SongItem(
-                       song = song,
-                       onAddToPlaylistClick = {
-                           onIntent(LibraryIntent.ClickSongOptions(song))
-                           showPlaylistDialog = true
-                       }
-                   ) {
-                        onIntent(LibraryIntent.ShareSong(song))
-                   }
-                }
+            ButtonSection(state = state, onIntent = onIntent, modifier = Modifier)
+            if (state.isLoading) {
+                LoadingAnimation()
+            } else if (state.networkError != null && !state.isLocalMode) {
+                NoInternetSection(
+                    fetchSongAgain = {
+                        onIntent(LibraryIntent.LoadNetworkSongs)
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            } else {
+                SongsSection(
+                    clickSongOptions = {
+                        onIntent(LibraryIntent.ClickSongOptions(it))
+                        showPlaylistDialog = true
+                    },
+                    shareSong = {
+                        onIntent(LibraryIntent.ShareSong(it))
+                    },
+                    modifier = Modifier,
+                    isLocalMode = state.isLocalMode,
+                    localSongs = state.localSongs,
+                    remoteSongs = state.remoteSongs,
+                )
             }
         }
-        if(showPlaylistDialog) {
+
+        if (showPlaylistDialog) {
             Dialog(
-                onDismissRequest = {
-                    showPlaylistDialog = false
-                }
+                onDismissRequest = { showPlaylistDialog = false },
             ) {
                 ChoosePlaylistDialog(
                     playlists = state.playlists,
-                    onAddNewPlaylist = {
-                        onIntent(LibraryIntent.ClickNewPlaylist)
-                    }
+                    onAddNewPlaylist = { onIntent(LibraryIntent.ClickNewPlaylist) },
                 ) { playlist ->
                     onIntent(LibraryIntent.ClickPlaylist(playlist))
                 }
             }
         }
-        if(showModalPermission) {
+        if (showModalPermission) {
             Dialog(
-                onDismissRequest = {
-                    showModalPermission = false
-                }
+                onDismissRequest = { showModalPermission = false },
             ) {
                 PermissionModal(
-                    isDenied = {
-                        showModalPermission = false
-                    }
+                    isDenied = { showModalPermission = false },
                 ) {
                     acceptedByUser = true
                     showModalPermission = false
@@ -252,17 +196,202 @@ fun LibraryScreen(
             }
         }
     }
+}
 
+@Composable
+private fun SongsSection(
+    clickSongOptions: (Song) -> Unit,
+    shareSong: (Song) -> Unit,
+    modifier: Modifier = Modifier,
+    isLocalMode: Boolean = true,
+    localSongs: List<Song> = emptyList(),
+    remoteSongs: List<Song> = emptyList(),
+) {
+
+    val songs = if (isLocalMode) {
+        localSongs
+    } else {
+        remoteSongs
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surface),
+        contentPadding = PaddingValues(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(songs) { song ->
+            SongItem(
+                song = song,
+                clickSongOptions = {
+                    clickSongOptions(song)
+                },
+                shareSong = {
+                    shareSong(song)
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ButtonSection(
+    state: LibraryState,
+    onIntent: (LibraryIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Spacer(modifier.height(24.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 40.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+    ) {
+        LibraryModeButton(
+            onClick = {
+                onIntent(LibraryIntent.ToggleLocalMode)
+            },
+            isLocalMode = state.isLocalMode,
+            title = "Local",
+        )
+        LibraryModeButton(
+            onClick = {
+                onIntent(LibraryIntent.ToggleLocalMode)
+            },
+            isLocalMode = !state.isLocalMode,
+            title = "Remote",
+        )
+    }
+}
+
+@Composable
+private fun LibraryModeButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isLocalMode: Boolean = false,
+    title: String = "",
+) {
+    val containerColor = if (isLocalMode) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+
+    val textColor = if (isLocalMode) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    Button(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+        ),
+        modifier = modifier.width(130.dp),
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            color = textColor,
+        )
+    }
+}
+
+@Composable
+private fun NoInternetSection(
+    fetchSongAgain: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.no_internet),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .size(100.dp),
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = """
+                No internet connection,
+                please check your
+                connection again
+            """.trimIndent(),
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(
+            onClick = fetchSongAgain,
+            shape = MaterialTheme.shapes.medium,
+        ) {
+            Text(
+                text = "Try again",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
 }
 
 @Preview(showSystemUi = true)
 @Composable
-fun PreviewLibrary(modifier: Modifier = Modifier) {
-
+private fun PreviewLibrary(modifier: Modifier = Modifier) {
     BuiTuanAnhTheme {
-        LibraryScreen(state = LibraryState()) {
-
-        }
+        LibraryScreen(state = LibraryState(
+            isLocalMode = true,
+            localSongs = listOf(
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+            )
+        ), onIntent = {})
     }
+}
 
+@Preview
+@Composable
+private fun PreviewRemoteLibrary() {
+    BuiTuanAnhTheme {
+        LibraryScreen(state = LibraryState(
+            isLocalMode = false,
+            remoteSongs = listOf(
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+            )
+        ), onIntent = {})
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewNetworkError() {
+    BuiTuanAnhTheme {
+        LibraryScreen(state = LibraryState(
+            isLocalMode = false,
+            networkError = "Error"
+        ), onIntent = {})
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewLoadingLibrary() {
+    BuiTuanAnhTheme {
+        LibraryScreen(state = LibraryState(
+            isLocalMode = false,
+            isLoading = true
+        ), onIntent = {})
+    }
 }
