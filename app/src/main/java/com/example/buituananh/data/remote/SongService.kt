@@ -1,6 +1,6 @@
 package com.example.buituananh.data.remote
 
-import com.example.buituananh.data.remote.model.SongResponse
+import com.example.buituananh.data.remote.model.response.SongResponse
 import retrofit2.Response
 import retrofit2.http.GET
 

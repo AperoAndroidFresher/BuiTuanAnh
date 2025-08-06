@@ -1,4 +1,4 @@
-package com.example.buituananh.data.remote.model
+package com.example.buituananh.data.remote.model.response
 
 data class SongResponse(
     val artist: String,

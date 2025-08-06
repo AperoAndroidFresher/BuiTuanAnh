@@ -103,7 +103,7 @@ class LibraryViewModel(
     }
 
     private suspend fun getAlSongs() {
-        songRepository.getAllSongs().collectLatest { list ->
+        songRepository.getLocalSongs().collectLatest { list ->
             _state.update { it.copy(localSongs = list, isLoading = false) }
         }
     }
