@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.util.Result
+import com.example.buituananh.data.util.onError
+import com.example.buituananh.data.util.onSuccess
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
@@ -74,12 +76,22 @@ class LibraryViewModel(
     }
 
     private fun loadNetworkSongs() {
-        //ongoing
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true) }
+            songRepository.getRemoteSongs().apply {
+                onSuccess { remoteSongs ->
+                    _state.update { it.copy(isLoading = false, remoteSongs = remoteSongs) }
+                }
+                onError { exception ->
+                    _state.update { it.copy(isLoading = true, networkError = exception.message) }
+                }
+            }
+        }
     }
 
     private fun loadLocalSongs(context: Context) = viewModelScope.launch(Dispatchers.IO) {
         launch(Dispatchers.Default) {
-            _state.update { it.copy( localSongs = emptyList(), isLoading = true) }
+            _state.update { it.copy(localSongs = emptyList(), isLoading = true) }
             val songs = MediaStoreHelper.loadLocalAudios(
                 contentResolver = contentResolver,
                 context = context,

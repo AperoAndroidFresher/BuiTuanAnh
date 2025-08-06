@@ -6,6 +6,7 @@ import com.example.buituananh.domain.model.Song
 
 data class LibraryState(
     val isLoading: Boolean = false,
+    val networkError: String? = null,
     val localSongs: List<Song> = emptyList(),
     val isLocalMode: Boolean = true,
     val remoteSongs: List<Song> = emptyList(),
