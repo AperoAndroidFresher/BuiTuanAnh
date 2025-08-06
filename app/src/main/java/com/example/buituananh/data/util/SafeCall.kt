@@ -13,14 +13,13 @@ suspend fun <T : Any> safeCall(
                 Result.Success(it)
             } ?: Result.Failure(Exception("Data is null"))
         } else {
-            
-        }
-        when (response.code()) {
-            400 -> Result.Failure(Exception("400 error"))
-            401 -> Result.Failure(Exception("No authentication"))
-            403 -> Result.Failure(Exception("No authentication"))
-            500 -> Result.Failure(Exception("Server error"))
-            else -> Result.Failure(Exception("Unknown error"))
+            when (response.code()) {
+                400 -> Result.Failure(Exception("400 error"))
+                401 -> Result.Failure(Exception("No authentication"))
+                403 -> Result.Failure(Exception("No authentication"))
+                500 -> Result.Failure(Exception("Server error"))
+                else -> Result.Failure(Exception("Unknown error"))
+            }
         }
     } catch (e: UnresolvedAddressException) {
         Result.Failure(Exception("No internet connection"))

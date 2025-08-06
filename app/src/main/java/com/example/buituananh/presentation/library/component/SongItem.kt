@@ -40,10 +40,10 @@ import com.example.buituananh.util.formatToString
 
 @Composable
 fun SongItem(
-    modifier: Modifier = Modifier,
     song: Song,
-    onAddToPlaylistClick: () -> Unit,
-    onShareClick: () -> Unit
+    clickSongOptions: () -> Unit,
+    shareSong: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     var expanded by remember {
@@ -125,11 +125,11 @@ fun SongItem(
                 },
                 onAddToPlaylistClick = {
                     expanded = false
-                    onAddToPlaylistClick()
+                    clickSongOptions()
                 },
                 onShareClick = {
                     expanded = false
-                    onShareClick()
+                    shareSong()
                 }
             )
         }

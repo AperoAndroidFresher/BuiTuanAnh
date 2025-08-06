@@ -5,9 +5,7 @@ package com.example.buituananh.presentation.library.component
 import android.Manifest
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,6 +24,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
+import com.example.buituananh.domain.model.Song
+import com.example.buituananh.presentation.components.LoadingAnimation
+import com.example.buituananh.presentation.components.TopBar
 import com.example.buituananh.presentation.library.LibraryEffect
 import com.example.buituananh.presentation.library.LibraryIntent
 import com.example.buituananh.presentation.library.LibraryState
@@ -91,10 +91,10 @@ fun LibraryScreenRoot(
 
 @Composable
 fun LibraryScreen(
-    modifier: Modifier = Modifier,
     state: LibraryState,
-    permissionState: PermissionState? = null,
     onIntent: (LibraryIntent) -> Unit,
+    modifier: Modifier = Modifier,
+    permissionState: PermissionState? = null,
 ) {
 
     val isGranted = permissionState?.status?.isGranted ?: false
@@ -121,123 +121,56 @@ fun LibraryScreen(
         if (!isGranted) {
             showModalPermission = true
         } else {
-            onIntent(LibraryIntent.LoadLocalSongs(context = context))
+            if (state.localSongs.isEmpty()) {
+                onIntent(LibraryIntent.LoadLocalSongs(context = context))
+            }
         }
     }
 
     LaunchedEffect(state.isLocalMode) {
-        if (!state.isLocalMode) {
+        if (!state.isLocalMode && state.remoteSongs.isEmpty()) {
             onIntent(LibraryIntent.LoadNetworkSongs)
-            Log.d("S1", "LibraryScreen: Loading")
         }
     }
 
     Scaffold(
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = "Library",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
+            TopBar(title = "Library")
         },
         modifier = modifier,
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
                 .padding(it),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 40.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                ) {
-                    Button(
-                        onClick = {
-                            onIntent(LibraryIntent.ToggleLocalMode)
-                        },
-                        shape = MaterialTheme.shapes.large,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (state.isLocalMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                        ),
-                        modifier = Modifier.width(130.dp),
-                    ) {
-                        Text(
-                            text = "Local",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = if (state.isLocalMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            onIntent(LibraryIntent.ToggleLocalMode)
-                        },
-                        shape = MaterialTheme.shapes.large,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (!state.isLocalMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                        ),
-                        modifier = Modifier.width(130.dp),
-                    ) {
-                        Text(
-                            text = "Remote",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = if (!state.isLocalMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                }
-                Spacer(Modifier.height(6.dp))
-            }
+            ButtonSection(state = state, onIntent = onIntent, modifier = Modifier)
             if (state.isLoading) {
-                item {
-                    CircularProgressIndicator()
-                }
-            } else if(state.networkError != null) {
-                item { 
-                    NoInternetSection(modifier = Modifier.fillMaxSize()) { 
+                LoadingAnimation()
+            } else if (state.networkError != null) {
+                NoInternetSection(
+                    fetchSongAgain = {
                         onIntent(LibraryIntent.LoadNetworkSongs)
-                    }
-                }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                )
             } else {
-                if (state.isLocalMode) {
-                    items(state.localSongs) { song ->
-                        SongItem(
-                            song = song,
-                            onAddToPlaylistClick = {
-                                onIntent(LibraryIntent.ClickSongOptions(song))
-                                showPlaylistDialog = true
-                            },
-                        ) {
-                            onIntent(LibraryIntent.ShareSong(song))
-                        }
-                    }
-                } else {
-                    items(state.remoteSongs) { song ->
-                        SongItem(
-                            song = song,
-                            onAddToPlaylistClick = {
-                                onIntent(LibraryIntent.ClickSongOptions(song))
-                                showPlaylistDialog = true
-                            },
-                        ) {
-
-                        }
-                    }
-                }
+                SongsSection(
+                    clickSongOptions = {
+                        onIntent(LibraryIntent.ClickSongOptions(it))
+                        showPlaylistDialog = true
+                    },
+                    shareSong = {
+                        onIntent(LibraryIntent.ShareSong(it))
+                    },
+                    modifier = Modifier,
+                    isLocalMode = state.isLocalMode,
+                    localSongs = state.localSongs,
+                    remoteSongs = state.remoteSongs,
+                )
             }
         }
+
         if (showPlaylistDialog) {
             Dialog(
                 onDismissRequest = { showPlaylistDialog = false },
@@ -266,9 +199,109 @@ fun LibraryScreen(
 }
 
 @Composable
-fun NoInternetSection(
+private fun SongsSection(
+    clickSongOptions: (Song) -> Unit,
+    shareSong: (Song) -> Unit,
     modifier: Modifier = Modifier,
-    fetchSongAgain: () -> Unit
+    isLocalMode: Boolean = true,
+    localSongs: List<Song> = emptyList(),
+    remoteSongs: List<Song> = emptyList(),
+) {
+
+    val songs = if (isLocalMode) {
+        localSongs
+    } else {
+        remoteSongs
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surface),
+        contentPadding = PaddingValues(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(songs) { song ->
+            SongItem(
+                song = song,
+                clickSongOptions = {
+                    clickSongOptions(song)
+                },
+                shareSong = {
+                    shareSong(song)
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ButtonSection(
+    state: LibraryState,
+    onIntent: (LibraryIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Spacer(modifier.height(24.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 40.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+    ) {
+        LibraryModeButton(
+            onClick = {
+                onIntent(LibraryIntent.ToggleLocalMode)
+            },
+            isLocalMode = state.isLocalMode,
+            title = "Local",
+        )
+        LibraryModeButton(
+            onClick = {
+                onIntent(LibraryIntent.ToggleLocalMode)
+            },
+            isLocalMode = !state.isLocalMode,
+            title = "Remote",
+        )
+    }
+}
+
+@Composable
+private fun LibraryModeButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isLocalMode: Boolean = false,
+    title: String = "",
+) {
+    val containerColor = if (isLocalMode) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+
+    val textColor = if (isLocalMode) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    Button(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+        ),
+        modifier = modifier.width(130.dp),
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            color = textColor,
+        )
+    }
+}
+
+@Composable
+private fun NoInternetSection(
+    fetchSongAgain: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
 
     Column(
@@ -276,12 +309,12 @@ fun NoInternetSection(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Image(
+        Icon(
             painter = painterResource(R.drawable.no_internet),
             contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
-                .size(100.dp)
-                .background(MaterialTheme.colorScheme.onSurface),
+                .size(100.dp),
         )
         Spacer(Modifier.height(16.dp))
         Text(
@@ -292,16 +325,16 @@ fun NoInternetSection(
             """.trimIndent(),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
         )
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = fetchSongAgain,
-            shape = MaterialTheme.shapes.large
-        ) { 
+            shape = MaterialTheme.shapes.medium,
+        ) {
             Text(
                 text = "Try again",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }
@@ -312,8 +345,6 @@ fun NoInternetSection(
 fun PreviewLibrary(modifier: Modifier = Modifier) {
 
     BuiTuanAnhTheme {
-        LibraryScreen(state = LibraryState()) {
-
-        }
+        LibraryScreen(state = LibraryState(), onIntent = {})
     }
 }

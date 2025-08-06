@@ -18,6 +18,7 @@ import com.example.buituananh.util.Destination
 import com.example.buituananh.util.MediaStoreHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -78,13 +79,13 @@ class LibraryViewModel(
 
     private fun loadNetworkSongs() {
         viewModelScope.launch(Dispatchers.IO) {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isLoading = true, networkError = null, remoteSongs = emptyList()) }
+            delay(2000L)
             songRepository.getRemoteSongs().apply {
                 onSuccess { remoteSongs ->
                     _state.update { it.copy(isLoading = false, remoteSongs = remoteSongs) }
                 }
                 onError { exception ->
-                    Log.d("LibraryViewModel", "loadNetworkSongs: ${exception.message}")
                     _state.update { it.copy(isLoading = false, networkError = exception.message) }
                 }
             }
