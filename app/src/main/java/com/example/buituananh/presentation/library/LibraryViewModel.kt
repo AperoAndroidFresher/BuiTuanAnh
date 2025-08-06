@@ -2,6 +2,7 @@ package com.example.buituananh.presentation.library
 
 import android.content.ContentResolver
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -83,7 +84,8 @@ class LibraryViewModel(
                     _state.update { it.copy(isLoading = false, remoteSongs = remoteSongs) }
                 }
                 onError { exception ->
-                    _state.update { it.copy(isLoading = true, networkError = exception.message) }
+                    Log.d("LibraryViewModel", "loadNetworkSongs: ${exception.message}")
+                    _state.update { it.copy(isLoading = false, networkError = exception.message) }
                 }
             }
         }

@@ -11,7 +11,9 @@ suspend fun <T : Any> safeCall(
         if (response.isSuccessful) {
             response.body()?.let {
                 Result.Success(it)
-            } ?: Result.Failure(Exception("Unknown error"))
+            } ?: Result.Failure(Exception("Data is null"))
+        } else {
+            
         }
         when (response.code()) {
             400 -> Result.Failure(Exception("400 error"))
