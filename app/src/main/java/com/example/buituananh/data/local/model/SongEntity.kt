@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.buituananh.util.SongSource
 
 @Entity(
     tableName = "musics",
@@ -19,4 +20,5 @@ data class SongEntity(
     val duration: Long?,
     val data: String?,
     val imageUri: Uri?,
+    val songSource: SongSource
 )

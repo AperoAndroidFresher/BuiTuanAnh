@@ -100,7 +100,7 @@ class LibraryViewModel(
                 context = context,
             )
             insertSongIfNotExist(songs)
-            getAlSongs()
+            getAllSongs()
         }
         loadPlaylistWithSongs()
     }

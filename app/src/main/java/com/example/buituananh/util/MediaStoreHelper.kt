@@ -49,6 +49,7 @@ object MediaStoreHelper {
                         duration = duration.toPairDuration(),
                         filePath = audioPath,
                         imageUri = embeddedPictureUri,
+                        songSource = SongSource.LOCAL
                     )
                     songs.add(song)
                 }

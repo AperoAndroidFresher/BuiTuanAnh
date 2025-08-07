@@ -1,6 +1,7 @@
 package com.example.buituananh.domain.model
 
 import android.util.Log
+import com.example.buituananh.util.SongSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -12,10 +13,10 @@ object PlaylistStore {
             Playlist(
                 title = "My favorite playlist",
                 songs = mutableListOf(
-                    Song(1, "Song 1", "Artist 1", 3 to 30, null, null),
-                    Song(2, "Song 2", "Artist 2", 1 to 30, null, null),
-                    Song(3, "Song 3", "Artist 3", 2 to 30, null, null),
-                    Song(4, "Song 4", "Artist 4", 5 to 50, null, null),
+                    Song(1, "Song 1", "Artist 1", 3 to 30, null, null, SongSource.LOCAL),
+                    Song(2, "Song 2", "Artist 2", 1 to 30, null, null, SongSource.LOCAL),
+                    Song(3, "Song 3", "Artist 3", 2 to 30, null, null, SongSource.LOCAL),
+                    Song(4, "Song 4", "Artist 4", 5 to 50, null, null, SongSource.LOCAL),
                 )
             )
         }

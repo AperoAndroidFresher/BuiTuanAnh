@@ -11,6 +11,7 @@ import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.SongRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.example.buituananh.util.SongSource
 
 class SongRepositoryImpl(
     private val database: AppDatabase,
@@ -34,9 +35,10 @@ class SongRepositoryImpl(
             -1
         }
     }
-
+    
     override suspend fun getLocalSongs(): Flow<List<Song>> {
-        return songDao.getAllSongs().map { list -> list.map { it.toSong() } }
+        return songDao.getAllSongs()
+            .map { list -> list.filter { it.songSource == SongSource.LOCAL }.map { it.toSong() } }
     }
 
     override suspend fun getRemoteSongs(): Result<List<Song>, Exception> {
