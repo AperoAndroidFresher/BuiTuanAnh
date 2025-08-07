@@ -19,15 +19,13 @@ object ImageUtils {
             retriever.setDataSource(context, uri)
             val art = retriever.embeddedPicture
             if (art != null) {
-                val file = File(context.cacheDir, "${System.currentTimeMillis()}.jpg")
+                val file = File(context.filesDir, "${System.currentTimeMillis()}.jpg")
                 file.writeBytes(art)
                 Uri.fromFile(file) 
             } else {
-                Log.d("AlbumArt", "No embedded image found")
                 null
             }
         } catch (e: Exception) {
-            Log.e("AlbumArt", "Error: ${e.message}")
             null
         } finally {
             retriever.release()

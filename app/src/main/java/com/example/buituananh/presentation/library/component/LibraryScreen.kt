@@ -5,6 +5,7 @@ package com.example.buituananh.presentation.library.component
 import android.Manifest
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -157,12 +158,12 @@ fun LibraryScreen(
                 )
             } else {
                 SongsSection(
-                    clickSongOptions = {
-                        onIntent(LibraryIntent.ClickSongOptions(it))
+                    clickSongOptions = {song ->
+                        onIntent(LibraryIntent.ClickSongOptions(song))
                         showPlaylistDialog = true
                     },
-                    shareSong = {
-                        onIntent(LibraryIntent.ShareSong(it))
+                    shareSong = {song ->
+                        onIntent(LibraryIntent.ShareSong(song))
                     },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
@@ -210,6 +211,7 @@ private fun SongsSection(
 ) {
 
     val songs = if (isLocalMode) {
+        Log.d("LibraryScreen", "SongsSection: ${localSongs.map { it.imageUri }}")
         localSongs
     } else {
         remoteSongs

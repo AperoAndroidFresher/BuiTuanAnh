@@ -72,25 +72,4 @@ class SongRepositoryImpl(
             .map { list -> list.filter { it.songSource == SongSource.REMOTE }.map { it.toSong() } }
     }
 
-    override suspend fun saveSongToInternalStorage(urlPath: String, fileName: String): File {
-        val directory = File(context.filesDir, "internal_storage")
-
-        if (directory.exists() && !directory.isDirectory) {
-            directory.delete()
-        }
-        if (!directory.exists()) {
-            directory.mkdir()
-        }
-
-        val file = File(directory, "$fileName.mp3")
-        withContext(Dispatchers.IO) {
-            val url = URL(urlPath)
-            url.openStream().use { input ->
-                FileOutputStream(file).use { output ->
-                    input.copyTo(output)
-                }
-            }
-        }
-        return file
-    }
 }

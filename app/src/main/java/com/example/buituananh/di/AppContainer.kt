@@ -2,9 +2,11 @@ package com.example.buituananh.di
 
 import android.content.Context
 import com.example.buituananh.data.local.AppDatabase
+import com.example.buituananh.data.repository.FileRepositoryImpl
 import com.example.buituananh.data.repository.PlaylistRepositoryImpl
 import com.example.buituananh.data.repository.SongRepositoryImpl
 import com.example.buituananh.data.repository.UserRepositoryImpl
+import com.example.buituananh.domain.repository.FileRepository
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
@@ -21,6 +23,7 @@ class AppContainer(
     val userRepository: UserRepository = UserRepositoryImpl(database, context)
     val playlistRepository: PlaylistRepository = PlaylistRepositoryImpl(database)
     val songRepository: SongRepository = SongRepositoryImpl(context, database, songService)
-
-    val fetchAndCacheSongsUseCase = FetchAndCacheSongsUseCase(songRepository)
+    val fileRepository: FileRepository = FileRepositoryImpl(context)
+    
+    val fetchAndCacheSongsUseCase = FetchAndCacheSongsUseCase(songRepository, fileRepository)
 }

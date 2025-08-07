@@ -2,16 +2,15 @@ package com.example.buituananh.domain.usecase
 
 import android.util.Log
 import com.example.buituananh.data.util.Result
-import com.example.buituananh.data.util.onError
-import com.example.buituananh.data.util.onSuccess
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.domain.repository.FileRepository
 import com.example.buituananh.domain.repository.SongRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.take
 
 class FetchAndCacheSongsUseCase(
-    private val songRepository: SongRepository
+    private val songRepository: SongRepository,
+    private val fileRepository: FileRepository
 ) {
     suspend operator fun invoke(): Result<Flow<List<Song>>, Exception> {
         val remoteSongsFlow = songRepository.getRemoteSongsFromRoom()
@@ -37,18 +36,17 @@ class FetchAndCacheSongsUseCase(
         }
     }
 
-
     
     private suspend fun alterUrlPathToFilePath(songs: List<Song>): List<Song> {
         val newSongs = songs.mapNotNull { song ->
             val url = song.filePath ?: return@mapNotNull null
 
-            val file = songRepository.saveSongToInternalStorage(
+            val file = fileRepository.saveAudioFileToInternalStorage(
                 urlPath = url,
                 fileName = "${song.title}-${song.artist}"
             )
-
-            song.copy(filePath = file.path)
+            val imageUri = fileRepository.getEmbeddedImageFromAudio(file)
+            song.copy(filePath = file.path, imageUri = imageUri)
         }
         return newSongs
     }

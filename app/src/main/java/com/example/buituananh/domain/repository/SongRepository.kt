@@ -19,6 +19,5 @@ interface SongRepository {
     
     suspend fun getRemoteSongsFromRoom(): Flow<List<Song>>
     
-    suspend fun saveSongToInternalStorage(urlPath: String, fileName: String): File
 }
 
