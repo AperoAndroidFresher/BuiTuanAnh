@@ -28,15 +28,6 @@ class LoginViewModel(
     private val _splashEffect = Channel<SplashEffect>()
     val splashEffect = _splashEffect.receiveAsFlow()
     
-    class Factory(
-        private val key: Destination.AuthWrapper,
-        private val repository: UserRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LoginViewModel(key, repository) as T
-        }
-    }
-
     fun onIntent(intent: LoginIntent) {
         return when (intent) {
             is LoginIntent.OnPasswordChange -> onPasswordChange(intent.password)
@@ -45,9 +36,9 @@ class LoginViewModel(
 
             is LoginIntent.OnCheckedChange -> onCheckedChange(intent.checked)
 
-            LoginIntent.OnLoginClick -> login()
+            LoginIntent.ClickLogin -> clickLogin()
 
-            LoginIntent.OnSignupClick -> navToSignup()
+            LoginIntent.ClickSignup -> clickSignup()
             
             LoginIntent.IsRememberedLogin -> isRememberedLogin()
 
@@ -56,7 +47,7 @@ class LoginViewModel(
 
     private fun setRememberedLogin() {
         viewModelScope.launch {
-            if(_state.value.isChecked) {
+            if(_state.value.isRemembered) {
                 userRepository.setRememberedLoginState(true)
             }
         }
@@ -74,20 +65,20 @@ class LoginViewModel(
         
     }
 
-    private fun navToSignup() {
+    private fun clickSignup() {
         sendEvent(LoginEffect.NavigateToSignupScreen)
     }
 
     private fun onCheckedChange(checked: Boolean) {
-        _state.value = _state.value.copy(isChecked = checked)
+        _state.value = _state.value.copy(isRemembered = checked)
     }
 
     private fun onUsernameChange(username: String) {
         val filtered = username.lowercase().filterNot { it.isWhitespace() }
         _state.update {
             it.copy(
-                username = filtered,
-                usernameError = ""
+                userName = filtered,
+                userNameError = ""
             )
         }
     }
@@ -96,81 +87,73 @@ class LoginViewModel(
         val filtered = password.filterNot { it.isWhitespace() }
         _state.update {
             it.copy(
-                password = filtered,
-                passwordError = ""
+                passWord = filtered,
+                passWordError = ""
             )
         }
     }
 
-    private fun login() {
+    private fun clickLogin() {
         viewModelScope.launch {
-            val usernameRegex = Regex("^[a-z\\d]*$")
-            val passwordRegex = Regex("^[a-zA-Z\\d]*$")
-            val username = _state.value.username
-            val password = _state.value.password
+            val username = _state.value.userName
+            val password = _state.value.passWord
 
-            var hasError = false
+            val isUsernameValid = validateUsername(username)
+            val isPasswordValid = validatePassword(password)
 
-            if (!username.matches(usernameRegex) || username.isBlank()) {
-                hasError = true
-                _state.update {
-                    it.copy(
-                        usernameError = "Invalid username format",
-                        username = ""
-                    )
-                }
-            } else {
-                _state.update {
-                    it.copy(
-                        usernameError = "",
-                        username = ""
-                    )
-                }
+            if (!isUsernameValid || !isPasswordValid) {
+                sendEvent(LoginEffect.ShowToast("Login unsuccessfully"))
+                return@launch
             }
 
-            if (!password.matches(passwordRegex) || password.isBlank()) {
-                hasError = true
-                _state.update {
-                    it.copy(
-                        passwordError = "Invalid password format",
-                        password = ""
-                    )
-                }
-            } else {
-                _state.update {
-                    it.copy(
-                        passwordError = "",
-                    )
-                }
+            val result = userRepository.assertLogin(username, password)
+            if (result is Result.Failure) {
+                handleLoginFailure(result.error)
+                sendEvent(LoginEffect.ShowToast("Login unsuccessfully"))
+                return@launch
             }
 
-            if (!hasError) {
-                val matchedUser = userRepository.assertLogin(
-                    username = username,
-                    password = password
-                )
-
-                if (matchedUser is Result.Failure) {
-                    hasError = true
-                    _state.update {
-                        it.copy(
-                            username = "",
-                            password = "",
-                            usernameError = matchedUser.error.localizedMessage ?: "Unknown error",
-                            passwordError = matchedUser.error.localizedMessage ?: "Unknown error"
-                        )
-                    }
-                } else if(matchedUser is Result.Success) {
-                    userRepository.saveUserId(matchedUser.data.userId)
-                }
-            }
-
-            if (!hasError) {
+            if (result is Result.Success) {
+                userRepository.saveUserId(result.data.userId)
                 setRememberedLogin()
                 sendEvent(LoginEffect.NavigateToHomeScreen)
-            } else {
-                sendEvent(LoginEffect.ShowToast("Login unsuccessfully"))
             }
+        }
+    }
+
+    private fun validateUsername(username: String): Boolean {
+        val regex = Regex("^[a-z\\d]*$")
+        val isValid = username.matches(regex) && username.isNotBlank()
+        _state.update {
+            it.copy(
+                userNameError = if (!isValid) "Invalid username format" else "",
+                userName = if (!isValid) "" else it.userName
+            )
+        }
+        return isValid
+    }
+
+    private fun validatePassword(password: String): Boolean {
+        val regex = Regex("^[a-zA-Z\\d]*$")
+        val isValid = password.matches(regex) && password.isNotBlank()
+        _state.update {
+            it.copy(
+                passWordError = if (!isValid) "Invalid password format" else "",
+                passWord = if (!isValid) "" else it.passWord
+            )
+        }
+        return isValid
+    }
+
+    private fun handleLoginFailure(error: Throwable) {
+        val errorMessage = error.localizedMessage ?: "Unknown error"
+        _state.update {
+            it.copy(
+                userName = "",
+                passWord = "",
+                userNameError = errorMessage,
+                passWordError = errorMessage
+            )
         }
     }
 
@@ -183,6 +166,15 @@ class LoginViewModel(
     private fun sendSplashEvent( event: SplashEffect) {
         viewModelScope.launch { 
             _splashEffect.send(event)
+        }
+    }
+
+    class Factory(
+        private val key: Destination.AuthWrapper,
+        private val repository: UserRepository
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return LoginViewModel(key, repository) as T
         }
     }
 

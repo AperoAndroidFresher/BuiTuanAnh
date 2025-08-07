@@ -1,12 +1,12 @@
 package com.example.buituananh.presentation.login
 
 data class LoginState(
-    val username: String = "",
-    val password: String = "",
-    val isChecked: Boolean = false,
+    val userName: String = "",
+    val passWord: String = "",
+    val isRemembered: Boolean = false,
 
-    val usernameError: String = "",
-    val passwordError: String = ""
+    val userNameError: String = "",
+    val passWordError: String = ""
 )
 
 sealed interface LoginIntent {
@@ -14,8 +14,8 @@ sealed interface LoginIntent {
     data class OnPasswordChange(val password: String) : LoginIntent
     data class OnCheckedChange(val checked: Boolean) : LoginIntent
     data object IsRememberedLogin : LoginIntent
-    data object OnLoginClick : LoginIntent
-    data object OnSignupClick : LoginIntent
+    data object ClickLogin : LoginIntent
+    data object ClickSignup : LoginIntent
 }
 
 sealed interface LoginEffect {
