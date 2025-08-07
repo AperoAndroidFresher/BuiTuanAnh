@@ -41,7 +41,7 @@ fun LoginScreenRoot(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+        viewModel.loginEffect.collect { effect ->
             when(effect) {
                 LoginEffect.NavigateToHomeScreen -> onNavigate(Destination.HomeScreen)
                 LoginEffect.NavigateToSignupScreen -> onNavigate(Destination.SignupScreen)

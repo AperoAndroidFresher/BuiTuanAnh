@@ -14,21 +14,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.buituananh.R
+import com.example.buituananh.presentation.login.LoginIntent
+import com.example.buituananh.presentation.login.LoginViewModel
+import com.example.buituananh.presentation.login.SplashEffect
+import com.example.buituananh.util.Destination
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
-    modifier: Modifier = Modifier,
-    onNavigate: () -> Unit
+    viewModel: LoginViewModel,
+    onNavigate: (Destination) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-
+    
     LaunchedEffect(Unit) {
-        delay(2000)
-        onNavigate()
+        viewModel.onIntent(LoginIntent.IsRememberedLogin)
+        viewModel.splashEffect.collect { effect ->
+            when(effect) {
+                SplashEffect.NavigateToHomeScreen -> {
+                    delay(1000L)
+                    onNavigate(Destination.HomeScreen)
+                }
+                SplashEffect.NavigateToLoginScreen -> {
+                    delay(1000L)
+                    onNavigate(Destination.LoginScreen)
+                }
+            }
+        }
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.Center,

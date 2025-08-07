@@ -23,4 +23,7 @@ interface UserRepository {
 
     suspend fun clearUserId()
 
+    suspend fun isRememberedLoginEnabled(): Boolean
+    
+    suspend fun setRememberedLoginState(isRemembered: Boolean)
 }

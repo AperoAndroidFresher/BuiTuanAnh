@@ -30,4 +30,7 @@ sealed interface Destination : NavKey {
 
     @Serializable
     data class DetailPlaylistScreen(val id: Long) : Destination
+
+    @Serializable
+    data object AuthWrapper : Destination
 }

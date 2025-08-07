@@ -15,18 +15,21 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val key: Destination.LoginScreen,
+    private val key: Destination.AuthWrapper,
     private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
 
-    private val _effect = Channel<LoginEffect>()
-    val effect = _effect.receiveAsFlow()
+    private val _loginEffect = Channel<LoginEffect>()
+    val loginEffect = _loginEffect.receiveAsFlow()
 
+    private val _splashEffect = Channel<SplashEffect>()
+    val splashEffect = _splashEffect.receiveAsFlow()
+    
     class Factory(
-        private val key: Destination.LoginScreen,
+        private val key: Destination.AuthWrapper,
         private val repository: UserRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -45,7 +48,30 @@ class LoginViewModel(
             LoginIntent.OnLoginClick -> login()
 
             LoginIntent.OnSignupClick -> navToSignup()
+            
+            LoginIntent.IsRememberedLogin -> isRememberedLogin()
+
         }
+    }
+
+    private fun setRememberedLogin() {
+        viewModelScope.launch {
+            if(_state.value.isChecked) {
+                userRepository.setRememberedLoginState(true)
+            }
+        }
+    }
+
+    private fun isRememberedLogin() {
+        viewModelScope.launch {
+            val isRemembered = userRepository.isRememberedLoginEnabled()
+            if(isRemembered) {
+                _splashEffect.send(SplashEffect.NavigateToHomeScreen)
+            } else {
+                _splashEffect.send(SplashEffect.NavigateToLoginScreen)
+            }   
+        }
+        
     }
 
     private fun navToSignup() {
@@ -140,6 +166,7 @@ class LoginViewModel(
             }
 
             if (!hasError) {
+                setRememberedLogin()
                 sendEvent(LoginEffect.NavigateToHomeScreen)
             } else {
                 sendEvent(LoginEffect.ShowToast("Login unsuccessfully"))
@@ -149,7 +176,13 @@ class LoginViewModel(
 
     private fun sendEvent(event: LoginEffect) {
         viewModelScope.launch {
-            _effect.send(event)
+            _loginEffect.send(event)
+        }
+    }
+    
+    private fun sendSplashEvent( event: SplashEffect) {
+        viewModelScope.launch { 
+            _splashEffect.send(event)
         }
     }
 

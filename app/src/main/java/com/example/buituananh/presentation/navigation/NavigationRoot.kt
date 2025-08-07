@@ -41,9 +41,10 @@ fun NavigationRoot(
     appContainer: AppContainer
 ) {
 
-    val backStack = rememberNavBackStack(Destination.SplashScreen)
+    val backStack = rememberNavBackStack(Destination.AuthWrapper)
     val backStack2 = rememberNavBackStack(Destination.PlaylistScreen)
-
+    val authBackstack = rememberNavBackStack(Destination.SplashScreen)
+    
     var currentDestinationIdx by remember {
         mutableIntStateOf(0)
     }
@@ -82,42 +83,62 @@ fun NavigationRoot(
                 rememberViewModelStoreNavEntryDecorator()
             ),
             entryProvider = entryProvider {
-                entry<Destination.SplashScreen> {
-                    SplashScreen {
-                        backStack.add(Destination.LoginScreen)
-                    }
-                }
-                entry<Destination.LoginScreen> { key: Destination.LoginScreen ->
-                    LoginScreenRoot(
-                        viewModel = viewModel(
-                            factory = LoginViewModel.Factory(
-                                key,
-                                appContainer.userRepository
-                            )
-                        )
-                    ) { route ->
-                        if (route is Destination.HomeScreen) {
-                            while (backStack.isNotEmpty()) {
-                                backStack.removeLastOrNull()
+                entry<Destination.AuthWrapper> { parentKey ->
+                    val loginViewModel = viewModel<LoginViewModel>(factory = LoginViewModel.Factory(parentKey, appContainer.userRepository))
+                    NavDisplay(
+                        backStack = authBackstack,
+                        onBack = { authBackstack.removeLastOrNull() },
+                        entryDecorators = listOf(
+                            rememberSceneSetupNavEntryDecorator(),
+                            rememberSavedStateNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator()
+                        ),
+                        entryProvider = entryProvider {
+                            entry<Destination.SplashScreen> {
+                                SplashScreen(
+                                    onNavigate = {
+                                        if(it is Destination.LoginScreen) {
+                                            authBackstack.add(Destination.LoginScreen)
+                                        }
+                                        if(it is Destination.HomeScreen) {
+                                            backStack.add(Destination.HomeScreen)
+                                        }
+                                    },
+                                    viewModel = loginViewModel
+                                )
+                            }
+                            entry<Destination.LoginScreen> { key: Destination.LoginScreen ->
+                                LoginScreenRoot(
+                                    viewModel = loginViewModel
+                                ) { route ->
+                                    if (route is Destination.HomeScreen) {
+                                        while (backStack.isNotEmpty()) {
+                                            backStack.removeLastOrNull()
+                                        }
+                                        backStack.add(route)
+                                    }
+                                    if (route is Destination.SignupScreen) {
+                                        authBackstack.add(route)
+                                    }
+                                }
+                            }
+                            entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
+                                SignupScreenRoot(
+                                    viewModel = viewModel(
+                                        factory = SignupViewModel.Factory(
+                                            key,
+                                            appContainer.userRepository
+                                        )
+                                    ),
+                                    onPopBack = {
+                                        authBackstack.removeLastOrNull()
+                                    }
+                                ) {
+                                    authBackstack.add(it)
+                                }
                             }
                         }
-                        backStack.add(route)
-                    }
-                }
-                entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
-                    SignupScreenRoot(
-                        viewModel = viewModel(
-                            factory = SignupViewModel.Factory(
-                                key,
-                                appContainer.userRepository
-                            )
-                        ),
-                        onPopBack = {
-                            backStack.removeLastOrNull()
-                        }
-                    ) {
-                        backStack.add(it)
-                    }
+                    )
                 }
                 entry<Destination.HomeScreen> {
                     HomeScreen {
