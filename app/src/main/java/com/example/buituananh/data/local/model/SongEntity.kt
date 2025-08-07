@@ -14,7 +14,7 @@ import com.example.buituananh.util.SongSource
 )
 data class SongEntity(
     @PrimaryKey(autoGenerate = true)
-    val songId: Long = 0,
+    val songId: Long? = 0,
     val title: String?,
     val artist: String?,
     val duration: Long?,

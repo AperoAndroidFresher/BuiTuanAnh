@@ -7,7 +7,7 @@ import com.example.buituananh.util.toPairDuration
 
 fun SongEntity.toSong(): Song {
     return Song(
-        songId = songId,
+        songId = songId ?: 0,
         title = title,
         artist = artist,
         duration = duration?.toPairDuration(),

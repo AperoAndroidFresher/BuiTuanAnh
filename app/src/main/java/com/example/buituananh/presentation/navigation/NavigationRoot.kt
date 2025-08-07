@@ -132,7 +132,8 @@ fun NavigationRoot(
                                 contentResolver,
                                 appContainer.userRepository,
                                 appContainer.playlistRepository,
-                                appContainer.songRepository
+                                appContainer.songRepository,
+                                appContainer.fetchAndCacheSongsUseCase
                             )
                         )
                     ) {

@@ -8,6 +8,7 @@ import com.example.buituananh.data.repository.UserRepositoryImpl
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
 import com.example.buituananh.util.RetrofitHelper
 
 class AppContainer(
@@ -19,6 +20,7 @@ class AppContainer(
 
     val userRepository: UserRepository = UserRepositoryImpl(database, context)
     val playlistRepository: PlaylistRepository = PlaylistRepositoryImpl(database)
-    val songRepository: SongRepository = SongRepositoryImpl(database, songService)
+    val songRepository: SongRepository = SongRepositoryImpl(context, database, songService)
 
+    val fetchAndCacheSongsUseCase = FetchAndCacheSongsUseCase(songRepository)
 }

@@ -2,7 +2,6 @@ package com.example.buituananh.presentation.library
 
 import android.content.ContentResolver
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,6 +13,7 @@ import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.MediaStoreHelper
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +28,7 @@ class LibraryViewModel(
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
     private val songRepository: SongRepository,
+    private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
@@ -80,13 +81,19 @@ class LibraryViewModel(
     private fun loadNetworkSongs() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true, networkError = null, remoteSongs = emptyList()) }
-            delay(2000L)
-            songRepository.getRemoteSongs().apply {
-                onSuccess { remoteSongs ->
-                    _state.update { it.copy(isLoading = false, remoteSongs = remoteSongs) }
+            delay(500L)
+            fetchAndCacheSongsUseCase.invoke().apply { 
+                onSuccess { flow ->
+                    flow.collectLatest { songs ->
+                        _state.update { 
+                            it.copy(isLoading = false, remoteSongs = songs)
+                        }
+                    }
                 }
-                onError { exception ->
-                    _state.update { it.copy(isLoading = false, networkError = exception.message) }
+                onError {  e ->
+                    _state.update { 
+                        it.copy(isLoading = false, networkError = e.localizedMessage)
+                    }
                 }
             }
         }
@@ -118,7 +125,7 @@ class LibraryViewModel(
     }
 
     private suspend fun getAllSongs() {
-        songRepository.getLocalSongs().collectLatest { list ->
+        songRepository.getLocalSongsFromRoom().collectLatest { list ->
             _state.update { it.copy(localSongs = list, isLoading = false) }
         }
     }
@@ -153,6 +160,7 @@ class LibraryViewModel(
         private val userRepository: UserRepository,
         private val playlistRepository: PlaylistRepository,
         private val songRepository: SongRepository,
+        private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return LibraryViewModel(
@@ -161,6 +169,7 @@ class LibraryViewModel(
                 userRepository,
                 playlistRepository,
                 songRepository,
+                fetchAndCacheSongsUseCase
             ) as T
         }
     }
