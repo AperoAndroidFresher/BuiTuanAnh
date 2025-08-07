@@ -2,16 +2,18 @@ package com.example.buituananh.data.local.mapper
 
 import com.example.buituananh.data.local.model.SongEntity
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.util.SongSource
 import com.example.buituananh.util.toPairDuration
 
 fun SongEntity.toSong(): Song {
     return Song(
-        songId = songId,
+        songId = songId ?: 0,
         title = title,
         artist = artist,
         duration = duration?.toPairDuration(),
         filePath = data,
-        imageUri = imageUri
+        imageUri = imageUri,
+        songSource = songSource
     )
 }
 
@@ -24,6 +26,7 @@ fun Song.toEntity(): SongEntity {
             (minutes * 60 + seconds) * 1000L
         },
         data = filePath,
-        imageUri = imageUri
+        imageUri = imageUri,
+        songSource = songSource
     )
 }

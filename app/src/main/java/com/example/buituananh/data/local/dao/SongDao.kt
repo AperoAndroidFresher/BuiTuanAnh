@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.buituananh.data.local.model.SongEntity
+import com.example.buituananh.domain.model.Song
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,5 +26,8 @@ interface SongDao {
         FROM musics
     """)
     fun getAllSongs(): Flow<List<SongEntity>>
+    
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSongs(songs: List<SongEntity>)
 
 }

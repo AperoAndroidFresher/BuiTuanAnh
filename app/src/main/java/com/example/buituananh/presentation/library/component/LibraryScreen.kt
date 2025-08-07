@@ -5,6 +5,7 @@ package com.example.buituananh.presentation.library.component
 import android.Manifest
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -33,6 +34,7 @@ import com.example.buituananh.presentation.library.LibraryState
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
+import com.example.buituananh.util.SongSource
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -156,12 +158,12 @@ fun LibraryScreen(
                 )
             } else {
                 SongsSection(
-                    clickSongOptions = {
-                        onIntent(LibraryIntent.ClickSongOptions(it))
+                    clickSongOptions = {song ->
+                        onIntent(LibraryIntent.ClickSongOptions(song))
                         showPlaylistDialog = true
                     },
-                    shareSong = {
-                        onIntent(LibraryIntent.ShareSong(it))
+                    shareSong = {song ->
+                        onIntent(LibraryIntent.ShareSong(song))
                     },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
@@ -209,6 +211,7 @@ private fun SongsSection(
 ) {
 
     val songs = if (isLocalMode) {
+        Log.d("LibraryScreen", "SongsSection: ${localSongs.map { it.imageUri }}")
         localSongs
     } else {
         remoteSongs
@@ -347,11 +350,11 @@ private fun PreviewLibrary(modifier: Modifier = Modifier) {
         LibraryScreen(state = LibraryState(
             isLocalMode = true,
             localSongs = listOf(
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
             )
         ), onIntent = {})
     }
@@ -364,11 +367,11 @@ private fun PreviewRemoteLibrary() {
         LibraryScreen(state = LibraryState(
             isLocalMode = false,
             remoteSongs = listOf(
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
             )
         ), onIntent = {})
     }
@@ -384,7 +387,7 @@ private fun PreviewNetworkError() {
         ), onIntent = {})
     }
 }
-
+    
 @Preview
 @Composable
 private fun PreviewLoadingLibrary() {

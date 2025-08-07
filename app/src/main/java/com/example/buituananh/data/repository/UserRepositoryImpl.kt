@@ -2,6 +2,7 @@ package com.example.buituananh.data.repository
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import com.example.buituananh.authDataStore
 import com.example.buituananh.data.local.AppDatabase
 import com.example.buituananh.data.local.mapper.toDomain
 import com.example.buituananh.data.local.model.UserEntity
@@ -11,6 +12,7 @@ import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.userDataStore
 import com.example.buituananh.util.UserPrefsKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 
@@ -24,6 +26,18 @@ class UserRepositoryImpl(
     override val userIdFlow: Flow<Long?>
         get() = context.userDataStore.data
             .map { it[UserPrefsKey.USER_ID] }
+
+    override suspend fun isRememberedLoginEnabled(): Boolean {
+        return context.authDataStore.data
+            .map { prefs -> prefs[UserPrefsKey.LOGIN_STATE] ?: false }
+            .first()
+    }
+
+    override suspend fun setRememberedLoginState(isRemembered: Boolean) {
+        context.authDataStore.edit { 
+            it[UserPrefsKey.LOGIN_STATE] = isRemembered
+        }
+    }
 
     override suspend fun saveUserId(userId: Long) {
         context.userDataStore.edit { prefs ->

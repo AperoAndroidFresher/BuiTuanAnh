@@ -10,6 +10,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.buituananh.presentation.MyApp
 
 val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
+val Context.authDataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
