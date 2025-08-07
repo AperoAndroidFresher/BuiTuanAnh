@@ -33,6 +33,7 @@ import com.example.buituananh.presentation.library.LibraryState
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
+import com.example.buituananh.util.SongSource
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -347,11 +348,11 @@ private fun PreviewLibrary(modifier: Modifier = Modifier) {
         LibraryScreen(state = LibraryState(
             isLocalMode = true,
             localSongs = listOf(
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.LOCAL),
             )
         ), onIntent = {})
     }
@@ -364,11 +365,11 @@ private fun PreviewRemoteLibrary() {
         LibraryScreen(state = LibraryState(
             isLocalMode = false,
             remoteSongs = listOf(
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
-                Song(1, "Song 1", "Artist1", 3 to 50, null, null),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
+                Song(1, "Song 1", "Artist1", 3 to 50, null, null, songSource = SongSource.REMOTE),
             )
         ), onIntent = {})
     }
@@ -384,7 +385,7 @@ private fun PreviewNetworkError() {
         ), onIntent = {})
     }
 }
-
+    
 @Preview
 @Composable
 private fun PreviewLoadingLibrary() {

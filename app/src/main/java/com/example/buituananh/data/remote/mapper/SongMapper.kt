@@ -2,6 +2,7 @@ package com.example.buituananh.data.remote.mapper
 
 import com.example.buituananh.data.remote.model.response.SongResponse
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.util.SongSource
 import com.example.buituananh.util.toPairDuration
 
 fun SongResponse.toSong(): Song 
@@ -11,5 +12,6 @@ fun SongResponse.toSong(): Song
         artist = artist,
         duration = duration.toLong().toPairDuration(),
         filePath = path,
-        imageUri = null
+        imageUri = null,
+        songSource = SongSource.REMOTE
     )
