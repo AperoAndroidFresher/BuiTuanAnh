@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.navigation
 
 import android.content.ContentResolver
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
@@ -45,18 +46,21 @@ fun NavigationRoot(
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            if (currentScreen is Destination.HomeScreen
-                || currentScreen is Destination.LibraryScreen
-                || currentScreen is Destination.PlaylistWrapper
-            ) {
-                BottomBar(
-                    currentDestination = currentDestinationIdx,
-                    onDestinationChange = {
-                        currentDestinationIdx = it
+            Column { 
+                MiniPlayer(appContainer.playerViewModel)
+                if (currentScreen is Destination.HomeScreen
+                    || currentScreen is Destination.LibraryScreen
+                    || currentScreen is Destination.PlaylistWrapper
+                ) {
+                    BottomBar(
+                        currentDestination = currentDestinationIdx,
+                        onDestinationChange = {
+                            currentDestinationIdx = it
+                        }
+                    ) { route ->
+                        backStack.removeLastOrNull()
+                        backStack.add(route)
                     }
-                ) { route ->
-                    backStack.removeLastOrNull()
-                    backStack.add(route)
                 }
             }
         }
@@ -98,7 +102,8 @@ fun NavigationRoot(
                                 appContainer.userRepository,
                                 appContainer.playlistRepository,
                                 appContainer.songRepository,
-                                appContainer.fetchAndCacheSongsUseCase
+                                appContainer.fetchAndCacheSongsUseCase,
+                                appContainer.playerViewModel
                             )
                         )
                     ) {

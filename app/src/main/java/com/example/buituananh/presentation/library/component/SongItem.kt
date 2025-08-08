@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.library.component
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,7 @@ fun SongItem(
     song: Song,
     clickSongOptions: () -> Unit,
     shareSong: () -> Unit,
+    playSong: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -56,7 +58,8 @@ fun SongItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(0.dp)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable { playSong() },
         verticalAlignment = Alignment.CenterVertically
     ) {
 

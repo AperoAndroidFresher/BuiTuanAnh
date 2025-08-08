@@ -11,6 +11,7 @@ import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
+import com.example.buituananh.presentation.player.PlayerViewModel
 import com.example.buituananh.util.RetrofitHelper
 
 class AppContainer(
@@ -26,4 +27,6 @@ class AppContainer(
     val fileRepository: FileRepository = FileRepositoryImpl(context)
     
     val fetchAndCacheSongsUseCase = FetchAndCacheSongsUseCase(songRepository, fileRepository)
+    
+    val playerViewModel: PlayerViewModel = PlayerViewModel()
 }

@@ -79,6 +79,8 @@ fun LibraryScreenRoot(
                 is LibraryEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
+
+                is LibraryEffect.PlaySong -> {}
             }
         }
     }
@@ -169,6 +171,9 @@ fun LibraryScreen(
                     isLocalMode = state.isLocalMode,
                     localSongs = state.localSongs,
                     remoteSongs = state.remoteSongs,
+                    playSong = { song, songs ->
+                        onIntent(LibraryIntent.PlayMusic(song,songs))
+                    }
                 )
             }
         }
@@ -204,6 +209,7 @@ fun LibraryScreen(
 private fun SongsSection(
     clickSongOptions: (Song) -> Unit,
     shareSong: (Song) -> Unit,
+    playSong: (Song, List<Song>) -> Unit,
     modifier: Modifier = Modifier,
     isLocalMode: Boolean = true,
     localSongs: List<Song> = emptyList(),
@@ -232,6 +238,9 @@ private fun SongsSection(
                 shareSong = {
                     shareSong(song)
                 },
+                playSong = {
+                    playSong(song, songs)
+                }
             )
         }
     }
