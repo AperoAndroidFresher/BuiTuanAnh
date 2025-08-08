@@ -8,6 +8,8 @@ data class MusicState(
     val musicList: List<Song> = emptyList(),
     val playerState: PlayerState? = null,
     val sliderState: Float = 0f,
+    val isShuffle: Boolean = true,
+    val isLoop: Boolean = true
 )
 
 @Parcelize
@@ -34,13 +36,16 @@ sealed interface PlayerIntent {
     data object ClickPause : PlayerIntent
     data object Next : PlayerIntent
     data object Previous : PlayerIntent
-    data class SliderChange(val duration: Float, val song: Song) : PlayerIntent
+    data class SliderChange(val duration: Float) : PlayerIntent
     data object Shuffle : PlayerIntent
     data object Loop : PlayerIntent
+    data class UpdateProgress(val progress: Long) : PlayerIntent
+    data object DragSliderEnd : PlayerIntent
 }
 
 sealed interface PlayerEffect {
     data class StartSong(val playerState: PlayerState) : PlayerEffect
     data class PlaySong(val playerState: PlayerState) : PlayerEffect
     data class PauseSong(val playerState: PlayerState) : PlayerEffect
+    data class SeekDuration(val nextProgress: Long) : PlayerEffect
 }
