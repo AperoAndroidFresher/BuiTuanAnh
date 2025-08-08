@@ -14,6 +14,8 @@ import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
+import com.example.buituananh.presentation.player.PlayerIntent
+import com.example.buituananh.presentation.player.PlayerViewModel
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.MediaStoreHelper
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,8 @@ class LibraryViewModel(
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
     private val songRepository: SongRepository,
-    private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase
+    private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase,
+    private val playerViewModel: PlayerViewModel
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
@@ -46,7 +49,13 @@ class LibraryViewModel(
             LibraryIntent.ToggleLocalMode -> toggleLocalSong()
             LibraryIntent.ClickNewPlaylist -> clickNewPlaylist()
             is LibraryIntent.ClickPlaylist -> clickPlaylist(intent.playlist)
+            is LibraryIntent.PlayMusic -> playMusic(intent.song, intent.songList)
         }
+    }
+
+    private fun playMusic(song: Song, songList: List<Song>) {
+        playerViewModel.onIntent(PlayerIntent.SelectSong(songList, song))
+        sendEffect(LibraryEffect.PlaySong(song))
     }
 
     private fun clickPlaylist(playlist: Playlist) {
@@ -160,7 +169,8 @@ class LibraryViewModel(
         private val userRepository: UserRepository,
         private val playlistRepository: PlaylistRepository,
         private val songRepository: SongRepository,
-        private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase
+        private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase,
+        private val playerViewModel: PlayerViewModel
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return LibraryViewModel(
@@ -169,7 +179,8 @@ class LibraryViewModel(
                 userRepository,
                 playlistRepository,
                 songRepository,
-                fetchAndCacheSongsUseCase
+                fetchAndCacheSongsUseCase,
+                playerViewModel
             ) as T
         }
     }

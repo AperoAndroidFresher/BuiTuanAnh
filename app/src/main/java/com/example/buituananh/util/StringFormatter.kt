@@ -21,3 +21,8 @@ fun Long.toPairDuration(): Pair<Int, Int>  {
     val seconds = (totalSeconds % 60).toInt()
     return minutes to seconds
 }
+
+fun Pair<Int, Int>.toLongDuration(): Long {
+    val (minutes, seconds) = this
+    return (minutes * 60L + seconds) * 1000L
+}
