@@ -18,11 +18,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val appContainer = (application as MusicApplication).appContainer
-            MyApp(
-                contentResolver = this@MainActivity.contentResolver,
-                appContainer = appContainer
-            )
+            MyApp()
         }
     }
 }

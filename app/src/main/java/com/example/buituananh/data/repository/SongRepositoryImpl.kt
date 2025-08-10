@@ -12,6 +12,7 @@ import com.example.buituananh.data.util.safeCall
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.util.SongSource
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -19,9 +20,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import javax.inject.Inject
 
-class SongRepositoryImpl(
-    private val context: Context,
+class SongRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val database: AppDatabase,
     private val songService: SongService,
 ) : SongRepository {

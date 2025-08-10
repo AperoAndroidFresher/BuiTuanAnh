@@ -6,6 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,9 +17,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LoginViewModel(
-    private val key: Destination.AuthWrapper,
+@HiltViewModel(assistedFactory = LoginViewModel.Factory::class)
+class LoginViewModel @AssistedInject constructor(
+     @Assisted private val key: Destination.AuthWrapper,
     private val userRepository: UserRepository
 ) : ViewModel() {
 
@@ -169,13 +175,9 @@ class LoginViewModel(
         }
     }
 
-    class Factory(
-        private val key: Destination.AuthWrapper,
-        private val repository: UserRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LoginViewModel(key, repository) as T
-        }
+    @AssistedFactory
+    interface Factory {
+        fun create(navKey: Destination.AuthWrapper): LoginViewModel
     }
 
 }

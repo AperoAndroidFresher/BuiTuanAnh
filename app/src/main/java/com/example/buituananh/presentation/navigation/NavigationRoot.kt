@@ -1,11 +1,10 @@
 package com.example.buituananh.presentation.navigation
 
-import android.content.ContentResolver
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
@@ -13,7 +12,6 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import com.example.buituananh.di.AppContainer
 import com.example.buituananh.presentation.home.HomeScreen
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.library.component.LibraryScreenRoot
@@ -25,9 +23,7 @@ import com.example.buituananh.util.Destination
 
 @Composable
 fun NavigationRoot(
-    modifier: Modifier = Modifier,
-    contentResolver: ContentResolver,
-    appContainer: AppContainer
+    modifier: Modifier = Modifier
 ) {
 
     val backStack = rememberNavBackStack(Destination.AuthWrapper)
@@ -71,7 +67,11 @@ fun NavigationRoot(
             ),
             entryProvider = entryProvider {
                 entry<Destination.AuthWrapper> { parentKey ->
-                    val loginViewModel = viewModel<LoginViewModel>(factory = LoginViewModel.Factory(parentKey, appContainer.userRepository))
+                    val loginViewModel = hiltViewModel<LoginViewModel, LoginViewModel.Factory>(
+                        creationCallback = { factory ->
+                            factory.create(parentKey)
+                        }
+                    )
                     AuthWrapperEntry(
                         addToBackStack = {
                             backStack.add(it)
@@ -80,7 +80,6 @@ fun NavigationRoot(
                             backStack.removeLastOrNull()
                         },
                         loginViewModel = loginViewModel,
-                        appContainer = appContainer,
                         backStack = backStack
                     )
                 }
@@ -90,39 +89,33 @@ fun NavigationRoot(
                     }
                 }
                 entry<Destination.LibraryScreen> { key ->
+                    val viewModel = hiltViewModel<LibraryViewModel, LibraryViewModel.Factory>(
+                        creationCallback = { factory ->
+                            factory.create(key)
+                        }
+                    )
                     LibraryScreenRoot(
-                        viewModel = viewModel(
-                            factory = LibraryViewModel.Factory(
-                                key,
-                                contentResolver,
-                                appContainer.userRepository,
-                                appContainer.playlistRepository,
-                                appContainer.songRepository,
-                                appContainer.fetchAndCacheSongsUseCase
-                            )
-                        )
+                        viewModel = viewModel
                     ) {
                         backStack.add(it)
                     }
                 }
                 entry<Destination.PlaylistWrapper> { key ->
-                    val viewModel = viewModel<PlaylistViewModel>(
-                        factory = PlaylistViewModel.Factory(
-                            key,
-                            appContainer.userRepository,
-                            appContainer.playlistRepository
-                        )
+                    val viewModel = hiltViewModel<PlaylistViewModel, PlaylistViewModel.Factory>(
+                        creationCallback = { factory ->
+                            factory.create(key)
+                        }
                     )
                     PlaylistWrapperEntry(viewModel)
                 }
                 entry<Destination.ProfileScreen> { key ->
+                    val viewModel = hiltViewModel<ProfileViewModel, ProfileViewModel.Factory>(
+                        creationCallback = { factory ->
+                            factory.create(key)
+                        }
+                    )
                     ProfileScreenRoot(
-                        viewModel = viewModel(
-                            factory = ProfileViewModel.Factory(
-                                key,
-                                appContainer.userRepository
-                            )
-                        ),
+                        viewModel = viewModel
                     )
                 }
             }

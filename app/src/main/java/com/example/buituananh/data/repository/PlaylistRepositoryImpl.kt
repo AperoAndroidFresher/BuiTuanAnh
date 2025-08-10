@@ -9,8 +9,9 @@ import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.repository.PlaylistRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class PlaylistRepositoryImpl(
+class PlaylistRepositoryImpl @Inject constructor(
     private val database: AppDatabase
 ) : PlaylistRepository {
 
