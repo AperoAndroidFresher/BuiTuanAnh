@@ -8,57 +8,90 @@ import javax.inject.Singleton
 @Singleton
 class PlaybackManager @Inject constructor() {
 
-    private val _playerState = MutableStateFlow(PlayerState())
-    val playerState = _playerState.asStateFlow()
-    
+    private val _musicState = MutableStateFlow(MusicState())
+    val playerState = _musicState.asStateFlow()
+
     private val _command = MutableSharedFlow<PlaybackEvent>()
     val command = _command.asSharedFlow()
     
-    fun updateQueue(newQueue: List<Song>) {
-        _playerState.update { it.copy(queue = newQueue) }
+    suspend fun dragSliderEnd() {
+        sendEvent(PlaybackEvent.DragSlider)
     }
     
+    fun dragSlider(progress: Float) {
+        _musicState.update { it.copy(progress = progress.toLong()) }
+    }
+    
+    fun updateQueue(newQueue: List<Song>) {
+        _musicState.update { it.copy(queue = newQueue) }
+    }
+
     fun updateSong(newSong: Song) {
-        _playerState.update { it.copy(currentSong = newSong) }
+        _musicState.update { it.copy(currentSong = newSong) }
     }
 
     fun updateIsPlaying(isPlaying: Boolean) {
-        _playerState.update { it.copy(isPlaying = isPlaying) }
-    } 
-    
+        _musicState.update { it.copy(isPlaying = isPlaying) }
+    }
+
     fun updateProgress(progress: Long) {
-        _playerState.update { it.copy(progress = progress) }
+        _musicState.update { it.copy(progress = progress) }
     }
     
+    fun toggleShuffleMode() {
+        _musicState.update { it.copy(isShuffleMode = !it.isShuffleMode) }
+    }
+
+    fun toggleRepeatMode() {
+        _musicState.update { it.copy(isRepeatMode = !it.isRepeatMode) }
+    }
+
+    fun togglePlayPauseMode() {
+        _musicState.update { it.copy(isPlaying = !it.isPlaying) }
+    }
+
     suspend fun startSong() {
-        val currentSong = _playerState.value.currentSong
-        _playerState.update { it.copy(isPlaying = true) }
+        val currentSong = _musicState.value.currentSong
+        _musicState.update { it.copy(isPlaying = true) }
         currentSong?.let {
             sendEvent(PlaybackEvent.StartSong(it))
         }
     }
-    
+
+    suspend fun stopPlaying() {
+        _musicState.update {
+            it.copy(
+                queue = emptyList(),
+                currentSong = null,
+                isPlaying = false,
+                isRepeatMode = false,
+                isShuffleMode = false,
+            )
+        }
+        sendEvent(PlaybackEvent.StopPlaying)
+    }
+
     suspend fun playSong() {
         updateIsPlaying(true)
         sendEvent(PlaybackEvent.PlaySong)
     }
-    
+
     suspend fun pauseSong() {
         updateIsPlaying(false)
         sendEvent(PlaybackEvent.PauseSong)
     }
-    
+
     suspend fun playNextSong() {
-        val currentSong = _playerState.value.currentSong
-        val queue = _playerState.value.queue
+        val currentSong = _musicState.value.currentSong
+        val queue = _musicState.value.queue
         val currentIndex = queue.indexOf(currentSong)
-        
-        val nextIndex: Int = if(_playerState.value.isRepeatMode) {
+
+        val nextIndex: Int = if (_musicState.value.isRepeatMode) {
             currentIndex
         } else {
-            if(_playerState.value.isShuffleMode) {
+            if (_musicState.value.isShuffleMode) {
                 var randomIndex = -1
-                while(randomIndex != currentIndex) {
+                while (randomIndex != currentIndex) {
                     randomIndex = queue.indices.random()
                 }
                 randomIndex
@@ -72,18 +105,18 @@ class PlaybackManager @Inject constructor() {
         }
 
         queue.getOrNull(nextIndex)?.let { nextSong ->
-            _playerState.update { it.copy(currentSong = nextSong, isPlaying = true, isRepeatMode = false) }
+            _musicState.update { it.copy(currentSong = nextSong, isPlaying = true, isRepeatMode = false) }
             sendEvent(PlaybackEvent.StartSong(nextSong))
         }
     }
-    
+
     suspend fun playPreviousSong() {
-        val currentSong = _playerState.value.currentSong
-        val queue = _playerState.value.queue
+        val currentSong = _musicState.value.currentSong
+        val queue = _musicState.value.queue
         val currentIndex = queue.indexOf(currentSong)
-        
-        val previousIndex = if(currentIndex != -1) {
-            if(currentIndex == 0) {
+
+        val previousIndex = if (currentIndex != -1) {
+            if (currentIndex == 0) {
                 queue.size - 1
             } else {
                 currentIndex - 1
@@ -91,15 +124,14 @@ class PlaybackManager @Inject constructor() {
         } else {
             0
         }
-        
+
         queue.getOrNull(previousIndex)?.let { prevSong ->
-            _playerState.update { it.copy(currentSong = prevSong, isPlaying = true) }
+            _musicState.update { it.copy(currentSong = prevSong, isPlaying = true) }
             sendEvent(PlaybackEvent.StartSong(prevSong))
         }
     }
-    
+
     private suspend fun sendEvent(event: PlaybackEvent) {
         _command.emit(event)
     }
-    
 }

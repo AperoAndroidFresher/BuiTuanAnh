@@ -28,7 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.components.LoadingAnimation
-import com.example.buituananh.presentation.components.TopBar
+import com.example.buituananh.presentation.components.TopBarNoAction
 import com.example.buituananh.presentation.library.LibraryEffect
 import com.example.buituananh.presentation.library.LibraryIntent
 import com.example.buituananh.presentation.library.LibraryState
@@ -138,7 +138,7 @@ fun LibraryScreen(
 
     Scaffold(
         topBar = {
-            TopBar(title = "Library")
+            TopBarNoAction(title = "Library")
         },
         modifier = modifier,
     ) {
