@@ -8,10 +8,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.buituananh.presentation.MyApp
+import dagger.hilt.android.AndroidEntryPoint
 
 val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
 val Context.authDataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
