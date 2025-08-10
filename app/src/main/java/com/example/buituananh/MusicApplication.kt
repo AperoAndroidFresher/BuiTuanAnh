@@ -6,7 +6,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import com.example.buituananh.di.AppContainer
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class MusicApplication : Application() {
 
     lateinit var appContainer: AppContainer
