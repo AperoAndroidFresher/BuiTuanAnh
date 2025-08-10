@@ -1,11 +1,10 @@
 package com.example.buituananh
 
 import android.app.Application
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.os.Build
-import com.example.buituananh.di.AppContainer
+import android.content.Context
+import com.example.buituananh.util.Utils
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -18,9 +17,9 @@ class MusicApplication : Application() {
             Utils.MEDIA_CHANNEL.toString(),
             NotificationManager.IMPORTANCE_HIGH
         )
-
+        
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(notificationChannel)
     }
-
+    
 }

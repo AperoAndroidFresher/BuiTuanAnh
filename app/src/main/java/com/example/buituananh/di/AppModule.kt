@@ -21,8 +21,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePlaybackManager(@ApplicationContext context: Context): PlaybackManager =
-        PlaybackManager(context)
+    fun providePlaybackManager(): PlaybackManager = PlaybackManager()
 
     @Provides
     @Singleton

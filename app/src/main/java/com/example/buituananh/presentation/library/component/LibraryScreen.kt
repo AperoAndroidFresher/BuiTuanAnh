@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -79,8 +80,6 @@ fun LibraryScreenRoot(
                 is LibraryEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
-
-                is LibraryEffect.PlaySong -> {}
             }
         }
     }
@@ -167,13 +166,13 @@ fun LibraryScreen(
                     shareSong = {song ->
                         onIntent(LibraryIntent.ShareSong(song))
                     },
+                    playSong = { song ->
+                        onIntent(LibraryIntent.StartSong(song))
+                    },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
                     localSongs = state.localSongs,
                     remoteSongs = state.remoteSongs,
-                    playSong = { song, songs ->
-                        onIntent(LibraryIntent.PlayMusic(song,songs))
-                    }
                 )
             }
         }
@@ -209,7 +208,6 @@ fun LibraryScreen(
 private fun SongsSection(
     clickSongOptions: (Song) -> Unit,
     shareSong: (Song) -> Unit,
-    playSong: (Song, List<Song>) -> Unit,
     modifier: Modifier = Modifier,
     isLocalMode: Boolean = true,
     localSongs: List<Song> = emptyList(),
@@ -238,8 +236,8 @@ private fun SongsSection(
                 shareSong = {
                     shareSong(song)
                 },
-                playSong = {
-                    playSong(song, songs)
+                modifier = Modifier.clickable { 
+                    playSong(song)
                 }
             )
         }

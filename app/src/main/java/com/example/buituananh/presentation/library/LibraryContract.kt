@@ -23,7 +23,7 @@ sealed interface LibraryIntent {
     data class ShareSong(val song: Song) : LibraryIntent
     data object ClickNewPlaylist : LibraryIntent
     data class ClickPlaylist(val playlist: Playlist) : LibraryIntent
-    data class PlayMusic(val song: Song, val songList: List<Song>) : LibraryIntent
+    data class StartSong(val song: Song) : LibraryIntent
 }
 
 
@@ -31,5 +31,4 @@ sealed interface LibraryEffect {
     data object NavigateToPlaylistScreen : LibraryEffect
     data class ShowToast(val message: String) : LibraryEffect
     data class ShareSongIntent(val song: Song) : LibraryEffect
-    data class PlaySong(val song: Song) : LibraryEffect
 }
