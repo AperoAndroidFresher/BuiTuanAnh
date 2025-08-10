@@ -10,15 +10,21 @@ import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.User
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ProfileViewModel(
-    private val key: Destination.ProfileScreen,
+@HiltViewModel(assistedFactory = ProfileViewModel.Factory::class)
+class ProfileViewModel @AssistedInject constructor(
+    @Assisted private val key: Destination.ProfileScreen,
     private val repository: UserRepository
 ) : ViewModel() {
 
@@ -27,16 +33,7 @@ class ProfileViewModel(
 
     private val _effect = Channel<ProfileEffect>()
     val effect = _effect.receiveAsFlow()
-
-    class Factory(
-        private val key: Destination.ProfileScreen,
-        private val repository: UserRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ProfileViewModel(key, repository) as T
-        }
-    }
-
+    
     fun onIntent(intent: ProfileIntent) {
         when(intent) {
             is ProfileIntent.OnDescriptionChange -> onDescriptionChange(intent.description)
@@ -158,6 +155,11 @@ class ProfileViewModel(
         viewModelScope.launch {
             _effect.send(effect)
         }
+    }
+    
+    @AssistedFactory
+    interface Factory {
+        fun create(navKey: Destination.ProfileScreen): ProfileViewModel
     }
 
 }

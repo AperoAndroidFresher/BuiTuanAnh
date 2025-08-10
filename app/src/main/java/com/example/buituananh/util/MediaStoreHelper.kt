@@ -10,9 +10,9 @@ import com.example.buituananh.domain.model.Song
 object MediaStoreHelper {
 
     fun loadLocalAudios(
-        contentResolver: ContentResolver,
         context: Context,
     ): List<Song> {
+        val contentResolver = context.contentResolver
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,

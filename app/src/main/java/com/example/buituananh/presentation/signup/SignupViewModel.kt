@@ -9,15 +9,21 @@ import com.example.buituananh.data.util.Result
 import com.example.buituananh.domain.model.User
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SignupViewModel(
-    private val key: Destination.SignupScreen,
+@HiltViewModel(assistedFactory = SignupViewModel.Factory::class)
+class SignupViewModel @AssistedInject constructor (
+    @Assisted private val key: Destination.SignupScreen,
     private val repository: UserRepository
 ) : ViewModel() {
 
@@ -26,16 +32,7 @@ class SignupViewModel(
 
     private val _effect = Channel<SignupEffect>()
     val effect = _effect.receiveAsFlow()
-
-    class Factory(
-        private val key: Destination.SignupScreen,
-        private val repository: UserRepository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SignupViewModel(key, repository) as T
-        }
-    }
-
+    
     fun onIntent(intent: SignupIntent) {
         return when (intent) {
             is SignupIntent.OnConfirmedPasswordChange -> onConfirmedPasswordChange(intent.confirmedPassword)
@@ -194,4 +191,9 @@ class SignupViewModel(
         }
     }
 
+    @AssistedFactory
+    interface Factory {
+        fun create(navKey: Destination.SignupScreen): SignupViewModel
+    }
+    
 }

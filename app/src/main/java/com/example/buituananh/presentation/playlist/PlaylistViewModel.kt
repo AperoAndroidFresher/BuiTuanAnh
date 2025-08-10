@@ -11,6 +11,10 @@ import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.util.Destination
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +23,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PlaylistViewModel(
-    private val key: Destination.PlaylistWrapper,
+@HiltViewModel(assistedFactory = PlaylistViewModel.Factory::class)
+class PlaylistViewModel @AssistedInject constructor(
+    @Assisted private val key: Destination.PlaylistWrapper,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
 ) : ViewModel() {
@@ -211,13 +217,8 @@ class PlaylistViewModel(
         }
     }
 
-    class Factory(
-        private val key: Destination.PlaylistWrapper,
-        private val userRepository: UserRepository,
-        private val playlistRepository: PlaylistRepository,
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaylistViewModel(key, userRepository, playlistRepository) as T
-        }
+    @AssistedFactory
+    interface Factory {
+        fun create(navKey: Destination.PlaylistWrapper): PlaylistViewModel
     }
 }

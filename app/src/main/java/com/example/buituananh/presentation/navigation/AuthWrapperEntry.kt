@@ -1,12 +1,12 @@
 package com.example.buituananh.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import com.example.buituananh.di.AppContainer
 import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.component.LoginScreenRoot
 import com.example.buituananh.presentation.signup.SignupViewModel
@@ -19,7 +19,6 @@ fun AuthWrapperEntry(
     addToBackStack: (Destination) -> Unit,
     onBack: () -> Unit,
     loginViewModel: LoginViewModel,
-    appContainer: AppContainer,
     backStack: NavBackStack
 ) {
     
@@ -63,13 +62,13 @@ fun AuthWrapperEntry(
                 }
             }
             entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
+                val viewModel = hiltViewModel<SignupViewModel, SignupViewModel.Factory>(
+                    creationCallback = { factory -> 
+                        factory.create(key)
+                    }
+                )
                 SignupScreenRoot(
-                    viewModel = viewModel(
-                        factory = SignupViewModel.Factory(
-                            key,
-                            appContainer.userRepository
-                        )
-                    ),
+                    viewModel = viewModel,
                     onPopBack = {
                         authBackstack.removeLastOrNull()
                     }

@@ -11,19 +11,16 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class MusicApplication : Application() {
 
-    lateinit var appContainer: AppContainer
-    private val CHANNEL_ID = "MusicPlayerChannel"
-
     override fun onCreate() {
         super.onCreate()
-        appContainer = AppContainer(applicationContext)
-
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            "Audio Service Channel",
-            NotificationManager.IMPORTANCE_DEFAULT,
+        val notificationChannel = NotificationChannel(
+            Utils.MEDIA_CHANNEL,
+            Utils.MEDIA_CHANNEL.toString(),
+            NotificationManager.IMPORTANCE_HIGH
         )
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.createNotificationChannel(channel)
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(notificationChannel)
     }
+
 }
