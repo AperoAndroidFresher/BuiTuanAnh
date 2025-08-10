@@ -23,6 +23,7 @@ sealed interface LibraryIntent {
     data class ShareSong(val song: Song) : LibraryIntent
     data object ClickNewPlaylist : LibraryIntent
     data class ClickPlaylist(val playlist: Playlist) : LibraryIntent
+    data class StartSong(val song: Song) : LibraryIntent
 }
 
 

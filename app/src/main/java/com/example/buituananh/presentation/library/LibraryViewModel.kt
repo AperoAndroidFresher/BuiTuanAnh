@@ -1,9 +1,7 @@
 package com.example.buituananh.presentation.library
 
-import android.content.ContentResolver
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.util.Result
 import com.example.buituananh.data.util.onError
@@ -14,6 +12,7 @@ import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
+import com.example.buituananh.service.PlaybackManager
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.MediaStoreHelper
 import dagger.assisted.Assisted
@@ -25,7 +24,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = LibraryViewModel.Factory::class)
 class LibraryViewModel @AssistedInject constructor (
@@ -33,7 +31,8 @@ class LibraryViewModel @AssistedInject constructor (
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
     private val songRepository: SongRepository,
-    private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase
+    private val fetchAndCacheSongsUseCase: FetchAndCacheSongsUseCase,
+    private val playbackManager: PlaybackManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
@@ -51,6 +50,20 @@ class LibraryViewModel @AssistedInject constructor (
             LibraryIntent.ToggleLocalMode -> toggleLocalSong()
             LibraryIntent.ClickNewPlaylist -> clickNewPlaylist()
             is LibraryIntent.ClickPlaylist -> clickPlaylist(intent.playlist)
+            is LibraryIntent.StartSong -> startSong(intent.song)
+        }
+    }
+
+    private fun startSong(song: Song) {
+        viewModelScope.launch {
+            val queue = if(_state.value.isLocalMode) {
+                _state.value.localSongs
+            } else {
+                _state.value.remoteSongs
+            }
+            playbackManager.updateQueue(queue)
+            playbackManager.updateSong(song)
+            playbackManager.startSong()
         }
     }
 

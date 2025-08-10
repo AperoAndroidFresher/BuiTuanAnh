@@ -10,8 +10,18 @@ import androidx.core.net.toUri
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 object ImageUtils {
+    
+    fun getImageFromUri(context: Context, uri: Uri?): Bitmap? {
+        if(uri == null) return null
+        var image: Bitmap? = null
+        context.contentResolver.openInputStream(uri)?.use { 
+            image = BitmapFactory.decodeStream(it)
+        }
+        return resizeBitmap(context, image, 50, 50)
+    }
 
     fun getEmbeddedPicture(context: Context, uri: Uri): Uri? {
         val retriever = MediaMetadataRetriever()
@@ -77,7 +87,7 @@ object ImageUtils {
     private fun calculateInSampleSize(
         options: BitmapFactory.Options,
         reqWidth: Int,
-        reqHeight: Int
+        reqHeight: Int,
     ): Int {
         val height = options.outHeight
         val width = options.outWidth

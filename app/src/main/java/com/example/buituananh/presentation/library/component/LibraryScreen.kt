@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -165,10 +166,13 @@ fun LibraryScreen(
                     shareSong = {song ->
                         onIntent(LibraryIntent.ShareSong(song))
                     },
+                    playSong = { song ->
+                        onIntent(LibraryIntent.StartSong(song))
+                    },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
                     localSongs = state.localSongs,
-                    remoteSongs = state.remoteSongs,
+                    remoteSongs = state.remoteSongs
                 )
             }
         }
@@ -204,6 +208,7 @@ fun LibraryScreen(
 private fun SongsSection(
     clickSongOptions: (Song) -> Unit,
     shareSong: (Song) -> Unit,
+    playSong: (Song) -> Unit,
     modifier: Modifier = Modifier,
     isLocalMode: Boolean = true,
     localSongs: List<Song> = emptyList(),
@@ -232,6 +237,9 @@ private fun SongsSection(
                 shareSong = {
                     shareSong(song)
                 },
+                modifier = Modifier.clickable { 
+                    playSong(song)
+                }
             )
         }
     }
