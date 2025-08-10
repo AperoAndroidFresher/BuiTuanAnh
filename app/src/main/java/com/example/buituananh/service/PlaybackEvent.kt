@@ -7,5 +7,7 @@ sealed interface PlaybackEvent {
     data object PauseSong : PlaybackEvent
     data object NextSong : PlaybackEvent
     data object PreviousSong : PlaybackEvent
+    data object StopPlaying : PlaybackEvent
     data class StartSong(val song: Song) : PlaybackEvent
+    data object DragSlider : PlaybackEvent
 }

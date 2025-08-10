@@ -33,4 +33,7 @@ sealed interface Destination : NavKey {
 
     @Serializable
     data object AuthWrapper : Destination
+    
+    @Serializable
+    data object PlayerWrapper : Destination
 }

@@ -37,7 +37,7 @@ class MusicService : Service() {
     lateinit var playbackManager: PlaybackManager
 
     private var mediaPlayer: MediaPlayer? = null
-    private var currentState: PlayerState = PlayerState()
+    private var currentState: MusicState = MusicState()
     private var job: Job? = null
 
     override fun onCreate() {
@@ -56,9 +56,20 @@ class MusicService : Service() {
                     PlaybackEvent.PlaySong -> playSong()
                     PlaybackEvent.PreviousSong -> previousSong()
                     is PlaybackEvent.StartSong -> startSong(command.song)
+                    PlaybackEvent.StopPlaying -> stopPlaying()
+                    PlaybackEvent.DragSlider -> dragSlider()
                 }
             }
         }
+    }
+
+    private fun dragSlider() {
+        val progress = currentState.progress.toInt()
+        mediaPlayer?.seekTo(progress)
+    }
+
+    private fun stopPlaying() {
+        
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

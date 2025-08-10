@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 
 @Composable
-fun TopBar(
+fun TopBarNoAction(
     modifier: Modifier = Modifier,
     title: String = ""
 ) {
