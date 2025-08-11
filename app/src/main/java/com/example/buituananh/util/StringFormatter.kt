@@ -29,3 +29,8 @@ fun Long.toMinuteSecondString(): String {
     val seconds = totalSeconds % 60
     return "%02d:%02d".format(minutes, seconds)
 }
+
+fun Pair<Int, Int>.toMilliseconds(): Long {
+    val (minutes, seconds) = this
+    return (minutes * 60L + seconds) * 1000L
+}

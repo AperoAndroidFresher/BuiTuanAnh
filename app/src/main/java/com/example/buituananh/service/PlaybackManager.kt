@@ -1,5 +1,6 @@
 package com.example.buituananh.service
 
+import android.util.Log
 import com.example.buituananh.domain.model.Song
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -46,13 +47,19 @@ class PlaybackManager @Inject constructor() {
         _musicState.update { it.copy(isRepeatMode = !it.isRepeatMode) }
     }
 
-    fun togglePlayPauseMode() {
+    suspend fun togglePlayPauseMode() {
         _musicState.update { it.copy(isPlaying = !it.isPlaying) }
+        val isPlaying = _musicState.value.isPlaying
+        if(isPlaying) {
+            playSong()
+        } else {
+            pauseSong()
+        }
     }
 
     suspend fun startSong() {
         val currentSong = _musicState.value.currentSong
-        _musicState.update { it.copy(isPlaying = true) }
+        _musicState.update { it.copy(isPlaying = true, isCancel = false) }
         currentSong?.let {
             sendEvent(PlaybackEvent.StartSong(it))
         }
@@ -66,6 +73,7 @@ class PlaybackManager @Inject constructor() {
                 isPlaying = false,
                 isRepeatMode = false,
                 isShuffleMode = false,
+                isCancel = true 
             )
         }
         sendEvent(PlaybackEvent.StopPlaying)
@@ -86,16 +94,20 @@ class PlaybackManager @Inject constructor() {
         val queue = _musicState.value.queue
         val currentIndex = queue.indexOf(currentSong)
 
-        val nextIndex: Int = if (_musicState.value.isRepeatMode) {
-            currentIndex
-        } else {
-            if (_musicState.value.isShuffleMode) {
-                var randomIndex = -1
-                while (randomIndex != currentIndex) {
+        Log.d("PlaybackManager", "playNextSong: ${_musicState.value.isRepeatMode}")
+        val nextIndex: Int = when {
+            _musicState.value.isRepeatMode -> {
+                _musicState.update { it.copy(isRepeatMode = false) }
+                currentIndex
+            }
+            _musicState.value.isShuffleMode -> {
+                var randomIndex = currentIndex
+                while(randomIndex == currentIndex && queue.size > 1) {
                     randomIndex = queue.indices.random()
                 }
                 randomIndex
-            } else {
+            }
+            else -> {
                 if (currentIndex != -1 && currentIndex < queue.size - 1) {
                     currentIndex + 1
                 } else {
@@ -103,7 +115,7 @@ class PlaybackManager @Inject constructor() {
                 }
             }
         }
-
+        Log.d("PlaybackManager", "playNextSong: ${nextIndex}")
         queue.getOrNull(nextIndex)?.let { nextSong ->
             _musicState.update { it.copy(currentSong = nextSong, isPlaying = true, isRepeatMode = false) }
             sendEvent(PlaybackEvent.StartSong(nextSong))

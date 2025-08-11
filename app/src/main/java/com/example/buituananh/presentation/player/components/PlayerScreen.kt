@@ -1,7 +1,10 @@
 package com.example.buituananh.presentation.player.components
 
 import android.net.Uri
+import android.util.Log
+import android.util.Size
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,20 +12,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
@@ -39,7 +46,7 @@ import com.example.buituananh.util.*
 @Composable
 fun PlayerScreenRoot(
     viewModel: PlayerViewModel,
-    onNavigate: (Destination) -> Unit,
+    popBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -48,7 +55,7 @@ fun PlayerScreenRoot(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                PlayerEffect.NavigateToHomeScreen -> onNavigate(Destination.HomeScreen)
+                PlayerEffect.NavigateToHomeScreen -> popBack()
             }
         }
     }
@@ -83,13 +90,14 @@ fun PlayerScreen(
             )
         },
     ) { paddingValues ->
-
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Spacer(Modifier.height(8.dp))
             ImageSong(uri = state.musicState?.currentSong?.imageUri)
             Spacer(Modifier.height(12.dp))
             TitleSection(
@@ -116,6 +124,7 @@ fun PlayerScreen(
                 playNextSong = { onIntent(PlayerIntent.ClickNextSong) },
                 playPrevSong = { onIntent(PlayerIntent.ClickPreviousSong) },
                 isShuffleMode = state.musicState?.isShuffleMode ?: false,
+                isPlaying = state.musicState?.isPlaying ?: false,
                 isRepeatMode = state.musicState?.isRepeatMode ?: false,
                 modifier = Modifier.padding(horizontalPadding)
             )
@@ -133,6 +142,7 @@ fun PlayerControl(
     modifier: Modifier = Modifier,
     isShuffleMode: Boolean = false,
     isRepeatMode: Boolean = false,
+    isPlaying: Boolean = false
 ) {
 
     val turnOnShuffleColor = animateColorAsState(
@@ -150,6 +160,12 @@ fun PlayerControl(
             MaterialTheme.colorScheme.surfaceBright
         },
     )
+    
+    val playPauseIcon = if(isPlaying) {
+        R.drawable.pause
+    } else {
+        R.drawable.play
+    }
 
     Row(
         modifier = modifier,
@@ -182,12 +198,12 @@ fun PlayerControl(
             modifier = Modifier
                 .size(60.dp)
                 .background(MaterialTheme.colorScheme.primary, CircleShape)
-                .clickable { 
+                .clickable {
                     togglePlayPause()
                 },
         ) {
             Icon(
-                painter = painterResource(R.drawable.outlined_play),
+                painter = painterResource(playPauseIcon),
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier
@@ -221,6 +237,7 @@ fun PlayerControl(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SliderSection(
     onValueChange: (Float) -> Unit,
@@ -229,18 +246,57 @@ fun SliderSection(
     currentProgress: Long? = 0L,
     duration: Pair<Int, Int> = 0 to 0,
 ) {
-
+    val totalDurationMs = duration.toMilliseconds().toFloat().coerceAtLeast(1f)
+    val progressValue = currentProgress?.toFloat() ?: 0f
+    val fraction = (progressValue / totalDurationMs).coerceIn(0f, 1f)
+    val density = LocalDensity.current
+    val thumbRadiusPx = density.run { 6.dp.toPx() }
+    val trackWidthPx = remember { mutableFloatStateOf(0f) }
+    
     Column(
         modifier = modifier.fillMaxWidth(),
     ) {
         Slider(
-            value = currentProgress?.toFloat() ?: 0F,
-            onValueChange = {
-                onValueChange(it)
+            value = progressValue,
+            onValueChange = onValueChange,
+            onValueChangeFinished = onDragEnd,
+            valueRange = 0f..totalDurationMs,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(20.dp),
+            colors = SliderDefaults.colors(
+                activeTrackColor = Color.Transparent,
+                inactiveTrackColor = Color.Transparent,
+                thumbColor = Color(0xFF7DF0FF)
+            ),
+            thumb = {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .background(Color(0xFF7DF0FF), shape = CircleShape)
+                )
             },
-            onValueChangeFinished = {
-                onDragEnd()
-            },
+            track = {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .background(Color(0xFF7A7F82))
+                        .onSizeChanged { size ->
+                            trackWidthPx.floatValue = size.width.toFloat()
+                        }
+                ) {
+                    val extraFraction = if (trackWidthPx.floatValue > 0f) {
+                        thumbRadiusPx / trackWidthPx.floatValue
+                    } else 0f
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth((fraction + extraFraction).coerceIn(0f, 1f))
+                            .background(Color(0xFF7DF0FF))
+                    )
+                }
+            }
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -277,6 +333,7 @@ fun TitleSection(
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 24.sp, fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
         )
+        Spacer(Modifier.height(8.dp))
         Text(
             text = artist,
             style = MaterialTheme.typography.bodySmall.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold),

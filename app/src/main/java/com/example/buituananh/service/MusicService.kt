@@ -69,7 +69,11 @@ class MusicService : Service() {
     }
 
     private fun stopPlaying() {
-        
+        scope.launch {
+            mediaPlayer?.reset()
+            val notification = createEmptyNotification()
+            startForeground(1, notification)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -83,7 +87,7 @@ class MusicService : Service() {
                 ACTION_PLAY -> playbackManager.playSong()
                 ACTION_PAUSE -> playbackManager.pauseSong()
                 ACTION_NEXT -> playbackManager.playNextSong()
-                ACTION_CANCEL -> stopSelf()
+                ACTION_CANCEL -> stopPlaying()
             }
         }
         return START_NOT_STICKY
@@ -168,7 +172,7 @@ class MusicService : Service() {
 
         val remoteViews = RemoteViews(packageName, R.layout.notification_player)
 
-        remoteViews.setTextViewText(R.id.txt_idx, queue.indexOf(song).toString())
+        remoteViews.setTextViewText(R.id.txt_idx, (queue.indexOf(song) + 1).toString())
         remoteViews.setTextViewText(R.id.txt_total, queue.size.toString())
         remoteViews.setTextViewText(R.id.txt_title, song?.title)
         remoteViews.setTextViewText(R.id.txt_artist, song?.artist)
