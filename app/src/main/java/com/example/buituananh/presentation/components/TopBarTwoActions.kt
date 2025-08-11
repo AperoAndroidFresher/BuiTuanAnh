@@ -60,7 +60,7 @@ fun TopBarTwoActions(
                 painter = painterResource(R.drawable.cancel),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(25.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
     }

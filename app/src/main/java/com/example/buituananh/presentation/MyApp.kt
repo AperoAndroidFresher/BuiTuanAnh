@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation
 
+import android.content.Intent
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.buituananh.presentation.navigation.NavigationRoot
@@ -7,7 +8,8 @@ import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 
 @Composable
 fun MyApp(
-    modifier: Modifier = Modifier
+    newIntent: Intent?,
+    modifier: Modifier = Modifier,
 ) {
 
     val themeController = remember { ThemeController() }
@@ -16,7 +18,7 @@ fun MyApp(
         BuiTuanAnhTheme(
             darkTheme = themeController.isDarkTheme
         ) {
-            NavigationRoot()
+            NavigationRoot(newIntent = newIntent)
         }
     }
 
