@@ -172,7 +172,8 @@ fun LibraryScreen(
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
                     localSongs = state.localSongs,
-                    remoteSongs = state.remoteSongs
+                    remoteSongs = state.remoteSongs,
+                    playedSong = state.playedSong
                 )
             }
         }
@@ -213,6 +214,7 @@ private fun SongsSection(
     isLocalMode: Boolean = true,
     localSongs: List<Song> = emptyList(),
     remoteSongs: List<Song> = emptyList(),
+    playedSong: Song? = null
 ) {
 
     val songs = if (isLocalMode) {
@@ -226,11 +228,12 @@ private fun SongsSection(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface),
         contentPadding = PaddingValues(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         items(songs) { song ->
             SongItem(
                 song = song,
+                playedSong = playedSong,
                 clickSongOptions = {
                     clickSongOptions(song)
                 },

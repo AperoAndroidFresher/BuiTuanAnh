@@ -41,6 +41,14 @@ class LibraryViewModel @AssistedInject constructor (
     private val _channel = Channel<LibraryEffect>()
     val channel = _channel.receiveAsFlow()
 
+    init {
+        viewModelScope.launch {
+            playbackManager.playerState.collect {state ->
+                _state.update { it.copy(playedSong = state.currentSong) }
+            }
+        }
+    }
+    
     fun onIntent(intent: LibraryIntent) {
         when (intent) {
             is LibraryIntent.ClickSongOptions -> clickSongOptions(intent.song)

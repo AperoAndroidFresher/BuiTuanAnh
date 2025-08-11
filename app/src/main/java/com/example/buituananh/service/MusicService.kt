@@ -51,13 +51,11 @@ class MusicService : Service() {
         scope.launch {
             playbackManager.command.collect { command ->
                 when (command) {
-                    PlaybackEvent.NextSong -> nextSong()
-                    PlaybackEvent.PauseSong -> pauseSong()
-                    PlaybackEvent.PlaySong -> playSong()
-                    PlaybackEvent.PreviousSong -> previousSong()
-                    is PlaybackEvent.StartSong -> startSong(command.song)
-                    PlaybackEvent.StopPlaying -> stopPlaying()
-                    PlaybackEvent.DragSlider -> dragSlider()
+                    PlaybackServiceEvent.PauseSong -> pauseSong()
+                    PlaybackServiceEvent.PlaySong -> playSong()
+                    is PlaybackServiceEvent.StartSong -> startSong(command.song)
+                    PlaybackServiceEvent.StopPlaying -> stopPlaying()
+                    PlaybackServiceEvent.DragSlider -> dragSlider()
                 }
             }
         }
@@ -103,10 +101,7 @@ class MusicService : Service() {
     override fun onBind(p0: Intent?): IBinder? {
         return null
     }
-
-    private fun previousSong() {
-    }
-
+    
     private fun playSong() {
         Log.d("Service1", "PlaySong: ")
         playbackManager.updateIsPlaying(true)
@@ -121,10 +116,7 @@ class MusicService : Service() {
         playbackManager.updateIsPlaying(false)
         notifySong()
     }
-
-    private fun nextSong() {
-    }
-
+    
     private fun updateProgress() {
         job?.cancel()
         job = scope.launch {

@@ -12,11 +12,11 @@ class PlaybackManager @Inject constructor() {
     private val _musicState = MutableStateFlow(MusicState())
     val playerState = _musicState.asStateFlow()
 
-    private val _command = MutableSharedFlow<PlaybackEvent>()
+    private val _command = MutableSharedFlow<PlaybackServiceEvent>()
     val command = _command.asSharedFlow()
     
     suspend fun dragSliderEnd() {
-        sendEvent(PlaybackEvent.DragSlider)
+        sendEvent(PlaybackServiceEvent.DragSlider)
     }
     
     fun dragSlider(progress: Float) {
@@ -61,7 +61,7 @@ class PlaybackManager @Inject constructor() {
         val currentSong = _musicState.value.currentSong
         _musicState.update { it.copy(isPlaying = true, isCancel = false) }
         currentSong?.let {
-            sendEvent(PlaybackEvent.StartSong(it))
+            sendEvent(PlaybackServiceEvent.StartSong(it))
         }
     }
 
@@ -76,17 +76,17 @@ class PlaybackManager @Inject constructor() {
                 isCancel = true 
             )
         }
-        sendEvent(PlaybackEvent.StopPlaying)
+        sendEvent(PlaybackServiceEvent.StopPlaying)
     }
 
     suspend fun playSong() {
         updateIsPlaying(true)
-        sendEvent(PlaybackEvent.PlaySong)
+        sendEvent(PlaybackServiceEvent.PlaySong)
     }
 
     suspend fun pauseSong() {
         updateIsPlaying(false)
-        sendEvent(PlaybackEvent.PauseSong)
+        sendEvent(PlaybackServiceEvent.PauseSong)
     }
 
     suspend fun playNextSong() {
@@ -118,7 +118,7 @@ class PlaybackManager @Inject constructor() {
         Log.d("PlaybackManager", "playNextSong: ${nextIndex}")
         queue.getOrNull(nextIndex)?.let { nextSong ->
             _musicState.update { it.copy(currentSong = nextSong, isPlaying = true, isRepeatMode = false) }
-            sendEvent(PlaybackEvent.StartSong(nextSong))
+            sendEvent(PlaybackServiceEvent.StartSong(nextSong))
         }
     }
 
@@ -139,11 +139,11 @@ class PlaybackManager @Inject constructor() {
 
         queue.getOrNull(previousIndex)?.let { prevSong ->
             _musicState.update { it.copy(currentSong = prevSong, isPlaying = true) }
-            sendEvent(PlaybackEvent.StartSong(prevSong))
+            sendEvent(PlaybackServiceEvent.StartSong(prevSong))
         }
     }
 
-    private suspend fun sendEvent(event: PlaybackEvent) {
+    private suspend fun sendEvent(event: PlaybackServiceEvent) {
         _command.emit(event)
     }
 }

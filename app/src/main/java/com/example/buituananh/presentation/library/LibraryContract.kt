@@ -12,7 +12,8 @@ data class LibraryState(
     val remoteSongs: List<Song> = emptyList(),
     val playlists: List<Playlist> = emptyList(),
     val selectedSong: Song? = null,
-    val userId: Long = -1
+    val userId: Long = -1,
+    val playedSong: Song? = null
 )
 
 sealed interface LibraryIntent {
