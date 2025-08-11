@@ -2,6 +2,7 @@ package com.example.buituananh.presentation.playlist
 
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.presentation.library.LibraryIntent
 
 data class PlaylistState(
     val isLoading: Boolean = false,
@@ -14,7 +15,8 @@ data class PlaylistState(
     
     val playlists: List<Playlist> = emptyList(),
     val userId: Long = -1,
-    val deletedPlaylistId: Long = -1
+    val deletedPlaylistId: Long = -1,
+    val playedSong: Song? = null
 )
 
 sealed interface PlaylistIntent {
@@ -36,6 +38,7 @@ sealed interface PlaylistIntent {
     data object CancelSortMode : PlaylistIntent
     data object SaveSortMode : PlaylistIntent
     data class DragSong(val fromIndex: Int, val toIndex: Int) : PlaylistIntent
+    data class StartSong(val song: Song) : PlaylistIntent
 }
 
 sealed interface PlaylistEffect {

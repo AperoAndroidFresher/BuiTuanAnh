@@ -2,6 +2,7 @@ package com.example.buituananh.presentation.playlist.detail_playlist_component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,11 +41,14 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.presentation.components.MusicAnimation
 import com.example.buituananh.util.formatToString
 
 @Composable
 fun GridSongItem(
+    startSong: () -> Unit,
     modifier: Modifier = Modifier,
+    playedSong: Song? = null,
     song: Song,
     onClick: (Pair<Offset, Song>) -> Unit
 ) {
@@ -54,9 +58,20 @@ fun GridSongItem(
     }
 
     Column(
-        modifier = modifier.width(140.dp),
+        modifier = modifier
+            .width(140.dp)
+            .padding(8.dp)
+            .clickable { startSong() }
+            .then(
+                if (playedSong == song) {
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                } else {
+                    Modifier.background(MaterialTheme.colorScheme.surface)
+                },
+            ) ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(8.dp))
         Box {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -101,6 +116,10 @@ fun GridSongItem(
                         .align(Alignment.Center)
                         .padding(4.dp)
                 )
+            }
+            
+            if(playedSong == song) {
+                MusicAnimation(Modifier.size(100.dp).align(Alignment.Center))
             }
         }
         Spacer(Modifier.height(6.dp))

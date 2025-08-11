@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.playlist
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,6 +11,7 @@ import com.example.buituananh.domain.model.PlaylistStore
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.service.PlaybackManager
 import com.example.buituananh.util.Destination
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -30,6 +32,7 @@ class PlaylistViewModel @AssistedInject constructor(
     @Assisted private val key: Destination.PlaylistWrapper,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
+    private val playbackManager: PlaybackManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
@@ -42,6 +45,11 @@ class PlaylistViewModel @AssistedInject constructor(
         viewModelScope.launch {
             PlaylistStore.playlists.collectLatest { updatedList ->
                 _state.update { it.copy(playlists = updatedList) }
+            }
+        }
+        viewModelScope.launch {
+            playbackManager.playerState.collect {state ->
+                _state.update { it.copy(playedSong = state.currentSong) }
             }
         }
     }
@@ -63,9 +71,19 @@ class PlaylistViewModel @AssistedInject constructor(
             is PlaylistIntent.SelectPlaylist -> selectPlaylist(intent.id)
             is PlaylistIntent.LoadPlaylistDetail -> loadPlaylistDetail(intent.id)
             is PlaylistIntent.UndoRemovePlaylist -> undoRemovePlaylist()
+            is PlaylistIntent.StartSong -> startSong(intent.song)
         }
     }
 
+    private fun startSong(song: Song) {
+        viewModelScope.launch {
+            val queue = _state.value.selectedPlaylist?.songs ?: emptyList()
+            playbackManager.updateQueue(queue)
+            playbackManager.updateSong(song)
+            playbackManager.startSong()
+        }
+    }
+    
     private fun undoRemovePlaylist() {
         viewModelScope.launch {
             playlistRepository.undoDeletePlaylist(_state.value.deletedPlaylistId)

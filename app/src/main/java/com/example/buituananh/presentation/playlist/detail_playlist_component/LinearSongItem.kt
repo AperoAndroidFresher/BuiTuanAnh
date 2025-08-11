@@ -1,15 +1,10 @@
 package com.example.buituananh.presentation.playlist.detail_playlist_component
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
@@ -36,48 +31,70 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.buituananh.R
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.presentation.components.MusicAnimation
 import com.example.buituananh.util.formatToString
 
 @Composable
 fun LinearSongItem(
+    startSong: () -> Unit,
     modifier: Modifier = Modifier,
     song: Song,
     isSortMode: Boolean,
-    onClick: (Pair<Offset, Song>) -> Unit
+    playedSong: Song? = null,
+    onClick: (Pair<Offset, Song>) -> Unit,
 ) {
 
     var iconOffset by remember {
         mutableStateOf(Offset.Zero)
     }
-
+    
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            .clickable { startSong() }
+            .then(
+                if (playedSong == song) {
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                } else {
+                    Modifier.background(MaterialTheme.colorScheme.surface)
+                },
+            )
             .padding(0.dp)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            
     ) {
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(song.imageUri)
-                .crossfade(true)
-                .error(R.drawable.default_song)
-                .build(),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(60.dp)
-                .clip(MaterialTheme.shapes.medium)
-        )
+        Box {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song.imageUri)
+                    .crossfade(true)
+                    .error(R.drawable.default_song)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .align(Alignment.Center),
+            )
+            if (playedSong == song) {
+                MusicAnimation(Modifier.size(50.dp).align(Alignment.Center))
+            }
+        }
 
         Spacer(Modifier.width(12.dp))
 
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.SpaceEvenly
+            verticalArrangement = Arrangement.SpaceEvenly,
         ) {
             Text(
                 text = song.title ?: "null",
@@ -87,7 +104,7 @@ fun LinearSongItem(
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 minLines = 1,
-                modifier = Modifier.basicMarquee()
+                modifier = Modifier.basicMarquee(),
             )
             Spacer(Modifier.height(4.dp))
             Text(
@@ -96,40 +113,41 @@ fun LinearSongItem(
                 letterSpacing = 1.5.sp,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.alpha(0.6f).basicMarquee(),
+                modifier = Modifier
+                    .alpha(0.6f)
+                    .basicMarquee(),
             )
         }
         Spacer(Modifier.width(3.dp))
         Text(
             text = song.duration?.formatToString() ?: "00:00",
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.width(8.dp))
         IconButton(
             onClick = {
-                if(!isSortMode) onClick(iconOffset to song)
+                if (!isSortMode) onClick(iconOffset to song)
             },
             modifier = Modifier.then(
-                if(!isSortMode) {
+                if (!isSortMode) {
                     Modifier.onGloballyPositioned { coords ->
                         val offset = coords.localToWindow(Offset.Zero)
                         iconOffset = offset
                     }
                 } else {
                     Modifier
-                }
-            )
+                },
+            ),
         ) {
             Icon(
-                imageVector = if(!isSortMode) Icons.Default.MoreVert else Icons.Default.Menu,
+                imageVector = if (!isSortMode) Icons.Default.MoreVert else Icons.Default.Menu,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
     }
-
 }
 
 @Preview(showSystemUi = true)
@@ -146,5 +164,4 @@ fun PreviewLinearSongItem(modifier: Modifier = Modifier) {
 //            )
 //        ) { }
 //    }
-
 }
