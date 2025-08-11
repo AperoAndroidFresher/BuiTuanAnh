@@ -19,6 +19,10 @@ class PlaybackManager @Inject constructor() {
         sendEvent(PlaybackServiceEvent.DragSlider)
     }
     
+    fun updatePlaylistId(id: Long?) {
+        _musicState.update { it.copy(playlistId = id) }
+    }
+    
     fun dragSlider(progress: Float) {
         _musicState.update { it.copy(progress = progress.toLong()) }
     }

@@ -38,7 +38,8 @@ fun SongItem(
     clickSongOptions: () -> Unit,
     shareSong: () -> Unit,
     modifier: Modifier = Modifier,
-    playedSong: Song? = null
+    playedSong: Song? = null,
+    isSongInPlaylist: Boolean = false
 ) {
 
     var expanded by remember {
@@ -51,7 +52,7 @@ fun SongItem(
         modifier = modifier
             .fillMaxWidth()
             .then(
-                if (playedSong == song) {
+                if ((playedSong == song) && isSongInPlaylist) {
                     Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 } else {
                     Modifier.background(MaterialTheme.colorScheme.surface)
@@ -77,7 +78,7 @@ fun SongItem(
                     .clip(MaterialTheme.shapes.medium)
                     .align(Alignment.Center)
             )
-            if (playedSong == song) {
+            if ((playedSong == song) && isSongInPlaylist) {
                 MusicAnimation(Modifier.size(50.dp).align(Alignment.Center))
             }
         }

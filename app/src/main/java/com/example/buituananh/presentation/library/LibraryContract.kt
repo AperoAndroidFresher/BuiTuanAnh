@@ -13,7 +13,8 @@ data class LibraryState(
     val playlists: List<Playlist> = emptyList(),
     val selectedSong: Song? = null,
     val userId: Long = -1,
-    val playedSong: Song? = null
+    val playedSong: Song? = null,
+    val playedPlaylistId: Long? = null
 )
 
 sealed interface LibraryIntent {

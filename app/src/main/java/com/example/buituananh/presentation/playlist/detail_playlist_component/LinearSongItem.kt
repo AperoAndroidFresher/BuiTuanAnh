@@ -47,6 +47,7 @@ fun LinearSongItem(
     song: Song,
     isSortMode: Boolean,
     playedSong: Song? = null,
+    isSongInPlaylist: Boolean = false,
     onClick: (Pair<Offset, Song>) -> Unit,
 ) {
 
@@ -60,7 +61,7 @@ fun LinearSongItem(
             .fillMaxWidth()
             .clickable { startSong() }
             .then(
-                if (playedSong == song) {
+                if ((playedSong == song) && isSongInPlaylist) {
                     Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 } else {
                     Modifier.background(MaterialTheme.colorScheme.surface)
@@ -85,7 +86,7 @@ fun LinearSongItem(
                     .clip(MaterialTheme.shapes.medium)
                     .align(Alignment.Center),
             )
-            if (playedSong == song) {
+            if ((playedSong == song) && isSongInPlaylist) {
                 MusicAnimation(Modifier.size(50.dp).align(Alignment.Center))
             }
         }
