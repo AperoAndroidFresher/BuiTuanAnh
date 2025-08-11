@@ -27,7 +27,7 @@ val LocalAppThemeController = staticCompositionLocalOf<ThemeController> {
 }
 
 class ThemeController {
-    var isDarkTheme by mutableStateOf(false)
+    var isDarkTheme by mutableStateOf(true)
     fun toggle() {
         isDarkTheme = !isDarkTheme
     }

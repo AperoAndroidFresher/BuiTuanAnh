@@ -60,11 +60,14 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun togglePlayPauseMode() {
-        playbackManager.togglePlayPauseMode()
+        viewModelScope.launch {
+            playbackManager.togglePlayPauseMode()
+        }
     }
 
     private fun stopPlaying() {
-        viewModelScope.launch { 
+        viewModelScope.launch {
+            sendEffect(PlayerEffect.NavigateToHomeScreen)
             playbackManager.stopPlaying()
         }
     }
