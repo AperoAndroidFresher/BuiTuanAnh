@@ -9,5 +9,6 @@ data class MusicState(
     val progress: Long = 0L,
     val isRepeatMode: Boolean = false,
     val isShuffleMode: Boolean = false,
-    val isCancel: Boolean = true
+    val isCancel: Boolean = true,
+    val playlistId: Long? = null
 )

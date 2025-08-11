@@ -94,6 +94,7 @@ fun DetailPlaylistScreenRoot(
     DetailPlaylistScreen(
         modifier = modifier,
         state = state,
+        isSongInPlaylist = viewModel.checkSongInPlaylist(),
         onIntent = viewModel::onIntent
     )
 
@@ -103,6 +104,7 @@ fun DetailPlaylistScreenRoot(
 fun DetailPlaylistScreen(
     modifier: Modifier = Modifier,
     state: PlaylistState,
+    isSongInPlaylist: Boolean,
     onIntent: (PlaylistIntent) -> Unit
 ) {
 
@@ -202,6 +204,7 @@ fun DetailPlaylistScreen(
                                 startSong = {
                                     onIntent(PlaylistIntent.StartSong(song))
                                 },
+                                isSongInPlaylist = isSongInPlaylist,
                                 playedSong = state.playedSong,
                                 song = song,
                                 modifier = Modifier.animateItem()
@@ -340,6 +343,7 @@ fun DetailPlaylistScreen(
                             },
                             playedSong = state.playedSong,
                             song = song,
+                            isSongInPlaylist = isSongInPlaylist,
                             isSortMode = state.isSortMode,
                             modifier = linearModifier.animateItem()
                         ) { (offset, song) ->

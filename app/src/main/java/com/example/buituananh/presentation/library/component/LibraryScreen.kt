@@ -85,10 +85,11 @@ fun LibraryScreenRoot(
     }
 
     LibraryScreen(
-        modifier = modifier,
         state = state,
+        isSongInPlaylist = viewModel.checkSongInPlaylist(),
         permissionState = mediaPermissionState,
         onIntent = viewModel::onIntent,
+        modifier = modifier
     )
 }
 
@@ -98,6 +99,7 @@ fun LibraryScreen(
     onIntent: (LibraryIntent) -> Unit,
     modifier: Modifier = Modifier,
     permissionState: PermissionState? = null,
+    isSongInPlaylist: Boolean = false
 ) {
 
     val isGranted = permissionState?.status?.isGranted ?: false
@@ -173,7 +175,8 @@ fun LibraryScreen(
                     isLocalMode = state.isLocalMode,
                     localSongs = state.localSongs,
                     remoteSongs = state.remoteSongs,
-                    playedSong = state.playedSong
+                    playedSong = state.playedSong,
+                    isSongInPlaylist = isSongInPlaylist
                 )
             }
         }
@@ -214,7 +217,8 @@ private fun SongsSection(
     isLocalMode: Boolean = true,
     localSongs: List<Song> = emptyList(),
     remoteSongs: List<Song> = emptyList(),
-    playedSong: Song? = null
+    playedSong: Song? = null,
+    isSongInPlaylist: Boolean = false
 ) {
 
     val songs = if (isLocalMode) {
@@ -234,6 +238,7 @@ private fun SongsSection(
             SongItem(
                 song = song,
                 playedSong = playedSong,
+                isSongInPlaylist = isSongInPlaylist,
                 clickSongOptions = {
                     clickSongOptions(song)
                 },

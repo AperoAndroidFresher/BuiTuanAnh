@@ -49,7 +49,7 @@ class PlaylistViewModel @AssistedInject constructor(
         }
         viewModelScope.launch {
             playbackManager.playerState.collect {state ->
-                _state.update { it.copy(playedSong = state.currentSong) }
+                _state.update { it.copy(playedSong = state.currentSong, playedPlaylistId = state.playlistId) }
             }
         }
     }
@@ -74,12 +74,19 @@ class PlaylistViewModel @AssistedInject constructor(
             is PlaylistIntent.StartSong -> startSong(intent.song)
         }
     }
+    
+    fun checkSongInPlaylist(): Boolean {
+        val openPlaylistId = _state.value.selectedPlaylist?.playlistId
+        val playedPlaylistId = _state.value.playedPlaylistId
+        return openPlaylistId == playedPlaylistId
+    }
 
     private fun startSong(song: Song) {
         viewModelScope.launch {
             val queue = _state.value.selectedPlaylist?.songs ?: emptyList()
             playbackManager.updateQueue(queue)
             playbackManager.updateSong(song)
+            playbackManager.updatePlaylistId(_state.value.selectedPlaylist?.playlistId)
             playbackManager.startSong()
         }
     }

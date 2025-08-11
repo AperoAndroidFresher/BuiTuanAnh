@@ -16,7 +16,8 @@ data class PlaylistState(
     val playlists: List<Playlist> = emptyList(),
     val userId: Long = -1,
     val deletedPlaylistId: Long = -1,
-    val playedSong: Song? = null
+    val playedSong: Song? = null,
+    val playedPlaylistId: Long? = null
 )
 
 sealed interface PlaylistIntent {

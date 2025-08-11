@@ -50,6 +50,7 @@ fun GridSongItem(
     modifier: Modifier = Modifier,
     playedSong: Song? = null,
     song: Song,
+    isSongInPlaylist: Boolean = false,
     onClick: (Pair<Offset, Song>) -> Unit
 ) {
 
@@ -63,7 +64,7 @@ fun GridSongItem(
             .padding(8.dp)
             .clickable { startSong() }
             .then(
-                if (playedSong == song) {
+                if ((playedSong == song) && isSongInPlaylist) {
                     Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 } else {
                     Modifier.background(MaterialTheme.colorScheme.surface)
@@ -118,7 +119,7 @@ fun GridSongItem(
                 )
             }
             
-            if(playedSong == song) {
+            if((playedSong == song) && isSongInPlaylist) {
                 MusicAnimation(Modifier.size(100.dp).align(Alignment.Center))
             }
         }
