@@ -1,16 +1,8 @@
 package com.example.buituananh.presentation.library.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
@@ -37,6 +29,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.buituananh.R
 import com.example.buituananh.domain.model.Song
+import com.example.buituananh.presentation.components.MusicAnimation
 import com.example.buituananh.util.formatToString
 
 @Composable
@@ -44,8 +37,8 @@ fun SongItem(
     song: Song,
     clickSongOptions: () -> Unit,
     shareSong: () -> Unit,
-    playSong: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    playedSong: Song? = null
 ) {
 
     var expanded by remember {
@@ -57,25 +50,37 @@ fun SongItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(0.dp)
-            .padding(horizontal = 16.dp)
-            .clickable { playSong() },
+            .then(
+                if (playedSong == song) {
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                } else {
+                    Modifier.background(MaterialTheme.colorScheme.surface)
+                },
+            )
+            .padding(vertical = 8.dp)
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(song.imageUri)
-                .size(sizeInPx)
-                .crossfade(true)
-                .error(R.drawable.default_song)
-                .build(),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(60.dp)
-                .clip(MaterialTheme.shapes.medium)
-        )
+        Box {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song.imageUri)
+                    .size(sizeInPx)
+                    .crossfade(true)
+                    .error(R.drawable.default_song)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .align(Alignment.Center)
+            )
+            if (playedSong == song) {
+                MusicAnimation(Modifier.size(50.dp).align(Alignment.Center))
+            }
+        }
 
         Spacer(Modifier.width(12.dp))
 
