@@ -6,8 +6,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
@@ -22,6 +26,9 @@ val Context.authDataStore: DataStore<Preferences> by preferencesDataStore(name =
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private var newIntent by mutableStateOf<Intent?>(null)
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -41,8 +48,14 @@ class MainActivity : ComponentActivity() {
 
         startForegroundService(Intent(this@MainActivity, MusicService::class.java))
         setContent {
-            MyApp()
+            MyApp(newIntent = newIntent)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        newIntent = intent
+        Log.d("MainActivity", "onNewIntent: Receive intent")
     }
 }
 

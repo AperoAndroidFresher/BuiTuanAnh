@@ -1,5 +1,7 @@
 package com.example.buituananh.presentation.navigation
 
+import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -34,12 +35,15 @@ import com.example.buituananh.presentation.player.components.PlayerScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.presentation.profile.ProfileViewModel
 import com.example.buituananh.presentation.profile.component.ProfileScreenRoot
+import com.example.buituananh.presentation.splash.SplashScreen
 import com.example.buituananh.util.Destination
+import com.example.buituananh.util.Utils
 import com.example.buituananh.util.toMilliseconds
 
 @Composable
 fun NavigationRoot(
     modifier: Modifier = Modifier,
+    newIntent: Intent?,
 ) {
 
     val backStack = rememberNavBackStack(Destination.AuthWrapper)
@@ -49,13 +53,36 @@ fun NavigationRoot(
     }
 
     val currentScreen by remember {
-        derivedStateOf {
-            backStack.last()
-        }
+        derivedStateOf { backStack.last() }
     }
-
+    
+    var firstNavGraphEntry by remember { 
+        mutableStateOf(false)
+    }
+    
     val playerViewModel = hiltViewModel<PlayerViewModel>()
     val musicState = playerViewModel.state.collectAsStateWithLifecycle().value
+    
+    LaunchedEffect(newIntent) {
+        newIntent?.let { intent ->
+            if(intent.action == Utils.OPEN_PLAYER) {
+                backStack.add(Destination.SplashScreen)
+                backStack.add(Destination.PlayerWrapper)
+                Log.d("NavigationRoot", "NavigationRoot: Open player screen")
+            } else {
+                Log.d("NavigationRoot", "NavigationRoot: Cannot receive")
+            }
+        }
+    }
+    
+    LaunchedEffect(Unit) {
+        if(!firstNavGraphEntry) {
+            if(musicState.musicState?.currentSong != null) {
+                backStack.add(Destination.PlayerWrapper)
+            }
+        }
+        firstNavGraphEntry = true
+    }
 
     Scaffold(
         modifier = modifier,

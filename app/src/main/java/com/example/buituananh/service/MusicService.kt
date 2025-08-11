@@ -196,7 +196,9 @@ class MusicService : Service() {
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
-            Intent(this, MainActivity::class.java),
+            Intent(this, MainActivity::class.java).apply {
+                action = Utils.OPEN_PLAYER
+            },
             PendingIntent.FLAG_IMMUTABLE,
         )
 

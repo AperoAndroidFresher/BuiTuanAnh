@@ -39,6 +39,7 @@ fun MiniPlayerBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column {
             ProgressBar(
