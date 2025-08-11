@@ -191,7 +191,6 @@ fun DetailPlaylistScreen(
             if (state.isGridMode) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -200,6 +199,10 @@ fun DetailPlaylistScreen(
                     if(songList != null) {
                         items(state.selectedPlaylist.songs) { song: Song ->
                             GridSongItem(
+                                startSong = {
+                                    onIntent(PlaylistIntent.StartSong(song))
+                                },
+                                playedSong = state.playedSong,
                                 song = song,
                                 modifier = Modifier.animateItem()
                             ) { (offset, song) ->
@@ -221,7 +224,7 @@ fun DetailPlaylistScreen(
             } else {
                 LazyColumn(
                     state = stateList,
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .then(
                             if (state.isSortMode) {
@@ -332,6 +335,10 @@ fun DetailPlaylistScreen(
                             Modifier.animateItem()
                         }
                         LinearSongItem(
+                            startSong = {
+                                onIntent(PlaylistIntent.StartSong(song))
+                            },
+                            playedSong = state.playedSong,
                             song = song,
                             isSortMode = state.isSortMode,
                             modifier = linearModifier.animateItem()
