@@ -48,6 +48,8 @@ fun SettingScreen(
         mutableStateOf(false)
     }
     
+    val showIcon = (state.backupLanguageCode != null) && (state.currentLanguageCode != state.backupLanguageCode)
+    
     val context = LocalContext.current
 
     Scaffold(
@@ -58,9 +60,11 @@ fun SettingScreen(
                 },
                 onAction = {
                     viewModel.onIntent(SettingIntent.AcceptLanguage)
+                    expanded = false
                 },
                 title = context.getString(R.string.setting),
                 iconId = R.drawable.accept,
+                showAction = showIcon
             )
         },
     ) {
@@ -117,7 +121,7 @@ fun LanguageSection(
         )
         Spacer(Modifier.width(14.dp))
         Text(
-            text = "Language",
+            text = stringResource(R.string.language),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.W600,
         )
@@ -131,11 +135,12 @@ fun LanguageMenu(
     modifier: Modifier = Modifier,
     expanded: Boolean = false,
 ) {
-
-    val list by remember {
-        mutableStateOf(listOf("English", "Korean", "French", "Vietnamese"))
-    }
-
+    val list = listOf(
+        stringResource(R.string.english),
+        stringResource(R.string.korean),
+        stringResource(R.string.french),
+        stringResource(R.string.vietnamese)
+    )
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,

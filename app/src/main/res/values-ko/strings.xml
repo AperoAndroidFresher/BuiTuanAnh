@@ -2,4 +2,11 @@
 <resources>
     <string name="app_name">Apero Music</string>
     <string name="setting">설정</string>
+    <string name="language">언어</string>
+
+    <!-- Language Options -->
+    <string name="english">영어</string>
+    <string name="korean">한국어</string>
+    <string name="french">프랑스어</string>
+    <string name="vietnamese">베트남어</string>
 </resources>

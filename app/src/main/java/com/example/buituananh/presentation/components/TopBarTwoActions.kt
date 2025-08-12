@@ -1,10 +1,7 @@
 package com.example.buituananh.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Icon
@@ -25,7 +22,8 @@ fun TopBarTwoActions(
     onAction: () -> Unit,
     modifier: Modifier = Modifier,
     title: String = "",
-    iconId: Int = R.drawable.cancel
+    iconId: Int = R.drawable.cancel,
+    showAction: Boolean = true
 ) {
 
     Row(
@@ -54,15 +52,19 @@ fun TopBarTwoActions(
             color = MaterialTheme.colorScheme.onSurface,
         )
 
-        IconButton(
-            onClick = onAction
-        ) {
-            Icon(
-                painter = painterResource(iconId),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(20.dp)
-            )
+        if(showAction) {
+            IconButton(
+                onClick = onAction
+            ) {
+                Icon(
+                    painter = painterResource(iconId),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        } else {
+            Spacer(Modifier.size(30.dp))
         }
     }
     
