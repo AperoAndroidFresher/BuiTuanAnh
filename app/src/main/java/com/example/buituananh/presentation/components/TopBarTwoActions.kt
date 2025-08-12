@@ -24,7 +24,8 @@ fun TopBarTwoActions(
     onBack: () -> Unit,
     onAction: () -> Unit,
     modifier: Modifier = Modifier,
-    title: String = ""
+    title: String = "",
+    iconId: Int = R.drawable.cancel
 ) {
 
     Row(
@@ -57,7 +58,7 @@ fun TopBarTwoActions(
             onClick = onAction
         ) {
             Icon(
-                painter = painterResource(R.drawable.cancel),
+                painter = painterResource(iconId),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(20.dp)

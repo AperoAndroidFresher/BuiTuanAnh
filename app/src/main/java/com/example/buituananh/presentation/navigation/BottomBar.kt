@@ -71,7 +71,7 @@ class BottomBarItemManager {
                 "Home",
                 R.drawable.filled_home,
                 R.drawable.outlined_home,
-                Destination.HomeScreen
+                Destination.HomeWrapper
             ),
             BottomBarItem(
                 1,

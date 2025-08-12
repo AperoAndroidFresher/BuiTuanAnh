@@ -4,8 +4,13 @@ import android.content.Context
 import com.example.buituananh.data.local.AppDatabase
 import com.example.buituananh.data.remote.SongService
 import com.example.buituananh.domain.repository.FileRepository
+import com.example.buituananh.domain.repository.LanguageRepository
 import com.example.buituananh.domain.repository.SongRepository
+import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.domain.usecase.ApplyLanguageUseCase
 import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
+import com.example.buituananh.domain.usecase.LoadLanguageUseCase
+import com.example.buituananh.domain.usecase.LoadUserDataUseCase
 import com.example.buituananh.service.PlaybackManager
 import com.example.buituananh.util.RetrofitHelper
 import dagger.Module
@@ -37,4 +42,22 @@ object AppModule {
         songRepository: SongRepository,
         fileRepository: FileRepository,
     ): FetchAndCacheSongsUseCase = FetchAndCacheSongsUseCase(songRepository, fileRepository)
+    
+    @Provides
+    @Singleton
+    fun provideLoadUserDataUserCase(
+        userRepository: UserRepository
+    ): LoadUserDataUseCase = LoadUserDataUseCase(userRepository)
+    
+    @Provides
+    @Singleton
+    fun provideLoadLanguageUseCase(
+        languageRepository: LanguageRepository
+    ): LoadLanguageUseCase = LoadLanguageUseCase(languageRepository)
+
+    @Provides
+    @Singleton
+    fun provideApplyLanguageUseCase(
+        languageRepository: LanguageRepository
+    ): ApplyLanguageUseCase = ApplyLanguageUseCase(languageRepository)
 }

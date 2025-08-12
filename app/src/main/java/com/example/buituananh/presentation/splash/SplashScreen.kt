@@ -33,7 +33,7 @@ fun SplashScreen(
             when(effect) {
                 SplashEffect.NavigateToHomeScreen -> {
                     delay(1000L)
-                    onNavigate(Destination.HomeScreen)
+                    onNavigate(Destination.HomeWrapper)
                 }
                 SplashEffect.NavigateToLoginScreen -> {
                     delay(1000L)

@@ -20,8 +20,11 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import androidx.room.coroutines.createFlow
 import com.example.buituananh.R
-import com.example.buituananh.presentation.home.HomeScreen
+import com.example.buituananh.presentation.home.HomeScreenRoot
+import com.example.buituananh.presentation.home.HomeViewModel
+import com.example.buituananh.presentation.home.components.HomeState
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.library.component.LibraryScreenRoot
 import com.example.buituananh.presentation.login.LoginViewModel
@@ -32,7 +35,9 @@ import com.example.buituananh.presentation.player.components.PlayerScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.presentation.profile.ProfileViewModel
 import com.example.buituananh.presentation.profile.component.ProfileScreenRoot
-import com.example.buituananh.presentation.splash.SplashScreen
+import com.example.buituananh.presentation.setting.SettingScreen
+import com.example.buituananh.presentation.setting.SettingViewModel
+import com.example.buituananh.service.PlayType
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.Utils
 import com.example.buituananh.util.toMilliseconds
@@ -73,7 +78,7 @@ fun NavigationRoot(
     }
     
     LaunchedEffect(currentScreen) {
-        if (currentScreen !is Destination.HomeScreen
+        if (currentScreen !is Destination.HomeWrapper
             && currentScreen !is Destination.LibraryScreen
             && currentScreen !is Destination.PlaylistWrapper
             && currentScreen !is Destination.PlayerWrapper
@@ -96,7 +101,7 @@ fun NavigationRoot(
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            if (currentScreen is Destination.HomeScreen
+            if (currentScreen is Destination.HomeWrapper
                 || currentScreen is Destination.LibraryScreen
                 || currentScreen is Destination.PlaylistWrapper
             ) {
@@ -129,7 +134,7 @@ fun NavigationRoot(
             }
         },
         floatingActionButton = {
-            if (musicState.musicState?.currentSong != null && (currentScreen is Destination.HomeScreen || currentScreen is Destination.LibraryScreen || currentScreen is Destination.PlaylistWrapper)) {
+            if (musicState.musicState?.currentSong != null && (currentScreen is Destination.HomeWrapper || currentScreen is Destination.LibraryScreen || currentScreen is Destination.PlaylistWrapper)) {
                 Icon(
                     painter = painterResource(R.drawable.cancel),
                     contentDescription = null,
@@ -169,10 +174,34 @@ fun NavigationRoot(
                         backStack = backStack,
                     )
                 }
-                entry<Destination.HomeScreen> {
-                    HomeScreen {
-                        backStack.add(it)
-                    }
+                entry<Destination.HomeWrapper> { key ->
+                    val homeViewModel = hiltViewModel<HomeViewModel, HomeViewModel.Factory>(
+                        creationCallback = { factory ->
+                            factory.create(key)
+                        }
+                    )
+                    HomeScreenRoot(
+                        onNavigate = {
+                            backStack.add(it)
+                        },
+                        viewModel = homeViewModel
+                    )
+                }
+                entry<Destination.SettingScreen> { key ->
+                    val settingViewModel = hiltViewModel<SettingViewModel, SettingViewModel.Factory>(
+                        creationCallback = { factory ->
+                            factory.create(key)
+                        }
+                    )
+                    SettingScreen(
+                        viewModel = settingViewModel,
+                        onNavigate = {
+                            
+                        },
+                        popBack = {
+                            backStack.removeLastOrNull()
+                        }
+                    )
                 }
                 entry<Destination.LibraryScreen> { key ->
                     val viewModel = hiltViewModel<LibraryViewModel, LibraryViewModel.Factory>(
