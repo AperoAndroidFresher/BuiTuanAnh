@@ -19,6 +19,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.buituananh.presentation.MyApp
 import com.example.buituananh.service.MusicService
+import com.example.buituananh.util.Utils
 import dagger.hilt.android.AndroidEntryPoint
 
 val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
@@ -50,6 +51,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApp(newIntent = newIntent)
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val intent = Intent(Utils.CANCEL_SERVICE).apply { 
+            `package` = packageName
+        }
+        sendBroadcast(intent)
     }
 
     override fun onNewIntent(intent: Intent) {

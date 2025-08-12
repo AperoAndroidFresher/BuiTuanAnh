@@ -10,5 +10,11 @@ data class MusicState(
     val isRepeatMode: Boolean = false,
     val isShuffleMode: Boolean = false,
     val isCancel: Boolean = true,
-    val playlistId: Long? = null
-)
+    val playlistId: Long? = null,
+    val playType: PlayType? = null
+) 
+
+enum class PlayType {
+    PREVIEW,
+    FOREGROUND
+}

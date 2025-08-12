@@ -19,6 +19,10 @@ class PlaybackManager @Inject constructor() {
         sendEvent(PlaybackServiceEvent.DragSlider)
     }
     
+    fun updatePlayType(playType: PlayType) {
+        _musicState.update { it.copy(playType = playType) }
+    }
+    
     fun updatePlaylistId(id: Long?) {
         _musicState.update { it.copy(playlistId = id) }
     }
@@ -77,7 +81,8 @@ class PlaybackManager @Inject constructor() {
                 isPlaying = false,
                 isRepeatMode = false,
                 isShuffleMode = false,
-                isCancel = true 
+                isCancel = true,
+                playType = null
             )
         }
         sendEvent(PlaybackServiceEvent.StopPlaying)

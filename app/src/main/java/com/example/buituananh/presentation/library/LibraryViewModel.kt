@@ -12,6 +12,7 @@ import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.SongRepository
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.domain.usecase.FetchAndCacheSongsUseCase
+import com.example.buituananh.service.PlayType
 import com.example.buituananh.service.PlaybackManager
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.MediaStoreHelper
@@ -64,13 +65,9 @@ class LibraryViewModel @AssistedInject constructor (
 
     private fun startSong(song: Song) {
         viewModelScope.launch {
-            val queue = if(_state.value.isLocalMode) {
-                _state.value.localSongs
-            } else {
-                _state.value.remoteSongs
-            }
-            playbackManager.updateQueue(queue)
+            playbackManager.updateQueue(emptyList())
             playbackManager.updateSong(song)
+            playbackManager.updatePlayType(PlayType.PREVIEW)
             playbackManager.updatePlaylistId(-1L)
             playbackManager.startSong()
         }

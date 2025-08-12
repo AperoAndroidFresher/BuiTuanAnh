@@ -11,6 +11,7 @@ import com.example.buituananh.domain.model.PlaylistStore
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.service.PlayType
 import com.example.buituananh.service.PlaybackManager
 import com.example.buituananh.util.Destination
 import dagger.assisted.Assisted
@@ -86,6 +87,7 @@ class PlaylistViewModel @AssistedInject constructor(
             val queue = _state.value.selectedPlaylist?.songs ?: emptyList()
             playbackManager.updateQueue(queue)
             playbackManager.updateSong(song)
+            playbackManager.updatePlayType(PlayType.FOREGROUND)
             playbackManager.updatePlaylistId(_state.value.selectedPlaylist?.playlistId)
             playbackManager.startSong()
         }
