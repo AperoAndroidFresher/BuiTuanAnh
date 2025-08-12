@@ -4,8 +4,10 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.IBinder
 import android.util.Log
@@ -25,20 +27,26 @@ class MusicService : Service() {
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    companion object {
-        const val ACTION_PREV = "ACTION_PREV"
-        const val ACTION_PLAY = "ACTION_PLAY"
-        const val ACTION_PAUSE = "ACTION_PAUSE"
-        const val ACTION_NEXT = "ACTION_NEXT"
-        const val ACTION_CANCEL = "ACTION_CANCEL"
-    }
-
     @Inject
     lateinit var playbackManager: PlaybackManager
 
     private var mediaPlayer: MediaPlayer? = null
     private var currentState: MusicState = MusicState()
     private var job: Job? = null
+
+    private val stopServiceReceive = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                if (intent.action == Utils.CANCEL_SERVICE) {
+                    scope.launch {
+                        if(currentState.playType == PlayType.PREVIEW) {
+                            playbackManager.stopPlaying()
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -59,6 +67,7 @@ class MusicService : Service() {
                 }
             }
         }
+        registerReceiver(stopServiceReceive, IntentFilter(Utils.CANCEL_SERVICE), Context.RECEIVER_NOT_EXPORTED)
     }
 
     private fun dragSlider() {
@@ -96,12 +105,13 @@ class MusicService : Service() {
         mediaPlayer?.release()
         scope.cancel()
         job?.cancel()
+        unregisterReceiver(stopServiceReceive)
     }
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
     }
-    
+
     private fun playSong() {
         Log.d("Service1", "PlaySong: ")
         playbackManager.updateIsPlaying(true)
@@ -116,7 +126,7 @@ class MusicService : Service() {
         playbackManager.updateIsPlaying(false)
         notifySong()
     }
-    
+
     private fun updateProgress() {
         job?.cancel()
         job = scope.launch {
@@ -224,5 +234,13 @@ class MusicService : Service() {
             Intent(this, MusicService::class.java).setAction(action),
             PendingIntent.FLAG_IMMUTABLE,
         )
+    }
+
+    companion object {
+        const val ACTION_PREV = "ACTION_PREV"
+        const val ACTION_PLAY = "ACTION_PLAY"
+        const val ACTION_PAUSE = "ACTION_PAUSE"
+        const val ACTION_NEXT = "ACTION_NEXT"
+        const val ACTION_CANCEL = "ACTION_CANCEL"
     }
 }
