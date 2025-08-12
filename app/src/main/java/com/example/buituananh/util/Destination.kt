@@ -2,6 +2,7 @@ package com.example.buituananh.util
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 
 sealed interface Destination : NavKey {
     @Serializable
@@ -14,7 +15,7 @@ sealed interface Destination : NavKey {
     data object SignupScreen : Destination
 
     @Serializable
-    data object HomeScreen : Destination
+    data object HomeWrapper : Destination
 
     @Serializable
     data object LibraryScreen : Destination
@@ -36,4 +37,7 @@ sealed interface Destination : NavKey {
     
     @Serializable
     data object PlayerWrapper : Destination
+    
+    @Serializable
+    data object SettingScreen : Destination
 }

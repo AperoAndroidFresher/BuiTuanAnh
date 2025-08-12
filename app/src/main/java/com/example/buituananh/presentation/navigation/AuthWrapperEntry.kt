@@ -2,7 +2,6 @@ package com.example.buituananh.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
@@ -39,8 +38,8 @@ fun AuthWrapperEntry(
                         if(it is Destination.LoginScreen) {
                             authBackstack.add(Destination.LoginScreen)
                         }
-                        if(it is Destination.HomeScreen) {
-                            addToBackStack(Destination.HomeScreen)
+                        if(it is Destination.HomeWrapper) {
+                            addToBackStack(Destination.HomeWrapper)
                         }
                     },
                     viewModel = loginViewModel
@@ -50,7 +49,7 @@ fun AuthWrapperEntry(
                 LoginScreenRoot(
                     viewModel = loginViewModel
                 ) { route ->
-                    if (route is Destination.HomeScreen) {
+                    if (route is Destination.HomeWrapper) {
                         while (backStack.isNotEmpty()) {
                             onBack()
                         }

@@ -4,8 +4,14 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.example.buituananh.util.UserPrefsKey
 import com.example.buituananh.util.Utils
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 @HiltAndroidApp
 class MusicApplication : Application() {

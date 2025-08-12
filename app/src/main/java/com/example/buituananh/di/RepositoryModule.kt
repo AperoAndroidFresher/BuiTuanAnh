@@ -1,13 +1,7 @@
 package com.example.buituananh.di
 
-import com.example.buituananh.data.repository.FileRepositoryImpl
-import com.example.buituananh.data.repository.PlaylistRepositoryImpl
-import com.example.buituananh.data.repository.SongRepositoryImpl
-import com.example.buituananh.data.repository.UserRepositoryImpl
-import com.example.buituananh.domain.repository.FileRepository
-import com.example.buituananh.domain.repository.PlaylistRepository
-import com.example.buituananh.domain.repository.SongRepository
-import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.data.repository.*
+import com.example.buituananh.domain.repository.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -34,4 +28,7 @@ abstract class RepositoryModule {
     @Singleton
     abstract fun provideSongRepository(impl: SongRepositoryImpl): SongRepository
     
+    @Binds
+    @Singleton
+    abstract fun provideLanguageRepository(impl: LanguageRepositoryImpl): LanguageRepository
 }

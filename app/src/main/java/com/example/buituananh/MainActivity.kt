@@ -19,11 +19,15 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.buituananh.presentation.MyApp
 import com.example.buituananh.service.MusicService
+import com.example.buituananh.util.UserPrefsKey
 import com.example.buituananh.util.Utils
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
 val Context.authDataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
+val Context.languageDataStore: DataStore<Preferences> by preferencesDataStore(name = "language_prefs")
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -32,7 +36,6 @@ class MainActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this@MainActivity,
