@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import com.example.buituananh.R
 
 object LanguageHelper {
     fun changeLanguage(context: Context, languageCode: String) {
@@ -26,20 +27,20 @@ object LanguageHelper {
 }
 
 
-sealed class Language(val languageCode: String) {
-    data object English : Language("en")
-    data object Korean : Language("ko")
-    data object French : Language("fr")
-    data object Vietnamese : Language("vi")
-    data object Alien : Language("alien")
-} 
+enum class Language(val languageCode: String) {
+    English("en"),
+    Korean("ko"),
+    French("fr"),
+    Vietnamese("vi"),
+    Alien("alien");
+}
 
-fun String.convertToLanguage(): String {
-    return when(this) {
-        "en" -> "English"
-        "ko" -> "Korean"
-        "fr" -> "French"
-        "vi" -> "Vietnamese"
+fun String.convertToLanguage(context: Context): String {
+    return when (this) {
+        "en" -> context.getString(R.string.english)
+        "ko" -> context.getString(R.string.korean)
+        "fr" -> context.getString(R.string.french)
+        "vi" -> context.getString(R.string.vietnamese)
         else -> "Alien"
     }
 }

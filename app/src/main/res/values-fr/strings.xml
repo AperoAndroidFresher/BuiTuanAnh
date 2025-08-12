@@ -9,4 +9,6 @@
     <string name="korean">Coréen</string>
     <string name="french">Français</string>
     <string name="vietnamese">Vietnamien</string>
+    <string name="welcomeback">Bon retour!</string>
+    <string name="rankings">Classements</string>
 </resources>

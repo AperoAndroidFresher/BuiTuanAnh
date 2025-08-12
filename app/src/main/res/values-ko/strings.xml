@@ -9,4 +9,6 @@
     <string name="korean">한국어</string>
     <string name="french">프랑스어</string>
     <string name="vietnamese">베트남어</string>
+    <string name="welcomeback">다시 오신 것을 환영합니다!</string>
+    <string name="rankings">순위</string>
 </resources>

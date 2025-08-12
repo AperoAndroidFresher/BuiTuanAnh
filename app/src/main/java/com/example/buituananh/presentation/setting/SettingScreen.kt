@@ -17,9 +17,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
 import com.example.buituananh.presentation.components.TopBarTwoActions
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
-import com.example.buituananh.util.Destination
-import com.example.buituananh.util.convertToLanguage
-import com.example.buituananh.util.toLanguageClass
+import com.example.buituananh.util.*
+import kotlinx.coroutines.yield
 
 @Composable
 fun SettingScreen(
@@ -35,7 +34,10 @@ fun SettingScreen(
         viewModel.effect.collect { effect ->
             when(effect) {
                 SettingEffect.NavigateToHomeScreen -> onNavigate(Destination.HomeWrapper)
-                SettingEffect.PopBack -> popBack()
+                SettingEffect.PopBack -> {
+                    yield()
+                    popBack()
+                }
             }
         }
     }
@@ -43,30 +45,35 @@ fun SettingScreen(
     LaunchedEffect(Unit) { 
         viewModel.onIntent(SettingIntent.LoadLanguage)
     }
-    
-    var expanded by remember {
-        mutableStateOf(false)
-    }
-    
-    val showIcon = (state.backupLanguageCode != null) && (state.currentLanguageCode != state.backupLanguageCode)
-    
+
     val context = LocalContext.current
+
+    val languageNames = listOf(
+        stringResource(R.string.english),
+        stringResource(R.string.korean),
+        stringResource(R.string.french),
+        stringResource(R.string.vietnamese)
+    )
+
+    var expanded by remember { mutableStateOf(false) }
+
+    val displayLanguageCode = state.currentLanguageCode
+    val displayLanguageName = displayLanguageCode.convertToLanguage(context)
 
     Scaffold(
         topBar = {
             TopBarTwoActions(
-                onBack = {
-                    viewModel.onIntent(SettingIntent.CancelLanguage)
-                },
+                onBack = { viewModel.onIntent(SettingIntent.CancelLanguage) },
                 onAction = {
                     viewModel.onIntent(SettingIntent.AcceptLanguage)
                     expanded = false
                 },
                 title = context.getString(R.string.setting),
                 iconId = R.drawable.accept,
-                showAction = showIcon
+                showAction = (state.backupLanguageCode != null) &&
+                             (state.currentLanguageCode != state.backupLanguageCode)
             )
-        },
+        }
     ) {
         Row(
             modifier = Modifier
@@ -79,27 +86,26 @@ fun SettingScreen(
             LanguageSection(modifier = Modifier.weight(1f))
 
             TextButton(
-                onClick = {
-                    expanded = !expanded
-                },
+                onClick = { expanded = !expanded },
             ) {
                 Text(
-                    text = state.currentLanguageCode.convertToLanguage(),
+                    text = displayLanguageName,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 LanguageMenu(
-                    onDismissRequest = { expanded = false },
                     expanded = expanded,
-                    onLanguageChange = { newLanguage ->
-                        val languageClass = newLanguage.toLanguageClass()
-                        viewModel.onIntent(SettingIntent.OnLanguageChange(languageClass))
+                    onDismissRequest = { expanded = false },
+                    onLanguageChange = { newLang ->
+                        viewModel.onIntent(SettingIntent.OnLanguageChange(newLang))
                         expanded = false
                     },
+                    languages = languageNames
                 )
             }
         }
     }
+
 }
 
 @Composable
@@ -130,17 +136,12 @@ fun LanguageSection(
 
 @Composable
 fun LanguageMenu(
+    expanded: Boolean,
     onDismissRequest: () -> Unit,
-    onLanguageChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    expanded: Boolean = false,
+    onLanguageChange: (Language) -> Unit,
+    languages: List<String>,
+    modifier: Modifier = Modifier
 ) {
-    val list = listOf(
-        stringResource(R.string.english),
-        stringResource(R.string.korean),
-        stringResource(R.string.french),
-        stringResource(R.string.vietnamese)
-    )
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
@@ -148,20 +149,24 @@ fun LanguageMenu(
             .width(150.dp)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
-        list.onEachIndexed { idx, language ->
+        languages.forEachIndexed { idx, languageName ->
             DropdownMenuItem(
                 text = {
                     Text(
-                        text = language,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                        text = languageName,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 },
                 onClick = {
-                    onLanguageChange(language)
-                },
+                    val selectedLang = Language.entries[idx]
+                    onLanguageChange(selectedLang)
+                }
             )
-            if(idx != list.size - 1) {
+            if (idx != languages.lastIndex) {
                 HorizontalDivider(Modifier.padding(horizontal = 8.dp))
             }
         }

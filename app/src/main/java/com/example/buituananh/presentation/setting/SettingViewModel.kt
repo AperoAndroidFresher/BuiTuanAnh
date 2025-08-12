@@ -45,22 +45,28 @@ class SettingViewModel @AssistedInject constructor(
     private fun onLanguageChange(language: Language) {
         _state.update {
             it.copy(
-                backupLanguageCode = it.currentLanguageCode,
-                currentLanguageCode = language.languageCode,
+                backupLanguageCode = it.backupLanguageCode ?: it.currentLanguageCode,
+                currentLanguageCode = language.languageCode
             )
         }
     }
 
     private fun acceptLanguage() {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch {
+            sendEffect(SettingEffect.PopBack)
+            _state.update { 
+                it.copy(
+                    backupLanguageCode = null
+                )
+            }
             applyLanguageUseCase(_state.value.currentLanguageCode)
         }
     }
 
     private fun cancelLanguage() {
-        _state.update { 
+        _state.update {
             it.copy(
-                currentLanguageCode = it.backupLanguageCode ?: "???",
+                currentLanguageCode = it.backupLanguageCode ?: "en",
                 backupLanguageCode = null
             )
         }
