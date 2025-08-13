@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">BuiTuanAnh</string>
+    <string name="app_name">Apero Music</string>
+    <string name="setting">Settings</string>
+    <string name="language">Language</string>
+    <string name="english">English</string>
+    <string name="korean">Korean</string>
+    <string name="french">French</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="welcomeback">Welcome back!</string>
+    <string name="rankings">Rankings</string>
+    
+    
 </resources>

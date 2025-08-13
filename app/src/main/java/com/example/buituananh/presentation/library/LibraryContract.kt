@@ -12,7 +12,9 @@ data class LibraryState(
     val remoteSongs: List<Song> = emptyList(),
     val playlists: List<Playlist> = emptyList(),
     val selectedSong: Song? = null,
-    val userId: Long = -1
+    val userId: Long = -1,
+    val playedSong: Song? = null,
+    val playedPlaylistId: Long? = null
 )
 
 sealed interface LibraryIntent {
@@ -23,7 +25,7 @@ sealed interface LibraryIntent {
     data class ShareSong(val song: Song) : LibraryIntent
     data object ClickNewPlaylist : LibraryIntent
     data class ClickPlaylist(val playlist: Playlist) : LibraryIntent
-    data class PlayMusic(val song: Song, val songList: List<Song>) : LibraryIntent
+    data class StartSong(val song: Song) : LibraryIntent
 }
 
 
@@ -31,5 +33,4 @@ sealed interface LibraryEffect {
     data object NavigateToPlaylistScreen : LibraryEffect
     data class ShowToast(val message: String) : LibraryEffect
     data class ShareSongIntent(val song: Song) : LibraryEffect
-    data class PlaySong(val song: Song) : LibraryEffect
 }

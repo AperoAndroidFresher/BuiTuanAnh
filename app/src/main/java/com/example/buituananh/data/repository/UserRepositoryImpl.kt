@@ -11,14 +11,16 @@ import com.example.buituananh.domain.model.User
 import com.example.buituananh.domain.repository.UserRepository
 import com.example.buituananh.userDataStore
 import com.example.buituananh.util.UserPrefsKey
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import javax.inject.Inject
 
-class UserRepositoryImpl(
+class UserRepositoryImpl @Inject constructor(
     private val database: AppDatabase,
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : UserRepository {
 
     private val userDao = database.userDao()

@@ -4,14 +4,16 @@ import android.content.Context
 import android.net.Uri
 import com.example.buituananh.domain.repository.FileRepository
 import com.example.buituananh.util.ImageUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import javax.inject.Inject
 
-class FileRepositoryImpl(
-    private val context: Context
+class FileRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context
 ): FileRepository {
     override suspend fun saveAudioFileToInternalStorage(urlPath: String, fileName: String): File {
         val directory = File(context.filesDir, "internal_storage")

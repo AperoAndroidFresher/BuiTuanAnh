@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.playlist
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,7 +11,13 @@ import com.example.buituananh.domain.model.PlaylistStore
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.domain.repository.PlaylistRepository
 import com.example.buituananh.domain.repository.UserRepository
+import com.example.buituananh.service.PlayType
+import com.example.buituananh.service.PlaybackManager
 import com.example.buituananh.util.Destination
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,11 +26,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PlaylistViewModel(
-    private val key: Destination.PlaylistWrapper,
+@HiltViewModel(assistedFactory = PlaylistViewModel.Factory::class)
+class PlaylistViewModel @AssistedInject constructor(
+    @Assisted private val key: Destination.PlaylistWrapper,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
+    private val playbackManager: PlaybackManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlaylistState())
@@ -36,6 +46,11 @@ class PlaylistViewModel(
         viewModelScope.launch {
             PlaylistStore.playlists.collectLatest { updatedList ->
                 _state.update { it.copy(playlists = updatedList) }
+            }
+        }
+        viewModelScope.launch {
+            playbackManager.playerState.collect {state ->
+                _state.update { it.copy(playedSong = state.currentSong, playedPlaylistId = state.playlistId) }
             }
         }
     }
@@ -57,9 +72,27 @@ class PlaylistViewModel(
             is PlaylistIntent.SelectPlaylist -> selectPlaylist(intent.id)
             is PlaylistIntent.LoadPlaylistDetail -> loadPlaylistDetail(intent.id)
             is PlaylistIntent.UndoRemovePlaylist -> undoRemovePlaylist()
+            is PlaylistIntent.StartSong -> startSong(intent.song)
         }
     }
+    
+    fun checkSongInPlaylist(): Boolean {
+        val openPlaylistId = _state.value.selectedPlaylist?.playlistId
+        val playedPlaylistId = _state.value.playedPlaylistId
+        return openPlaylistId == playedPlaylistId
+    }
 
+    private fun startSong(song: Song) {
+        viewModelScope.launch {
+            val queue = _state.value.selectedPlaylist?.songs ?: emptyList()
+            playbackManager.updateQueue(queue)
+            playbackManager.updateSong(song)
+            playbackManager.updatePlayType(PlayType.FOREGROUND)
+            playbackManager.updatePlaylistId(_state.value.selectedPlaylist?.playlistId)
+            playbackManager.startSong()
+        }
+    }
+    
     private fun undoRemovePlaylist() {
         viewModelScope.launch {
             playlistRepository.undoDeletePlaylist(_state.value.deletedPlaylistId)
@@ -211,13 +244,8 @@ class PlaylistViewModel(
         }
     }
 
-    class Factory(
-        private val key: Destination.PlaylistWrapper,
-        private val userRepository: UserRepository,
-        private val playlistRepository: PlaylistRepository,
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaylistViewModel(key, userRepository, playlistRepository) as T
-        }
+    @AssistedFactory
+    interface Factory {
+        fun create(navKey: Destination.PlaylistWrapper): PlaylistViewModel
     }
 }

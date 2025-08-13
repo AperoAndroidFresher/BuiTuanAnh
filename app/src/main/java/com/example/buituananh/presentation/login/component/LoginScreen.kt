@@ -43,7 +43,7 @@ fun LoginScreenRoot(
     LaunchedEffect(Unit) {
         viewModel.loginEffect.collect { effect ->
             when (effect) {
-                LoginEffect.NavigateToHomeScreen -> onNavigate(Destination.HomeScreen)
+                LoginEffect.NavigateToHomeScreen -> onNavigate(Destination.HomeWrapper)
                 LoginEffect.NavigateToSignupScreen -> onNavigate(Destination.SignupScreen)
                 is LoginEffect.ShowToast -> Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
             }

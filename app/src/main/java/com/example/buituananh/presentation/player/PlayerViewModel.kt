@@ -1,161 +1,103 @@
 package com.example.buituananh.presentation.player
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.buituananh.domain.model.Song
+import com.example.buituananh.service.PlaybackManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.roundToLong
+import javax.inject.Inject
 
-class PlayerViewModel : ViewModel() {
-
-    private val _musicState = MutableStateFlow(MusicState())
-    val musicState = _musicState.asStateFlow()
-
+@HiltViewModel
+class PlayerViewModel @Inject constructor(
+    private val playbackManager: PlaybackManager
+) : ViewModel() {
+    
+    private val _state = MutableStateFlow(PlayerState())
+    val state = _state.asStateFlow()
+    
     private val _effect = Channel<PlayerEffect>()
     val effect = _effect.receiveAsFlow()
-
+    
+    init {
+        viewModelScope.launch {
+            playbackManager.playerState.collect { musicState ->
+                _state.update { it.copy(musicState = musicState) }
+            }
+        }
+    }
+    
     fun onIntent(intent: PlayerIntent) {
-        when (intent) {
-            is PlayerIntent.Loop -> onLoop()
-            is PlayerIntent.Next -> onNext()
-            is PlayerIntent.ClickPause -> onPause()
-            is PlayerIntent.ClickPlay -> onPlay()
-            is PlayerIntent.Previous -> onPrevious()
-            is PlayerIntent.Shuffle -> onShuffle()
-            is PlayerIntent.SliderChange -> onSliderChange(intent.duration)
-            is PlayerIntent.SelectSong -> start(intent.songList, intent.song)
-            is PlayerIntent.UpdateProgress -> updateProgress(intent.progress)
-            is PlayerIntent.DragSliderEnd -> dragSliderEnd()
+        when(intent) {
+            PlayerIntent.ClickBack -> clickBack()
+            PlayerIntent.ClickNextSong -> clickNextSong()
+            PlayerIntent.ClickPreviousSong -> clickPreviousSong()
+            is PlayerIntent.DragSlider -> dragSlider(intent.progress)
+            PlayerIntent.StopPlaying -> stopPlaying()
+            PlayerIntent.TogglePlayPauseMode -> togglePlayPauseMode()
+            PlayerIntent.ToggleRepeatMode -> toggleRepeatMode()
+            PlayerIntent.ToggleShuffleMode -> toggleShuffleMode()
+            PlayerIntent.DragSliderEnd -> dragSliderEnd()
         }
     }
 
     private fun dragSliderEnd() {
-        val nextProgress = _musicState.value.playerState?.progress ?: 0L
-        Log.d("PlayerViewModel", "dragSliderEnd: $nextProgress")
-        sendEffect(PlayerEffect.SeekDuration(nextProgress))
-    }
-
-    private fun updateProgress(progress: Long) {
-        _musicState.update {
-            it.copy(playerState = (it.playerState ?: PlayerState()).copy(progress = progress))
+        viewModelScope.launch { 
+            playbackManager.dragSliderEnd()
         }
     }
 
-    private fun onPlay() {
-        val playerState = _musicState.value.playerState?.copy(action = PlayerAction.PLAY)
-        _musicState.update { it.copy(playerState = playerState) }
-        playerState?.let {
-            sendEffect(PlayerEffect.PauseSong(playerState))
+    private fun toggleShuffleMode() {
+        playbackManager.toggleShuffleMode()        
+    }
+
+    private fun toggleRepeatMode() {
+        playbackManager.toggleRepeatMode()        
+    }
+
+    private fun togglePlayPauseMode() {
+        viewModelScope.launch {
+            playbackManager.togglePlayPauseMode()
         }
     }
 
-    private fun onPause() {
-        val playerState = _musicState.value.playerState?.copy(action = PlayerAction.PAUSE)
-        _musicState.update { it.copy(playerState = playerState) }
-        playerState?.let {
-            sendEffect(PlayerEffect.PauseSong(playerState))
+    private fun stopPlaying() {
+        viewModelScope.launch {
+            sendEffect(PlayerEffect.NavigateToHomeScreen)
+            playbackManager.stopPlaying()
         }
     }
 
-    private fun onNext() {
-        val song = _musicState.value.playerState?.music
-        val list = _musicState.value.musicList
-
-        if (list.isEmpty()) return
-
-        val currentIdx = list.indexOf(song)
-        val isShuffle = _musicState.value.isShuffle
-        val isLoop = _musicState.value.isLoop
-        val nextIdx = when {
-            isLoop -> {
-                _musicState.update { it.copy(isLoop = false) }
-                currentIdx.takeIf { it != -1 } ?: 0
-            }
-            !isShuffle -> {
-                if (currentIdx == -1 || currentIdx == list.lastIndex) 0 else currentIdx + 1
-            }
-            list.size == 1 -> 0
-            else -> {
-                var randomIdx: Int
-                do {
-                    randomIdx = list.indices.random()
-                } while (randomIdx == currentIdx)
-                randomIdx
-            }
-        }
-        val nextSong = list[nextIdx]
-        Log.d("PlayerViewModel", "onNext: $nextSong")
-        startSong(nextSong)
-    }
-
-    private fun onPrevious() {
-        val song = _musicState.value.playerState?.music
-        val list = _musicState.value.musicList
-        
-        if(list.isEmpty()) return
-        
-        val currentIdx = list.indexOf(song)
-        val previousIdx = if(currentIdx <= 0) {
-            list.size - 1
-        } else {
-            currentIdx - 1
-        }
-        val previousSong = list[previousIdx]
-        startSong(previousSong)
-    }
-
-    private fun onSliderChange(sliderState: Float) {
-        updateProgress(sliderState.roundToLong())
-    }
-
-    private fun onLoop() {
-        _musicState.update { it.copy(isLoop = !it.isLoop) }
-    }
-
-    private fun onShuffle() {
-        _musicState.update { 
-            it.copy(isShuffle = !it.isShuffle)
+    private fun dragSlider(progress: Float) {
+        viewModelScope.launch { 
+            playbackManager.dragSlider(progress)
         }
     }
 
-    private fun startSong(song: Song) {
-        _musicState.update {
-            it.copy(
-                playerState = (it.playerState ?: PlayerState()).copy(
-                    music = song,
-                    action = PlayerAction.START,
-                    progress = 0L,
-                ),
-            )
-        }
-        sendEffect(PlayerEffect.StartSong(_musicState.value.playerState ?: PlayerState()))
+    private fun clickPreviousSong() {
+       viewModelScope.launch { 
+           playbackManager.playPreviousSong()
+       }
     }
 
-    private fun start(songList: List<Song>, song: Song) {
-        Log.d("playerviewmodel", "start: ${song.toString()}, ${songList.toString()}")
-        _musicState.update {
-            it.copy(
-                musicList = songList,
-                playerState = (it.playerState ?: PlayerState()).copy(
-                    music = song,
-                    action = PlayerAction.START,
-                    progress = 0L,
-                ),
-            )
+    private fun clickNextSong() {
+        viewModelScope.launch {
+            playbackManager.playNextSong()
         }
-        Log.d("playerviewmodel", "${_musicState.value.playerState}")
-        sendEffect(PlayerEffect.StartSong(_musicState.value.playerState ?: PlayerState()))
+    }
+
+    private fun clickBack() {
+        sendEffect(PlayerEffect.NavigateToHomeScreen)
     }
 
     private fun sendEffect(effect: PlayerEffect) {
-        viewModelScope.launch {
+        viewModelScope.launch { 
             _effect.send(effect)
         }
     }
+    
 }

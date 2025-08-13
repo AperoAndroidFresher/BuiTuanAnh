@@ -1,12 +1,11 @@
 package com.example.buituananh.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import com.example.buituananh.di.AppContainer
 import com.example.buituananh.presentation.login.LoginViewModel
 import com.example.buituananh.presentation.login.component.LoginScreenRoot
 import com.example.buituananh.presentation.signup.SignupViewModel
@@ -19,7 +18,6 @@ fun AuthWrapperEntry(
     addToBackStack: (Destination) -> Unit,
     onBack: () -> Unit,
     loginViewModel: LoginViewModel,
-    appContainer: AppContainer,
     backStack: NavBackStack
 ) {
     
@@ -40,8 +38,8 @@ fun AuthWrapperEntry(
                         if(it is Destination.LoginScreen) {
                             authBackstack.add(Destination.LoginScreen)
                         }
-                        if(it is Destination.HomeScreen) {
-                            addToBackStack(Destination.HomeScreen)
+                        if(it is Destination.HomeWrapper) {
+                            addToBackStack(Destination.HomeWrapper)
                         }
                     },
                     viewModel = loginViewModel
@@ -51,7 +49,7 @@ fun AuthWrapperEntry(
                 LoginScreenRoot(
                     viewModel = loginViewModel
                 ) { route ->
-                    if (route is Destination.HomeScreen) {
+                    if (route is Destination.HomeWrapper) {
                         while (backStack.isNotEmpty()) {
                             onBack()
                         }
@@ -63,13 +61,13 @@ fun AuthWrapperEntry(
                 }
             }
             entry<Destination.SignupScreen> { key: Destination.SignupScreen ->
+                val viewModel = hiltViewModel<SignupViewModel, SignupViewModel.Factory>(
+                    creationCallback = { factory -> 
+                        factory.create(key)
+                    }
+                )
                 SignupScreenRoot(
-                    viewModel = viewModel(
-                        factory = SignupViewModel.Factory(
-                            key,
-                            appContainer.userRepository
-                        )
-                    ),
+                    viewModel = viewModel,
                     onPopBack = {
                         authBackstack.removeLastOrNull()
                     }

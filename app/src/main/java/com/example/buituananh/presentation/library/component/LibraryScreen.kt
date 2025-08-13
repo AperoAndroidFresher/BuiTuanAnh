@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,7 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.R
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.components.LoadingAnimation
-import com.example.buituananh.presentation.components.TopBar
+import com.example.buituananh.presentation.components.TopBarNoAction
 import com.example.buituananh.presentation.library.LibraryEffect
 import com.example.buituananh.presentation.library.LibraryIntent
 import com.example.buituananh.presentation.library.LibraryState
@@ -79,17 +80,16 @@ fun LibraryScreenRoot(
                 is LibraryEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
-
-                is LibraryEffect.PlaySong -> {}
             }
         }
     }
 
     LibraryScreen(
-        modifier = modifier,
         state = state,
+        isSongInPlaylist = viewModel.checkSongInPlaylist(),
         permissionState = mediaPermissionState,
         onIntent = viewModel::onIntent,
+        modifier = modifier
     )
 }
 
@@ -99,6 +99,7 @@ fun LibraryScreen(
     onIntent: (LibraryIntent) -> Unit,
     modifier: Modifier = Modifier,
     permissionState: PermissionState? = null,
+    isSongInPlaylist: Boolean = false
 ) {
 
     val isGranted = permissionState?.status?.isGranted ?: false
@@ -139,7 +140,7 @@ fun LibraryScreen(
 
     Scaffold(
         topBar = {
-            TopBar(title = "Library")
+            TopBarNoAction(title = "Library")
         },
         modifier = modifier,
     ) {
@@ -167,13 +168,15 @@ fun LibraryScreen(
                     shareSong = {song ->
                         onIntent(LibraryIntent.ShareSong(song))
                     },
+                    playSong = { song ->
+                        onIntent(LibraryIntent.StartSong(song))
+                    },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
                     localSongs = state.localSongs,
                     remoteSongs = state.remoteSongs,
-                    playSong = { song, songs ->
-                        onIntent(LibraryIntent.PlayMusic(song,songs))
-                    }
+                    playedSong = state.playedSong,
+                    isSongInPlaylist = isSongInPlaylist
                 )
             }
         }
@@ -209,11 +212,13 @@ fun LibraryScreen(
 private fun SongsSection(
     clickSongOptions: (Song) -> Unit,
     shareSong: (Song) -> Unit,
-    playSong: (Song, List<Song>) -> Unit,
+    playSong: (Song) -> Unit,
     modifier: Modifier = Modifier,
     isLocalMode: Boolean = true,
     localSongs: List<Song> = emptyList(),
     remoteSongs: List<Song> = emptyList(),
+    playedSong: Song? = null,
+    isSongInPlaylist: Boolean = false
 ) {
 
     val songs = if (isLocalMode) {
@@ -227,19 +232,21 @@ private fun SongsSection(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface),
         contentPadding = PaddingValues(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         items(songs) { song ->
             SongItem(
                 song = song,
+                playedSong = playedSong,
+                isSongInPlaylist = isSongInPlaylist,
                 clickSongOptions = {
                     clickSongOptions(song)
                 },
                 shareSong = {
                     shareSong(song)
                 },
-                playSong = {
-                    playSong(song, songs)
+                modifier = Modifier.clickable { 
+                    playSong(song)
                 }
             )
         }

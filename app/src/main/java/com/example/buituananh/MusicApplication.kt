@@ -1,27 +1,31 @@
 package com.example.buituananh
 
 import android.app.Application
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.os.Build
-import com.example.buituananh.di.AppContainer
+import android.content.Context
+import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.example.buituananh.util.UserPrefsKey
+import com.example.buituananh.util.Utils
+import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
+@HiltAndroidApp
 class MusicApplication : Application() {
-
-    lateinit var appContainer: AppContainer
-    private val CHANNEL_ID = "MusicPlayerChannel"
 
     override fun onCreate() {
         super.onCreate()
-        appContainer = AppContainer(applicationContext)
-
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            "Audio Service Channel",
-            NotificationManager.IMPORTANCE_DEFAULT,
+        val notificationChannel = NotificationChannel(
+            Utils.MEDIA_CHANNEL,
+            Utils.MEDIA_CHANNEL.toString(),
+            NotificationManager.IMPORTANCE_HIGH
         )
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.createNotificationChannel(channel)
+        
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(notificationChannel)
     }
+    
 }
