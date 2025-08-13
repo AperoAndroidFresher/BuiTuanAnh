@@ -318,13 +318,13 @@ private fun LibraryModeButton(
 }
 
 @Composable
-private fun NoInternetSection(
+fun NoInternetSection(
     fetchSongAgain: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

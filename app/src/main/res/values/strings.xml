@@ -8,6 +8,9 @@
     <string name="vietnamese">Vietnamese</string>
     <string name="welcomeback">Welcome back!</string>
     <string name="rankings">Rankings</string>
-    
+    <string name="top_albums">Top Albums</string>
+    <string name="top_tracks">Top Tracks</string>
+    <string name="top_artists">Top Artists</string>
+    <string name="see_all">See all</string>
     
 </resources>

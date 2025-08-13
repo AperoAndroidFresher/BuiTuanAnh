@@ -31,4 +31,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun provideLanguageRepository(impl: LanguageRepositoryImpl): LanguageRepository
+    
+    @Binds
+    @Singleton
+    abstract fun provideAudioScrobblerRepository(impl: AudioScrobblerRepositoryImpl): AudioScrobblerRepository 
 }

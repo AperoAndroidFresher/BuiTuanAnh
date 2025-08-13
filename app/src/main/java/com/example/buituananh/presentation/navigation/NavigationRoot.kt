@@ -20,11 +20,9 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import androidx.room.coroutines.createFlow
 import com.example.buituananh.R
-import com.example.buituananh.presentation.home.HomeScreenRoot
+import com.example.buituananh.presentation.home.components.HomeScreenRoot
 import com.example.buituananh.presentation.home.HomeViewModel
-import com.example.buituananh.presentation.home.components.HomeState
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.library.component.LibraryScreenRoot
 import com.example.buituananh.presentation.login.LoginViewModel
@@ -180,28 +178,7 @@ fun NavigationRoot(
                             factory.create(key)
                         }
                     )
-                    HomeScreenRoot(
-                        onNavigate = {
-                            backStack.add(it)
-                        },
-                        viewModel = homeViewModel
-                    )
-                }
-                entry<Destination.SettingScreen> { key ->
-                    val settingViewModel = hiltViewModel<SettingViewModel, SettingViewModel.Factory>(
-                        creationCallback = { factory ->
-                            factory.create(key)
-                        }
-                    )
-                    SettingScreen(
-                        viewModel = settingViewModel,
-                        onNavigate = {
-                            
-                        },
-                        popBack = {
-                            backStack.removeLastOrNull()
-                        }
-                    )
+                    HomeWrapperEntry(homeViewModel)
                 }
                 entry<Destination.LibraryScreen> { key ->
                     val viewModel = hiltViewModel<LibraryViewModel, LibraryViewModel.Factory>(
@@ -222,16 +199,6 @@ fun NavigationRoot(
                         },
                     )
                     PlaylistWrapperEntry(viewModel)
-                }
-                entry<Destination.ProfileScreen> { key ->
-                    val viewModel = hiltViewModel<ProfileViewModel, ProfileViewModel.Factory>(
-                        creationCallback = { factory ->
-                            factory.create(key)
-                        },
-                    )
-                    ProfileScreenRoot(
-                        viewModel = viewModel,
-                    )
                 }
                 entry<Destination.PlayerWrapper> {
                     PlayerScreenRoot(

@@ -11,4 +11,8 @@
     <string name="vietnamese">베트남어</string>
     <string name="welcomeback">다시 오신 것을 환영합니다!</string>
     <string name="rankings">순위</string>
+    <string name="top_albums">최고 앨범</string>
+    <string name="top_tracks">최고 트랙</string>
+    <string name="top_artists">최고 아티스트</string>
+    <string name="see_all">모두 보기</string>
 </resources>

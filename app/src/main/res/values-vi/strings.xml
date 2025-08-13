@@ -11,4 +11,9 @@
     <string name="vietnamese">Tiếng Việt</string>
     <string name="welcomeback">Chào mừng trở lại!</string>
     <string name="rankings">Bảng xếp hạng</string>
+
+    <string name="top_albums">Album hàng đầu</string>
+    <string name="top_tracks">Bài hát hàng đầu</string>
+    <string name="top_artists">Nghệ sĩ hàng đầu</string>
+    <string name="see_all">Xem tất cả</string>
 </resources>

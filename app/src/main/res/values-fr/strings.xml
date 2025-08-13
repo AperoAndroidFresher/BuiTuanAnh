@@ -11,4 +11,9 @@
     <string name="vietnamese">Vietnamien</string>
     <string name="welcomeback">Bon retour!</string>
     <string name="rankings">Classements</string>
+
+    <string name="top_albums">Meilleurs albums</string>
+    <string name="top_tracks">Meilleurs titres</string>
+    <string name="top_artists">Meilleurs artistes</string>
+    <string name="see_all">Voir tout</string>
 </resources>
