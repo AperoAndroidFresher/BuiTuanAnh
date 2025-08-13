@@ -36,4 +36,33 @@
     <string name="share">Partager</string>
     <string name="my_playlist">Ma playlist</string>
     <string name="songs">chansons</string>
+
+    <string name="no_internet_line1">Pas de connexion Internet,</string>
+    <string name="no_internet_line2">veuillez vérifier votre</string>
+    <string name="no_internet_line3">connexion à nouveau</string>
+    <string name="try_again">Réessayer</string>
+    <string name="home">Accueil</string>
+
+    <string name="choose_playlist">Choisir une playlist</string>
+    <string name="no_playlist_line1">Vous n\'avez aucune</string>
+    <string name="no_playlist_line2">playlist. Cliquez sur</string>
+    <string name="no_playlist_line3">le bouton « + » pour ajouter.</string>
+
+    <string name="new_playlist">Nouvelle playlist</string>
+    <string name="playlist_title_prompt">Donnez un titre à votre playlist</string>
+    <string name="cancel">Annuler</string>
+    <string name="create">Créer</string>
+    <string name="remove_playlist">Supprimer la playlist</string>
+    <string name="rename">Renommer</string>
+    <string name="remove_from_playlist">Supprimer de la playlist</string>
+    <string name="playlist">Playlist</string>
+    <string name="login_title">Connectez-vous à votre compte</string>
+    <string name="username">Nom d\'utilisateur</string>
+    <string name="password">Mot de passe</string>
+    <string name="remember_me">Se souvenir de moi</string>
+    <string name="login">Se connecter</string>
+    <string name="no_account">Vous n\'avez pas de compte ?</string>
+    <string name="sign_up">S\'inscrire</string>
+    <string name="confirm_password">Confirmer le mot de passe</string>
+    <string name="email">Email</string>
 </resources>

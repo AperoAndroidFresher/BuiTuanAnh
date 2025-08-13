@@ -30,6 +30,31 @@
     <string name="share">Share</string>
     <string name="my_playlist">My playlist</string>
     <string name="songs">songs</string>
-    
-    
+    <string name="no_internet_line1">No internet connection,</string>
+    <string name="no_internet_line2">please check your</string>
+    <string name="no_internet_line3">connection again</string>
+    <string name="try_again">Try again</string>
+    <string name="home">Home</string>
+    <string name="choose_playlist">Choose playlist</string>
+    <string name="no_playlist_line1">You don\'t have any</string>
+    <string name="no_playlist_line2">playlists. Click the</string>
+    <string name="no_playlist_line3">"+" button to add.</string>
+    <string name="new_playlist">New Playlist</string>
+    <string name="playlist_title_prompt">Give your playlist a title</string>
+    <string name="cancel">Cancel</string>
+    <string name="create">Create</string>
+    <string name="remove_playlist">Remove playlist</string>
+    <string name="rename">Rename</string>
+    <string name="remove_from_playlist">Remove from playlist</string>
+    <string name="playlist">Playlist</string>
+    <string name="login_title">Login to your account</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="login">Login</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="email">Email</string>
+
 </resources>

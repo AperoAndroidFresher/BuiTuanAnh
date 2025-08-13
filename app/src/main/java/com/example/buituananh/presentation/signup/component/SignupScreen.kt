@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -90,7 +91,7 @@ fun SignupScreen(
         Spacer(Modifier.height(24.dp))
         InputTextField(
             iconId = R.drawable.person,
-            hint = "Username",
+            hint = stringResource(R.string.username),
             value = state.username,
             isError = state.usernameError.isNotBlank(),
             errorName = state.usernameError,
@@ -101,7 +102,7 @@ fun SignupScreen(
         Spacer(Modifier.height(14.dp))
         InputTextField(
             iconId = R.drawable.password,
-            hint = "Password",
+            hint = stringResource(R.string.password),
             value = state.password,
             isPasswordField = true,
             isError = state.passwordError.isNotBlank(),
@@ -113,7 +114,7 @@ fun SignupScreen(
         Spacer(Modifier.height(14.dp))
         InputTextField(
             iconId = R.drawable.password,
-            hint = "Confirm password",
+            hint = stringResource(R.string.confirm_password),
             value = state.confirmedPassword,
             isPasswordField = true,
             isError = state.confirmedPasswordError.isNotBlank(),
@@ -125,7 +126,7 @@ fun SignupScreen(
         Spacer(Modifier.height(14.dp))
         InputTextField(
             iconId = R.drawable.email,
-            hint = "Email",
+            hint = stringResource(R.string.email),
             value = state.email,
             isError = state.emailError.isNotBlank(),
             errorName = state.emailError,
@@ -144,7 +145,7 @@ fun SignupScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
         ) {
-            Text("Sign up", modifier = Modifier.padding(vertical = 10.dp))
+            Text(stringResource(R.string.sign_up), modifier = Modifier.padding(vertical = 10.dp))
         }
         Spacer(Modifier.height(28.dp))
     }

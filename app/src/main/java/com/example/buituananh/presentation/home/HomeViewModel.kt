@@ -71,7 +71,7 @@ class HomeViewModel @AssistedInject constructor(
 
     private fun loadAlbumTrackArtist() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isLoading = true, error = null) }
             delay(1000L)
             fetchAlbumTrackArtistUseCase().apply { 
                 onSuccess { (albums, tracks, artist) -> 

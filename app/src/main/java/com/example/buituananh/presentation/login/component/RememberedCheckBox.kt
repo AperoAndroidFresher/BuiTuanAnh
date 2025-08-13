@@ -11,8 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.buituananh.R
 
 @Composable
 fun RememberedCheckbox(
@@ -35,7 +37,7 @@ fun RememberedCheckbox(
         )
         Spacer(Modifier.width(6.dp))
         Text(
-            text = "Remember me",
+            text = stringResource(R.string.remember_me),
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold

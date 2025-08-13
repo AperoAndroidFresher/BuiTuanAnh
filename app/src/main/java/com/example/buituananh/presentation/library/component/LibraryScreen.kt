@@ -339,9 +339,9 @@ fun NoInternetSection(
         Spacer(Modifier.height(16.dp))
         Text(
             text = """
-                No internet connection,
-                please check your
-                connection again
+                ${stringResource(R.string.no_internet_line1)}
+                ${stringResource(R.string.no_internet_line2)}
+                ${stringResource(R.string.no_internet_line3)}
             """.trimIndent(),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
@@ -353,7 +353,7 @@ fun NoInternetSection(
             shape = MaterialTheme.shapes.medium,
         ) {
             Text(
-                text = "Try again",
+                text = stringResource(R.string.try_again),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

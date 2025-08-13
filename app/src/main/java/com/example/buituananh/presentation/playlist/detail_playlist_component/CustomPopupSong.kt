@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,7 +57,7 @@ fun CustomPopupSong(
             )
             Spacer(Modifier.width(16.dp))
             Text(
-                text = "Remove from playlist",
+                text = stringResource(R.string.remove_from_playlist),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 18.sp
@@ -85,7 +86,7 @@ fun CustomPopupSong(
             )
             Spacer(Modifier.width(16.dp))
             Text(
-                text = "Share (coming soon)",
+                text = stringResource(R.string.share),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 fontSize = 18.sp

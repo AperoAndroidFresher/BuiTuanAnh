@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -110,7 +111,7 @@ private fun LoginForm(
 ) {
     InputTextField(
         iconId = R.drawable.person,
-        hint = "Username",
+        hint = stringResource(R.string.username),
         value = userName,
         isError = userNameError.isNotBlank(),
         errorName = userNameError,
@@ -121,7 +122,7 @@ private fun LoginForm(
     Spacer(Modifier.height(14.dp))
     InputTextField(
         iconId = R.drawable.password,
-        hint = "Password",
+        hint = stringResource(R.string.password),
         value = passWord,
         isPasswordField = true,
         isError = passWordError.isNotBlank(),
@@ -144,7 +145,7 @@ fun LoginButton(
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
     ) {
-        Text("Login", modifier = Modifier.padding(vertical = 10.dp))
+        Text(stringResource(R.string.login), modifier = Modifier.padding(vertical = 10.dp))
     }
 }
 
@@ -161,14 +162,14 @@ private fun NoAccountBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Don't have an account?",
+                text = stringResource(R.string.no_account),
                 color = MaterialTheme.colorScheme.onSurface,
             )
             TextButton(
                 onClick = clickSignup,
             ) {
                 Text(
-                    text = "Sign Up",
+                    text = stringResource(R.string.sign_up),
                     fontWeight = FontWeight.W700,
                     color = MaterialTheme.colorScheme.primary,
                 )
