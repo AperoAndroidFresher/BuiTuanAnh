@@ -1,13 +1,11 @@
 package com.example.buituananh.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.entry
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.example.buituananh.presentation.home.HomeViewModel
@@ -24,11 +22,16 @@ import com.example.buituananh.util.Destination
 @Composable
 fun HomeWrapperEntry(
     popBack: () -> Unit,
+    sendCurrentRoute: (NavKey) -> Unit,
     homeViewModel: HomeViewModel,
     modifier: Modifier = Modifier
 ) {
 
     val homeBackStack = rememberNavBackStack(Destination.HomeScreen)
+    
+    LaunchedEffect(homeBackStack) {
+        sendCurrentRoute(homeBackStack.last())
+    }
     
     NavDisplay(
         backStack = homeBackStack,

@@ -28,4 +28,12 @@
     <string name="your_universtiy_name">Tên trường đại học của bạn</string>
     <string name="description_hint">Nhập mô tả về bản thân</string>
     <string name="submit">Gửi</string>
+
+    <string name="local">Cục bộ</string>
+    <string name="remote">Từ xa</string>
+    <string name="library">Thư viện</string>
+    <string name="add_to_playlist">Thêm vào playlist</string>
+    <string name="share">Chia sẻ</string>
+    <string name="my_playlist">Playlist của tôi</string>
+    <string name="songs">bài hát</string>
 </resources>

@@ -1,11 +1,14 @@
 package com.example.buituananh.presentation.components
 
+import android.graphics.Color
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
@@ -23,11 +26,18 @@ fun NetworkingImage(
     url: String? = null,
     width: Int = 100,
     height: Int = 100,
+    isFiltered: Boolean = false,
     shape: Shape = RectangleShape,
 ) {
     val context = LocalContext.current
     val sizeInPx = with(LocalDensity.current) { width.dp.roundToPx() }
 
+    val colorFilter = if (isFiltered) {
+        ColorFilter.tint(androidx.compose.ui.graphics.Color.Gray, BlendMode.Color)
+    } else {
+        null
+    }
+    
     AsyncImage(
         model = ImageRequest.Builder(context)
             .data(url)
@@ -41,6 +51,7 @@ fun NetworkingImage(
             .build(),
         contentDescription = null,
         contentScale = ContentScale.Crop,
+        colorFilter = colorFilter,
         modifier = modifier
             .width(width.dp)
             .height(height.dp)

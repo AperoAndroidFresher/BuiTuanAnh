@@ -23,6 +23,13 @@
     <string name="your_universtiy_name">Your university name</string>
     <string name="description_hint">Enter a description about yourself</string>
     <string name="submit">Submit</string>
+    <string name="local">Local</string>
+    <string name="remote">Remote</string>
+    <string name="library">Library</string>
+    <string name="add_to_playlist">Add to playlist</string>
+    <string name="share">Share</string>
+    <string name="my_playlist">My playlist</string>
+    <string name="songs">songs</string>
     
     
 </resources>

@@ -88,7 +88,7 @@ fun HomeScreen(
                     onIntent(HomeIntent.ClickProfile)
                 },
                 avatarUri = state.user?.avatarUri,
-                userName = state.user?.fullName,
+                userName = state.user?.username,
             )
         },
         modifier = modifier,

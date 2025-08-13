@@ -20,11 +20,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -215,6 +211,8 @@ class PlaylistViewModel @AssistedInject constructor(
             )
             if (result is Result.Success) {
                 sendEffect(PlaylistEffect.ShowToast("Delete successfully"))
+                val newQueue = playlistRepository.getPlaylistWithSongById(chosen.playlistId).first()
+                playbackManager.updateQueue(newQueue.songs)
             } else {
                 sendEffect(PlaylistEffect.ShowToast("Delete unsuccessfully"))
             }

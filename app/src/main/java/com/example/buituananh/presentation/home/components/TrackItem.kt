@@ -39,6 +39,7 @@ fun TrackItem(
         ) {
             NetworkingImage(
                 url = track.imageUrl,
+                isFiltered = true,
                 modifier = Modifier
                     .width(150.dp)
                     .height(140.dp)
@@ -70,13 +71,13 @@ fun TrackItem(
                     Icon(
                         painter = painterResource(R.drawable.number_count),
                         contentDescription = null,
-                        tint = Color.Black,
+                        tint = Color.White,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
                         text = track.playCount,
-                        color = Color.Black,
+                        color = Color.White,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -87,13 +88,13 @@ fun TrackItem(
                     Icon(
                         painter = painterResource(R.drawable.artist),
                         contentDescription = null,
-                        tint = Color.Black,
+                        tint = Color.White,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
                         text = track.artistName,
-                        color = Color.Black,
+                        color = Color.White,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

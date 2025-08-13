@@ -36,11 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.buituananh.R
 import com.example.buituananh.domain.model.Playlist
 import com.example.buituananh.presentation.playlist.PlaylistEffect
 import com.example.buituananh.presentation.playlist.PlaylistIntent
@@ -147,7 +149,7 @@ fun PlaylistScreen(
                 Spacer(Modifier.size(30.dp))
 
                 Text(
-                    text = "My Playlist",
+                    text = stringResource(R.string.my_playlist),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface

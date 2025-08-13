@@ -90,6 +90,8 @@ class LibraryViewModel @AssistedInject constructor (
                     playlistId = playlist.playlistId,
                     songId = songId,
                 )
+                val newQueue = playlistRepository.getPlaylistWithSongById(playlist.playlistId).first()
+                playbackManager.updateQueue(newQueue.songs)
                 notifyIntentResult(result)
             }
 

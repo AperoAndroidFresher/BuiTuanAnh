@@ -28,4 +28,12 @@
     <string name="your_universtiy_name">Nom de votre université</string>
     <string name="description_hint">Entrez une description de vous-même</string>
     <string name="submit">Soumettre</string>
+
+    <string name="local">Local</string>
+    <string name="remote">Distant</string>
+    <string name="library">Bibliothèque</string>
+    <string name="add_to_playlist">Ajouter à la playlist</string>
+    <string name="share">Partager</string>
+    <string name="my_playlist">Ma playlist</string>
+    <string name="songs">chansons</string>
 </resources>

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,7 @@ fun LibraryScreenRoot(
     val context = LocalContext.current
 
     var permission = Manifest.permission.READ_EXTERNAL_STORAGE
-    permission = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+    permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_AUDIO
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
@@ -140,7 +141,7 @@ fun LibraryScreen(
 
     Scaffold(
         topBar = {
-            TopBarNoAction(title = "Library")
+            TopBarNoAction(title = stringResource(R.string.library))
         },
         modifier = modifier,
     ) {
@@ -271,14 +272,14 @@ private fun ButtonSection(
                 onIntent(LibraryIntent.ToggleLocalMode)
             },
             isLocalMode = state.isLocalMode,
-            title = "Local",
+            title = stringResource(R.string.local)
         )
         LibraryModeButton(
             onClick = {
                 onIntent(LibraryIntent.ToggleLocalMode)
             },
             isLocalMode = !state.isLocalMode,
-            title = "Remote",
+            title = stringResource(R.string.remote)
         )
     }
 }

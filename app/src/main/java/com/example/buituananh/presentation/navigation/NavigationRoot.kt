@@ -76,8 +76,6 @@ fun NavigationRoot(
         }
     }
     
-    
-    
     LaunchedEffect(currentScreen) {
         if (currentScreen !is Destination.HomeWrapper
             && currentScreen !is Destination.LibraryScreen
@@ -189,7 +187,10 @@ fun NavigationRoot(
                             }
                             backStack.add(Destination.AuthWrapper)
                         },
-                        homeViewModel
+                        sendCurrentRoute = {
+                            
+                        },
+                        homeViewModel =  homeViewModel
                     )
                 }
                 entry<Destination.LibraryScreen> { key ->

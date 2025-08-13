@@ -35,15 +35,19 @@ object ImageUtils {
         return resizeBitmap(context, image, 50, 50)
     }
 
-    fun getEmbeddedPicture(context: Context, uri: Uri): Uri? {
+    fun getEmbeddedPicture(context: Context, uri: Uri, fileName: String): Uri? {
         val retriever = MediaMetadataRetriever()
         return try {
             retriever.setDataSource(context, uri)
             val art = retriever.embeddedPicture
             if (art != null) {
-                val file = File(context.filesDir, "${System.currentTimeMillis()}.jpg")
-                file.writeBytes(art)
-                Uri.fromFile(file) 
+                val file = File(context.filesDir, fileName)
+                if(file.exists()) {
+                    Uri.fromFile(file)
+                } else {
+                    file.writeBytes(art)
+                    Uri.fromFile(file)
+                }
             } else {
                 null
             }
