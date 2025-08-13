@@ -25,9 +25,11 @@ sealed interface ProfileIntent {
     data object OnSubmitClick : ProfileIntent
     data class PickImage(val uri: Uri?) : ProfileIntent
     data object LoadUserData : ProfileIntent
+    data object LogOut : ProfileIntent
 }
 
 sealed interface ProfileEffect {
     data object ShowDialog : ProfileEffect
+    data object PopBack : ProfileEffect
     data class ShowToast(val message: String) : ProfileEffect
 }

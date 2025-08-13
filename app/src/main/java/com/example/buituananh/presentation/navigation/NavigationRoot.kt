@@ -39,6 +39,7 @@ import com.example.buituananh.service.PlayType
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.Utils
 import com.example.buituananh.util.toMilliseconds
+import kotlinx.coroutines.delay
 
 @Composable
 fun NavigationRoot(
@@ -75,6 +76,8 @@ fun NavigationRoot(
         }
     }
     
+    
+    
     LaunchedEffect(currentScreen) {
         if (currentScreen !is Destination.HomeWrapper
             && currentScreen !is Destination.LibraryScreen
@@ -89,11 +92,12 @@ fun NavigationRoot(
 
     LaunchedEffect(Unit) {
         if (!firstNavGraphEntry) {
+            delay(100) 
             if (musicState.musicState?.currentSong != null) {
                 backStack.add(Destination.PlayerWrapper)
             }
+            firstNavGraphEntry = true
         }
-        firstNavGraphEntry = true
     }
 
     Scaffold(
@@ -178,7 +182,15 @@ fun NavigationRoot(
                             factory.create(key)
                         }
                     )
-                    HomeWrapperEntry(homeViewModel)
+                    HomeWrapperEntry(
+                        popBack = {
+                            while(backStack.isNotEmpty()) {
+                                backStack.removeLastOrNull()
+                            }
+                            backStack.add(Destination.AuthWrapper)
+                        },
+                        homeViewModel
+                    )
                 }
                 entry<Destination.LibraryScreen> { key ->
                     val viewModel = hiltViewModel<LibraryViewModel, LibraryViewModel.Factory>(

@@ -5,19 +5,10 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +22,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,9 +34,12 @@ import com.example.buituananh.presentation.profile.ProfileViewModel
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.ImageUtils
 import kotlinx.coroutines.delay
+import com.example.buituananh.R
+import com.example.buituananh.util.colors
 
 @Composable
 fun ProfileScreenRoot(
+    popBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel
 ) {
@@ -65,6 +61,8 @@ fun ProfileScreenRoot(
                 is ProfileEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
+
+                ProfileEffect.PopBack -> popBack()
             }
         }
     }
@@ -116,7 +114,8 @@ private fun ProfileScreen(
                     context,
                     uri ?: Uri.EMPTY
                 ) ?: Uri.EMPTY
-                onIntent(ProfileIntent.PickImage(uriPicker))
+                val newUri = ImageUtils.saveUriToFile(context, uriPicker)
+                onIntent(ProfileIntent.PickImage(newUri))
         }
 
     Column(
@@ -127,7 +126,7 @@ private fun ProfileScreen(
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(34.dp))
+        Spacer(Modifier.height(12.dp))
         //information section
         InformationSection(
             enableEditor = enableEditor,
@@ -150,8 +149,8 @@ private fun ProfileScreen(
 
             InputField(
                 modifier = Modifier.width((currentWidthScreen - 32.dp) / 2),
-                titleName = "Name",
-                placeholderText = "Enter your name...",
+                titleName = stringResource(R.string.name),
+                placeholderText = stringResource(R.string.enter_your_name) + "...",
                 inputValue = state.name,
                 isEnabled = enableEditor,
                 isError = state.isNameError
@@ -161,8 +160,8 @@ private fun ProfileScreen(
             Spacer(Modifier.width(8.dp))
             InputField(
                 modifier = Modifier.width((currentWidthScreen - 32.dp) / 2),
-                titleName = "Phone number",
-                placeholderText = "Your phone number...",
+                titleName = stringResource(R.string.phone_number),
+                placeholderText = stringResource(R.string.your_phone_number) + "...",
                 inputValue = state.phoneNumber,
                 isEnabled = enableEditor,
                 isPhoneOptions = true,
@@ -179,8 +178,8 @@ private fun ProfileScreen(
         ) {
             InputField(
                 modifier = Modifier.fillMaxWidth(),
-                titleName = "UNIVERSITY NAME",
-                placeholderText = "Your university name...",
+                titleName = stringResource(R.string.university_name),
+                placeholderText = stringResource(R.string.your_universtiy_name) + "...",
                 inputValue = state.universityName,
                 isEnabled = enableEditor,
                 isError = state.isUniversityError
@@ -196,8 +195,8 @@ private fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                titleName = "DESCRIBE YOURSELF",
-                placeholderText = "Enter a description about yourself...",
+                titleName = stringResource(R.string.describe_yourself),
+                placeholderText = stringResource(R.string.describe_yourself) + "...",
                 inputValue = state.description,
                 maxLines = 4,
                 isEnabled = enableEditor,
@@ -216,11 +215,38 @@ private fun ProfileScreen(
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text(
-                    "Submit", modifier = Modifier.padding(
+                    stringResource(R.string.submit), modifier = Modifier.padding(
                         vertical = 8.dp,
                         horizontal = 24.dp
                     )
                 )
+            }
+        } else {
+            Button(
+                onClick = {
+                    onIntent(ProfileIntent.LogOut)
+                },
+                shape = MaterialTheme.shapes.medium,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp)
+                ) { 
+                    Icon(
+                        painter = painterResource(R.drawable.logout),
+                        contentDescription = null,
+                        tint = colors[6],
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.log_out),
+                        color = colors[6]
+                    )
+                }
             }
         }
         if (isShowDialog) {

@@ -16,4 +16,16 @@
     <string name="top_tracks">Bài hát hàng đầu</string>
     <string name="top_artists">Nghệ sĩ hàng đầu</string>
     <string name="see_all">Xem tất cả</string>
+
+    <string name="my_information">THÔNG TIN CỦA TÔI</string>
+    <string name="name">TÊN</string>
+    <string name="phone_number">SỐ ĐIỆN THOẠI</string>
+    <string name="university_name">TÊN TRƯỜNG ĐẠI HỌC</string>
+    <string name="describe_yourself">MÔ TẢ BẢN THÂN</string>
+    <string name="log_out">Đăng xuất</string>
+    <string name="enter_your_name">Nhập tên của bạn</string>
+    <string name="your_phone_number">Số điện thoại của bạn</string>
+    <string name="your_universtiy_name">Tên trường đại học của bạn</string>
+    <string name="description_hint">Nhập mô tả về bản thân</string>
+    <string name="submit">Gửi</string>
 </resources>

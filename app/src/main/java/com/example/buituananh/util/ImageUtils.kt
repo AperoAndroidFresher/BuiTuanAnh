@@ -13,6 +13,18 @@ import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
 
 object ImageUtils {
+
+    fun saveUriToFile(context: Context, uri: Uri): Uri {
+        val fileName = "${System.currentTimeMillis()}.webp"
+        val file = File(context.filesDir, fileName)
+        
+        context.contentResolver.openInputStream(uri).use { input ->
+            file.outputStream().use { output ->
+                input?.copyTo(output)
+            }
+        }
+        return Uri.fromFile(file)
+    }
     
     fun getImageFromUri(context: Context, uri: Uri?): Bitmap? {
         if(uri == null) return null

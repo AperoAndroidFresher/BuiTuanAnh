@@ -23,6 +23,7 @@ import com.example.buituananh.util.Destination
 
 @Composable
 fun HomeWrapperEntry(
+    popBack: () -> Unit,
     homeViewModel: HomeViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -89,6 +90,7 @@ fun HomeWrapperEntry(
                     },
                 )
                 ProfileScreenRoot(
+                    popBack = popBack,
                     viewModel = viewModel,
                 )
             }

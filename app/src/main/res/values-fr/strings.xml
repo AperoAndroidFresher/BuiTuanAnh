@@ -16,4 +16,16 @@
     <string name="top_tracks">Meilleurs titres</string>
     <string name="top_artists">Meilleurs artistes</string>
     <string name="see_all">Voir tout</string>
+
+    <string name="my_information">MES INFORMATIONS</string>
+    <string name="name">NOM</string>
+    <string name="phone_number">NUMÉRO DE TÉLÉPHONE</string>
+    <string name="university_name">NOM DE L\'UNIVERSITÉ</string>
+    <string name="describe_yourself">DÉCRIVEZ-VOUS</string>
+    <string name="log_out">Se déconnecter</string>
+    <string name="enter_your_name">Entrez votre nom</string>
+    <string name="your_phone_number">Votre numéro de téléphone</string>
+    <string name="your_universtiy_name">Nom de votre université</string>
+    <string name="description_hint">Entrez une description de vous-même</string>
+    <string name="submit">Soumettre</string>
 </resources>

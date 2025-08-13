@@ -12,5 +12,17 @@
     <string name="top_tracks">Top Tracks</string>
     <string name="top_artists">Top Artists</string>
     <string name="see_all">See all</string>
+    <string name="my_information">MY INFORMATION</string>
+    <string name="name">NAME</string>
+    <string name="phone_number">PHONE NUMBER</string>
+    <string name="university_name">UNIVERSITY NAME</string>
+    <string name="describe_yourself">DESCRIBE YOURSELF</string>
+    <string name="log_out">Log Out</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="your_phone_number">Your phone number</string>
+    <string name="your_universtiy_name">Your university name</string>
+    <string name="description_hint">Enter a description about yourself</string>
+    <string name="submit">Submit</string>
+    
     
 </resources>

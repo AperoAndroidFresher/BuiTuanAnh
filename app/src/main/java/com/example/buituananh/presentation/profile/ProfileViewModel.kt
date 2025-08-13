@@ -43,6 +43,15 @@ class ProfileViewModel @AssistedInject constructor(
             is ProfileIntent.PickImage -> pickImage(intent.uri)
             ProfileIntent.OnSubmitClick -> onSubmitClick()
             ProfileIntent.LoadUserData -> loadUserData()
+            ProfileIntent.LogOut -> logOut()
+        }
+    }
+
+    private fun logOut() {
+        viewModelScope.launch { 
+            repository.clearUserId()
+            repository.setRememberedLoginState(false)
+            sendEvent(ProfileEffect.PopBack)
         }
     }
 
