@@ -1,6 +1,7 @@
 package com.example.buituananh.presentation.playlist.detail_playlist_component
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -39,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.playlist.PlaylistEffect
@@ -47,6 +49,7 @@ import com.example.buituananh.presentation.playlist.PlaylistState
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import kotlinx.coroutines.channels.Channel
+import java.io.File
 import kotlin.math.roundToInt
 
 @Composable
@@ -66,14 +69,15 @@ fun DetailPlaylistScreenRoot(
 
                 }
                 is PlaylistEffect.ShareSongIntent -> {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
+                    Log.d("A3", "DetailPlaylistScreenRoot: ${effect.song.toString()}")
+                    val file = File(effect.song.filePath ?: "")
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val intent = Intent(Intent.ACTION_SEND).apply { 
                         type = "audio/*"
-                        putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
+                        putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    context.startActivity(
-                        Intent.createChooser(intent, "Share audio")
-                    )
+                    context.startActivity(Intent.createChooser(intent, "share audio"))
                 }
 
                 is PlaylistEffect.ShowDeleteSnackBar -> {
@@ -165,7 +169,8 @@ fun DetailPlaylistScreen(
                 detectTapGestures(
                     onPress = {
                         showPopup = false
-                    })
+                    }
+                )
             }) {
 
         Column {
