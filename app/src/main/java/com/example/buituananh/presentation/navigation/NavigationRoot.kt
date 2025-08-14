@@ -21,7 +21,6 @@ import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.example.buituananh.R
-import com.example.buituananh.presentation.home.components.HomeScreenRoot
 import com.example.buituananh.presentation.home.HomeViewModel
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.library.component.LibraryScreenRoot
@@ -31,10 +30,6 @@ import com.example.buituananh.presentation.player.PlayerViewModel
 import com.example.buituananh.presentation.player.components.MiniPlayerBar
 import com.example.buituananh.presentation.player.components.PlayerScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
-import com.example.buituananh.presentation.profile.ProfileViewModel
-import com.example.buituananh.presentation.profile.component.ProfileScreenRoot
-import com.example.buituananh.presentation.setting.SettingScreen
-import com.example.buituananh.presentation.setting.SettingViewModel
 import com.example.buituananh.service.PlayType
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.Utils
@@ -88,12 +83,12 @@ fun NavigationRoot(
     
 
     LaunchedEffect(currentHomeScreen) {
+        Log.d("nav3", "NavigationRoot: $currentHomeScreen")
         val screen = currentHomeScreen is Destination.ProfileScreen || currentHomeScreen is Destination.SettingScreen
         if ( screen &&
             musicState.musicState?.currentSong != null &&
             musicState.musicState.playType == PlayType.PREVIEW
         ) {
-            Log.d("PlayerViewModel", "NavigationRoot: stop")
             playerViewModel.onIntent(PlayerIntent.StopPlaying)
         } else {
             Log.d("PlayerViewModel", "NavigationRoot: not stopp")
@@ -195,7 +190,8 @@ fun NavigationRoot(
                         },
                     )
                     AuthWrapperEntry(
-                        addToBackStack = {
+                        navToHome = {
+                            backStack.removeLastOrNull()
                             backStack.add(it)
                         },
                         onBack = {
