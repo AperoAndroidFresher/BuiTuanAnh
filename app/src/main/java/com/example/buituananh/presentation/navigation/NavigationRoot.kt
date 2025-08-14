@@ -20,11 +20,8 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import androidx.room.coroutines.createFlow
 import com.example.buituananh.R
-import com.example.buituananh.presentation.home.HomeScreenRoot
 import com.example.buituananh.presentation.home.HomeViewModel
-import com.example.buituananh.presentation.home.components.HomeState
 import com.example.buituananh.presentation.library.LibraryViewModel
 import com.example.buituananh.presentation.library.component.LibraryScreenRoot
 import com.example.buituananh.presentation.login.LoginViewModel
@@ -33,14 +30,11 @@ import com.example.buituananh.presentation.player.PlayerViewModel
 import com.example.buituananh.presentation.player.components.MiniPlayerBar
 import com.example.buituananh.presentation.player.components.PlayerScreenRoot
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
-import com.example.buituananh.presentation.profile.ProfileViewModel
-import com.example.buituananh.presentation.profile.component.ProfileScreenRoot
-import com.example.buituananh.presentation.setting.SettingScreen
-import com.example.buituananh.presentation.setting.SettingViewModel
 import com.example.buituananh.service.PlayType
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.Utils
 import com.example.buituananh.util.toMilliseconds
+import kotlinx.coroutines.delay
 
 @Composable
 fun NavigationRoot(
@@ -49,6 +43,8 @@ fun NavigationRoot(
 ) {
 
     val backStack = rememberNavBackStack(Destination.AuthWrapper)
+    val homeBackStack = rememberNavBackStack(Destination.HomeScreen)
+    val playlistBackStack = rememberNavBackStack(Destination.PlaylistScreen)
 
     var currentDestinationIdx by remember {
         mutableIntStateOf(0)
@@ -56,6 +52,14 @@ fun NavigationRoot(
 
     val currentScreen by remember {
         derivedStateOf { backStack.last() }
+    }
+
+    val currentHomeScreen by remember {
+        derivedStateOf { homeBackStack.last() }
+    }
+    
+    val currentPlaylistScreen by remember { 
+        derivedStateOf { playlistBackStack.last() }
     }
 
     var firstNavGraphEntry by remember {
@@ -73,38 +77,49 @@ fun NavigationRoot(
                 Log.d("NavigationRoot", "NavigationRoot: Open player screen")
             } else {
                 Log.d("NavigationRoot", "NavigationRoot: Cannot receive")
-            }
+            }     
         }
     }
     
-    LaunchedEffect(currentScreen) {
-        if (currentScreen !is Destination.HomeWrapper
-            && currentScreen !is Destination.LibraryScreen
-            && currentScreen !is Destination.PlaylistWrapper
-            && currentScreen !is Destination.PlayerWrapper
-            && musicState.musicState?.currentSong != null
-            && musicState.musicState.playType == PlayType.PREVIEW
+
+    LaunchedEffect(currentHomeScreen) {
+        Log.d("nav3", "NavigationRoot: $currentHomeScreen")
+        val screen = currentHomeScreen is Destination.ProfileScreen || currentHomeScreen is Destination.SettingScreen
+        if ( screen &&
+            musicState.musicState?.currentSong != null &&
+            musicState.musicState.playType == PlayType.PREVIEW
         ) {
             playerViewModel.onIntent(PlayerIntent.StopPlaying)
+        } else {
+            Log.d("PlayerViewModel", "NavigationRoot: not stopp")
         }
     }
 
     LaunchedEffect(Unit) {
         if (!firstNavGraphEntry) {
+            delay(100)
             if (musicState.musicState?.currentSong != null) {
                 backStack.add(Destination.PlayerWrapper)
             }
+            firstNavGraphEntry = true
         }
-        firstNavGraphEntry = true
     }
 
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            if (currentScreen is Destination.HomeWrapper
-                || currentScreen is Destination.LibraryScreen
-                || currentScreen is Destination.PlaylistWrapper
-            ) {
+
+            val inHomeMain = currentScreen is Destination.HomeWrapper &&
+                             currentHomeScreen is Destination.HomeScreen
+
+            val inLibraryMain = currentScreen is Destination.LibraryScreen
+
+            val inPlaylistMain = currentScreen is Destination.PlaylistWrapper &&
+                                 currentPlaylistScreen is Destination.PlaylistScreen
+
+            val showBottomBar = inHomeMain || inLibraryMain || inPlaylistMain
+            
+            if (showBottomBar) {
                 val isCancel = musicState.musicState?.isCancel ?: false
                 Column {
                     AnimatedVisibility(!isCancel) {
@@ -134,7 +149,18 @@ fun NavigationRoot(
             }
         },
         floatingActionButton = {
-            if (musicState.musicState?.currentSong != null && (currentScreen is Destination.HomeWrapper || currentScreen is Destination.LibraryScreen || currentScreen is Destination.PlaylistWrapper)) {
+            val inHomeMain = currentScreen is Destination.HomeWrapper &&
+                             currentHomeScreen is Destination.HomeScreen
+
+            val inLibraryMain = currentScreen is Destination.LibraryScreen
+
+            val inPlaylistMain = currentScreen is Destination.PlaylistWrapper &&
+                                 currentPlaylistScreen is Destination.PlaylistScreen
+
+            val showFAB = musicState.musicState?.currentSong != null &&
+                          (inHomeMain || inLibraryMain || inPlaylistMain)
+            
+            if (showFAB) {
                 Icon(
                     painter = painterResource(R.drawable.cancel),
                     contentDescription = null,
@@ -164,7 +190,8 @@ fun NavigationRoot(
                         },
                     )
                     AuthWrapperEntry(
-                        addToBackStack = {
+                        navToHome = {
+                            backStack.removeLastOrNull()
                             backStack.add(it)
                         },
                         onBack = {
@@ -178,29 +205,24 @@ fun NavigationRoot(
                     val homeViewModel = hiltViewModel<HomeViewModel, HomeViewModel.Factory>(
                         creationCallback = { factory ->
                             factory.create(key)
-                        }
-                    )
-                    HomeScreenRoot(
-                        onNavigate = {
-                            backStack.add(it)
                         },
-                        viewModel = homeViewModel
                     )
-                }
-                entry<Destination.SettingScreen> { key ->
-                    val settingViewModel = hiltViewModel<SettingViewModel, SettingViewModel.Factory>(
-                        creationCallback = { factory ->
-                            factory.create(key)
-                        }
-                    )
-                    SettingScreen(
-                        viewModel = settingViewModel,
-                        onNavigate = {
-                            
+                    HomeWrapperEntry(
+                        homeViewModel = homeViewModel,
+                        homeBackStack = homeBackStack,
+                        addDestination = {
+                            homeBackStack.add(it)
                         },
-                        popBack = {
-                            backStack.removeLastOrNull()
-                        }
+                        onBack = {
+                            homeBackStack.removeLastOrNull()
+                        },
+                        navigateToLogin = {
+                            while (backStack.isNotEmpty()) {
+                                backStack.removeLastOrNull()
+                            }
+                            backStack.add(Destination.AuthWrapper)
+                            homeBackStack.removeLastOrNull()
+                        },
                     )
                 }
                 entry<Destination.LibraryScreen> { key ->
@@ -221,16 +243,15 @@ fun NavigationRoot(
                             factory.create(key)
                         },
                     )
-                    PlaylistWrapperEntry(viewModel)
-                }
-                entry<Destination.ProfileScreen> { key ->
-                    val viewModel = hiltViewModel<ProfileViewModel, ProfileViewModel.Factory>(
-                        creationCallback = { factory ->
-                            factory.create(key)
-                        },
-                    )
-                    ProfileScreenRoot(
+                    PlaylistWrapperEntry(
                         viewModel = viewModel,
+                        playlistBackStack = playlistBackStack,
+                        onBack = {
+                            playlistBackStack.removeLastOrNull()
+                        },
+                        addDestination = {
+                            playlistBackStack.add(it)
+                        }
                     )
                 }
                 entry<Destination.PlayerWrapper> {

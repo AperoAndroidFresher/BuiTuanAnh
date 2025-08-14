@@ -2,6 +2,7 @@ package com.example.buituananh.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
 import com.example.buituananh.domain.repository.FileRepository
 import com.example.buituananh.util.ImageUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -15,8 +16,8 @@ import javax.inject.Inject
 class FileRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ): FileRepository {
-    override suspend fun saveAudioFileToInternalStorage(urlPath: String, fileName: String): File {
-        val directory = File(context.filesDir, "internal_storage")
+    override suspend fun saveAudioFileToExternalStorage(urlPath: String, fileName: String): File {
+        val directory = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), "shared_audio")
 
         if (directory.exists() && !directory.isDirectory) {
             directory.delete()
@@ -39,7 +40,7 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getEmbeddedImageFromAudio(file: File): Uri? {
         val uri = Uri.fromFile(file)
-        val image = ImageUtils.getEmbeddedPicture(context, uri)
+        val image = ImageUtils.getEmbeddedPicture(context, uri, file.name)
         return image
     }
 }

@@ -16,7 +16,7 @@ fun TopBarNoAction(
     title: String = ""
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface),
         horizontalArrangement = Arrangement.Center,

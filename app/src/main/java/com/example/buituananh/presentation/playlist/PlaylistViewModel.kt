@@ -1,8 +1,8 @@
 package com.example.buituananh.presentation.playlist
 
-import android.util.Log
+import android.app.Activity
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.local.mapper.toEntity
 import com.example.buituananh.data.util.Result
@@ -20,13 +20,8 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = PlaylistViewModel.Factory::class)
 class PlaylistViewModel @AssistedInject constructor(
@@ -74,6 +69,10 @@ class PlaylistViewModel @AssistedInject constructor(
             is PlaylistIntent.UndoRemovePlaylist -> undoRemovePlaylist()
             is PlaylistIntent.StartSong -> startSong(intent.song)
         }
+    }
+
+    fun launchService(){
+        playbackManager.launchService()
     }
     
     fun checkSongInPlaylist(): Boolean {
@@ -215,6 +214,8 @@ class PlaylistViewModel @AssistedInject constructor(
             )
             if (result is Result.Success) {
                 sendEffect(PlaylistEffect.ShowToast("Delete successfully"))
+                val newQueue = playlistRepository.getPlaylistWithSongById(chosen.playlistId).first()
+                playbackManager.updateQueue(newQueue.songs)
             } else {
                 sendEffect(PlaylistEffect.ShowToast("Delete unsuccessfully"))
             }

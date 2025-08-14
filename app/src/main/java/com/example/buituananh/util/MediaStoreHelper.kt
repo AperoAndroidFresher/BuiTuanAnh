@@ -40,7 +40,7 @@ object MediaStoreHelper {
                     val audioPath = it.getString(audioPathColumn)
 
                     val audioUri = ContentUris.withAppendedId(uri, id)
-                    val embeddedPictureUri = ImageUtils.getEmbeddedPicture(context, audioUri)
+                    val embeddedPictureUri = ImageUtils.getEmbeddedPicture(context, audioUri, "$title-$artist.webp")
 
                     val song = Song(
                         songId = id,

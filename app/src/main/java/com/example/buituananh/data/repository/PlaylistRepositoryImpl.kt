@@ -68,7 +68,8 @@ class PlaylistRepositoryImpl @Inject constructor(
         songId: Long
     ): Result<String, Exception> {
         return try {
-            playlistDao.insertSongToPlaylist(PlaylistMusicCrossRef(playlistId, songId))
+            val nextPosition = playlistDao.getNextPosition(playlistId)
+            playlistDao.insertSongToPlaylist(PlaylistMusicCrossRef(playlistId, songId, nextPosition))
             Result.Success("Add successfully")
         } catch (e: Exception) {
             Result.Failure(e)
@@ -87,9 +88,7 @@ class PlaylistRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPlaylistWithSongById(playlistId: Long): Flow<Playlist> {
-        return playlistDao.getPlaylistWithSongsById(playlistId).map { it.toPlaylist() }
-    }
+       
 
     override suspend fun isSongInPlaylist(playlistId: Long, songId: Long): Boolean {
         return playlistDao.isSongInPlaylist(playlistId, songId)

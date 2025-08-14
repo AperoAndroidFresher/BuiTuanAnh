@@ -1,6 +1,9 @@
 package com.example.buituananh.presentation.playlist.detail_playlist_component
 
 import android.content.Intent
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -39,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.buituananh.domain.model.Song
 import com.example.buituananh.presentation.playlist.PlaylistEffect
@@ -46,7 +50,12 @@ import com.example.buituananh.presentation.playlist.PlaylistIntent
 import com.example.buituananh.presentation.playlist.PlaylistState
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.channels.Channel
+import java.io.File
+import java.util.jar.Manifest
 import kotlin.math.roundToInt
 
 @Composable
@@ -66,14 +75,15 @@ fun DetailPlaylistScreenRoot(
 
                 }
                 is PlaylistEffect.ShareSongIntent -> {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
+                    Log.d("A3", "DetailPlaylistScreenRoot: ${effect.song.toString()}")
+                    val file = File(effect.song.filePath ?: "")
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val intent = Intent(Intent.ACTION_SEND).apply { 
                         type = "audio/*"
-                        putExtra(Intent.EXTRA_STREAM, effect.song.filePath)
+                        putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    context.startActivity(
-                        Intent.createChooser(intent, "Share audio")
-                    )
+                    context.startActivity(Intent.createChooser(intent, "share audio"))
                 }
 
                 is PlaylistEffect.ShowDeleteSnackBar -> {
@@ -95,16 +105,22 @@ fun DetailPlaylistScreenRoot(
         modifier = modifier,
         state = state,
         isSongInPlaylist = viewModel.checkSongInPlaylist(),
-        onIntent = viewModel::onIntent
+        onIntent = viewModel::onIntent,
+        launchService = {
+            viewModel.launchService()
+        }
     )
 
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DetailPlaylistScreen(
     modifier: Modifier = Modifier,
     state: PlaylistState,
     isSongInPlaylist: Boolean,
+    launchService: () -> Unit,
     onIntent: (PlaylistIntent) -> Unit
 ) {
 
@@ -156,6 +172,12 @@ fun DetailPlaylistScreen(
         }
     }
 
+    val permission = android.Manifest.permission.POST_NOTIFICATIONS
+    val notificationPermission = rememberPermissionState(permission) {
+        if(it) {
+            launchService()
+        } 
+    }
 
     Box(
         modifier = modifier
@@ -165,7 +187,8 @@ fun DetailPlaylistScreen(
                 detectTapGestures(
                     onPress = {
                         showPopup = false
-                    })
+                    }
+                )
             }) {
 
         Column {
@@ -202,7 +225,11 @@ fun DetailPlaylistScreen(
                         items(state.selectedPlaylist.songs) { song: Song ->
                             GridSongItem(
                                 startSong = {
-                                    onIntent(PlaylistIntent.StartSong(song))
+                                    if(notificationPermission.status.isGranted) {
+                                        onIntent(PlaylistIntent.StartSong(song))
+                                    } else {
+                                        notificationPermission.launchPermissionRequest()   
+                                    }
                                 },
                                 isSongInPlaylist = isSongInPlaylist,
                                 playedSong = state.playedSong,
@@ -339,7 +366,11 @@ fun DetailPlaylistScreen(
                         }
                         LinearSongItem(
                             startSong = {
-                                onIntent(PlaylistIntent.StartSong(song))
+                                if(notificationPermission.status.isGranted) {
+                                    onIntent(PlaylistIntent.StartSong(song))
+                                } else {
+                                    notificationPermission.launchPermissionRequest()
+                                }
                             },
                             playedSong = state.playedSong,
                             song = song,

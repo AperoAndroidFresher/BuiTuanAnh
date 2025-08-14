@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import com.example.buituananh.presentation.library.LibraryEffect
 import com.example.buituananh.presentation.library.LibraryIntent
 import com.example.buituananh.presentation.library.LibraryState
 import com.example.buituananh.presentation.library.LibraryViewModel
+import com.example.buituananh.presentation.playlist.PlaylistIntent
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.SongSource
@@ -53,14 +55,18 @@ fun LibraryScreenRoot(
     val context = LocalContext.current
 
     var permission = Manifest.permission.READ_EXTERNAL_STORAGE
-    permission = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+    permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_AUDIO
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
 
-    val mediaPermissionState = rememberPermissionState(permission)
-
+    val mediaPermissionState = rememberPermissionState(permission) { isGranted ->
+        if(isGranted) {
+            viewModel.launchService()
+        }
+    }
+    
     LaunchedEffect(Unit) {
         viewModel.channel.collect { effect ->
             when (effect) {
@@ -137,10 +143,12 @@ fun LibraryScreen(
             onIntent(LibraryIntent.LoadNetworkSongs)
         }
     }
+    
+    val permission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS) 
 
     Scaffold(
         topBar = {
-            TopBarNoAction(title = "Library")
+            TopBarNoAction(title = stringResource(R.string.library))
         },
         modifier = modifier,
     ) {
@@ -169,7 +177,11 @@ fun LibraryScreen(
                         onIntent(LibraryIntent.ShareSong(song))
                     },
                     playSong = { song ->
-                        onIntent(LibraryIntent.StartSong(song))
+                        if(permission.status.isGranted) {
+                            onIntent(LibraryIntent.StartSong(song))
+                        } else {
+                            permission.launchPermissionRequest()
+                        }
                     },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,
@@ -271,14 +283,14 @@ private fun ButtonSection(
                 onIntent(LibraryIntent.ToggleLocalMode)
             },
             isLocalMode = state.isLocalMode,
-            title = "Local",
+            title = stringResource(R.string.local)
         )
         LibraryModeButton(
             onClick = {
                 onIntent(LibraryIntent.ToggleLocalMode)
             },
             isLocalMode = !state.isLocalMode,
-            title = "Remote",
+            title = stringResource(R.string.remote)
         )
     }
 }
@@ -318,13 +330,13 @@ private fun LibraryModeButton(
 }
 
 @Composable
-private fun NoInternetSection(
+fun NoInternetSection(
     fetchSongAgain: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -338,9 +350,9 @@ private fun NoInternetSection(
         Spacer(Modifier.height(16.dp))
         Text(
             text = """
-                No internet connection,
-                please check your
-                connection again
+                ${stringResource(R.string.no_internet_line1)}
+                ${stringResource(R.string.no_internet_line2)}
+                ${stringResource(R.string.no_internet_line3)}
             """.trimIndent(),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
@@ -352,7 +364,7 @@ private fun NoInternetSection(
             shape = MaterialTheme.shapes.medium,
         ) {
             Text(
-                text = "Try again",
+                text = stringResource(R.string.try_again),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

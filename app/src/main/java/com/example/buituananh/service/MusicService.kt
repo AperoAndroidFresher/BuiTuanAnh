@@ -93,7 +93,7 @@ class MusicService : Service() {
                 ACTION_PREV -> playbackManager.playPreviousSong()
                 ACTION_PLAY -> playbackManager.playSong()
                 ACTION_PAUSE -> playbackManager.pauseSong()
-                ACTION_NEXT -> playbackManager.playNextSong()
+                ACTION_NEXT -> playbackManager.playNextSong(userAction = true)
                 ACTION_CANCEL -> stopPlaying()
             }
         }
@@ -149,7 +149,9 @@ class MusicService : Service() {
             setOnPreparedListener {
                 start()
                 updateProgress()
-                notifySong()
+                if(currentState.playType == PlayType.FOREGROUND) {
+                    notifySong()
+                }
             }
             setOnCompletionListener {
                 scope.launch {
@@ -167,7 +169,7 @@ class MusicService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val queue = currentState.queue
+        val queue = currentState.originalQueue
         val song = currentState.currentSong
         val isPlaying = currentState.isPlaying
         Log.d("Service1", "createNotification: $isPlaying")

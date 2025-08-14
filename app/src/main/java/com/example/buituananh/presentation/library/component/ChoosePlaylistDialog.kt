@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,7 +56,7 @@ fun ChoosePlaylistDialog(
     ) {
         Spacer(Modifier.height(16.dp))
         Text(
-            text = "Choose playlist",
+            text = stringResource(R.string.choose_playlist),
             style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -63,9 +64,9 @@ fun ChoosePlaylistDialog(
             Spacer(Modifier.height(50.dp))
             Text(
                 text = """
-                    You don't have any
-                    playlists. Click the
-                    "+" button to add.
+                    ${stringResource(R.string.no_playlist_line1)}
+                    ${stringResource(R.string.no_playlist_line2)}
+                    ${stringResource(R.string.no_playlist_line3)}
                 """.trimIndent(),
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
                 color = MaterialTheme.colorScheme.onSurface
@@ -137,7 +138,7 @@ fun ChoosePlaylistDialog(
                                 modifier = Modifier.basicMarquee()
                             )
                             Text(
-                                text = "${playlist.songs.size} songs",
+                                text = "${playlist.songs.size} ${stringResource(R.string.songs)}",
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 16.sp),
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)

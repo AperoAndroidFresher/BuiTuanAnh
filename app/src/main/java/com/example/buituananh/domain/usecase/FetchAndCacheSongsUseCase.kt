@@ -41,7 +41,7 @@ class FetchAndCacheSongsUseCase(
         val newSongs = songs.mapNotNull { song ->
             val url = song.filePath ?: return@mapNotNull null
 
-            val file = fileRepository.saveAudioFileToInternalStorage(
+            val file = fileRepository.saveAudioFileToExternalStorage(
                 urlPath = url,
                 fileName = "${song.title}-${song.artist}"
             )

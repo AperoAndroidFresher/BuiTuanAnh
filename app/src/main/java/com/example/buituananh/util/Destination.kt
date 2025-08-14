@@ -1,6 +1,9 @@
 package com.example.buituananh.util
 
 import androidx.navigation3.runtime.NavKey
+import com.example.buituananh.domain.model.Album
+import com.example.buituananh.domain.model.Artist
+import com.example.buituananh.domain.model.Track
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 
@@ -40,4 +43,16 @@ sealed interface Destination : NavKey {
     
     @Serializable
     data object SettingScreen : Destination
+    
+    @Serializable
+    data class AlbumsScreen(val albums: List<Album>) : Destination
+
+    @Serializable
+    data class TrackScreen(val tracks: List<Track>) : Destination
+    
+    @Serializable
+    data class ArtistScreen(val artists: List<Artist>) : Destination
+    
+    @Serializable
+    data object HomeScreen : Destination
 }

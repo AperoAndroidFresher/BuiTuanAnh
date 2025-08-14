@@ -13,6 +13,34 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PlaylistDao {
 
+    @Query("""
+    SELECT COALESCE(MAX(position), -1) + 1
+    FROM playlist_music_cross_ref
+    WHERE playlistId = :playlistId
+""")
+    suspend fun getNextPosition(playlistId: Long): Int
+    
+    @Query("""
+        UPDATE playlist_music_cross_ref
+        SET position = :newPosition
+        WHERE playlistId = :playlistId AND songId = :songId
+    """)
+    suspend fun updateSongPosition(
+        playlistId: Long,
+        songId: Long,
+        newPosition: Int
+    )
+
+    @Transaction
+    suspend fun updatePlaylistOrder(
+        playlistId: Long,
+        newOrder: List<Long> 
+    ) {
+        newOrder.forEachIndexed { index, songId ->
+            updateSongPosition(playlistId, songId, index)
+        }
+    }
+    
      @Insert(onConflict = OnConflictStrategy.IGNORE)
      suspend fun insertSongToPlaylist(crossRef: PlaylistMusicCrossRef)
 

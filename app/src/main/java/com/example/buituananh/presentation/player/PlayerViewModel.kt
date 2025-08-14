@@ -86,7 +86,7 @@ class PlayerViewModel @Inject constructor(
 
     private fun clickNextSong() {
         viewModelScope.launch {
-            playbackManager.playNextSong()
+            playbackManager.playNextSong(userAction = true)
         }
     }
 

@@ -47,10 +47,10 @@ class MainActivity : ComponentActivity() {
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     1,
                 )
+            } else {
+                startForegroundService(Intent(this@MainActivity, MusicService::class.java))
             }
         }
-
-        startForegroundService(Intent(this@MainActivity, MusicService::class.java))
         setContent {
             MyApp(newIntent = newIntent)
         }

@@ -37,7 +37,7 @@ enum class Language(val languageCode: String) {
 
 fun String.convertToLanguage(context: Context): String {
     return when (this) {
-        "en" -> context.getString(R.string.english)
+        "en" ->     context.getString(R.string.english)
         "ko" -> context.getString(R.string.korean)
         "fr" -> context.getString(R.string.french)
         "vi" -> context.getString(R.string.vietnamese)

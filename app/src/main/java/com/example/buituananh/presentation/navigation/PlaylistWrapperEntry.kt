@@ -2,10 +2,7 @@ package com.example.buituananh.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.entry
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
@@ -15,15 +12,16 @@ import com.example.buituananh.util.Destination
 
 @Composable
 fun PlaylistWrapperEntry(
-    viewModel: PlaylistViewModel
+    viewModel: PlaylistViewModel,
+    playlistBackStack: NavBackStack,
+    onBack: () -> Unit,
+    addDestination: (Destination) -> Unit
 ) {
-    
-    val playlistBackStack = rememberNavBackStack(Destination.PlaylistScreen)
     
     NavDisplay(
         backStack = playlistBackStack,
         onBack = {
-            playlistBackStack.removeLastOrNull()
+            onBack()
         },
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
@@ -33,7 +31,7 @@ fun PlaylistWrapperEntry(
         entryProvider = entryProvider {
             entry<Destination.PlaylistScreen> {
                 PlaylistScreenRoot(viewModel = viewModel) {
-                    playlistBackStack.add(it)
+                    addDestination(it)
                 }
             }
             entry<Destination.DetailPlaylistScreen> {

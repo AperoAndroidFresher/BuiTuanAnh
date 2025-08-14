@@ -11,4 +11,57 @@
     <string name="vietnamese">Tiếng Việt</string>
     <string name="welcomeback">Chào mừng trở lại!</string>
     <string name="rankings">Bảng xếp hạng</string>
+
+    <string name="top_albums">Album hàng đầu</string>
+    <string name="top_tracks">Bài hát hàng đầu</string>
+    <string name="top_artists">Nghệ sĩ hàng đầu</string>
+    <string name="see_all">Xem tất cả</string>
+
+    <string name="my_information">THÔNG TIN CỦA TÔI</string>
+    <string name="name">TÊN</string>
+    <string name="phone_number">SỐ ĐIỆN THOẠI</string>
+    <string name="university_name">TÊN TRƯỜNG ĐẠI HỌC</string>
+    <string name="describe_yourself">MÔ TẢ BẢN THÂN</string>
+    <string name="log_out">Đăng xuất</string>
+    <string name="enter_your_name">Nhập tên của bạn</string>
+    <string name="your_phone_number">Số điện thoại của bạn</string>
+    <string name="your_universtiy_name">Tên trường đại học của bạn</string>
+    <string name="description_hint">Nhập mô tả về bản thân</string>
+    <string name="submit">Gửi</string>
+
+    <string name="local">Cục bộ</string>
+    <string name="remote">Từ xa</string>
+    <string name="library">Thư viện</string>
+    <string name="add_to_playlist">Thêm vào playlist</string>
+    <string name="share">Chia sẻ</string>
+    <string name="my_playlist">Playlist của tôi</string>
+    <string name="songs">bài hát</string>
+
+    <string name="no_internet_line1">Không có kết nối internet,</string>
+    <string name="no_internet_line2">vui lòng kiểm tra</string>
+    <string name="no_internet_line3">kết nối của bạn</string>
+    <string name="try_again">Thử lại</string>
+    <string name="home">Trang chủ</string>
+    <string name="choose_playlist">Chọn playlist</string>
+    <string name="no_playlist_line1">Bạn chưa có</string>
+    <string name="no_playlist_line2">playlist nào. Nhấn nút</string>
+    <string name="no_playlist_line3">« + » để thêm.</string>
+
+    <string name="new_playlist">Playlist mới</string>
+    <string name="playlist_title_prompt">Đặt tiêu đề cho playlist của bạn</string>
+    <string name="cancel">Hủy</string>
+    <string name="create">Tạo</string>
+    <string name="remove_playlist">Xóa playlist</string>
+    <string name="rename">Đổi tên</string>
+    <string name="remove_from_playlist">Xóa khỏi playlist</string>
+    <string name="playlist">Playlist</string>
+    <string name="login_title">Đăng nhập vào tài khoản của bạn</string>
+    <string name="username">Tên đăng nhập</string>
+    <string name="password">Mật khẩu</string>
+    <string name="remember_me">Ghi nhớ tôi</string>
+    <string name="login">Đăng nhập</string>
+    <string name="no_account">Bạn chưa có tài khoản?</string>
+    <string name="sign_up">Đăng ký</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="email">Email</string>
 </resources>
