@@ -149,7 +149,9 @@ class MusicService : Service() {
             setOnPreparedListener {
                 start()
                 updateProgress()
-                notifySong()
+                if(currentState.playType == PlayType.FOREGROUND) {
+                    notifySong()
+                }
             }
             setOnCompletionListener {
                 scope.launch {

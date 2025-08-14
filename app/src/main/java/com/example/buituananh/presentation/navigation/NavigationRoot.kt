@@ -48,6 +48,8 @@ fun NavigationRoot(
 ) {
 
     val backStack = rememberNavBackStack(Destination.AuthWrapper)
+    val homeBackStack = rememberNavBackStack(Destination.HomeScreen)
+    val playlistBackStack = rememberNavBackStack(Destination.PlaylistScreen)
 
     var currentDestinationIdx by remember {
         mutableIntStateOf(0)
@@ -55,6 +57,14 @@ fun NavigationRoot(
 
     val currentScreen by remember {
         derivedStateOf { backStack.last() }
+    }
+
+    val currentHomeScreen by remember {
+        derivedStateOf { homeBackStack.last() }
+    }
+    
+    val currentPlaylistScreen by remember { 
+        derivedStateOf { playlistBackStack.last() }
     }
 
     var firstNavGraphEntry by remember {
@@ -72,25 +82,27 @@ fun NavigationRoot(
                 Log.d("NavigationRoot", "NavigationRoot: Open player screen")
             } else {
                 Log.d("NavigationRoot", "NavigationRoot: Cannot receive")
-            }
+            }     
         }
     }
     
-    LaunchedEffect(currentScreen) {
-        if (currentScreen !is Destination.HomeWrapper
-            && currentScreen !is Destination.LibraryScreen
-            && currentScreen !is Destination.PlaylistWrapper
-            && currentScreen !is Destination.PlayerWrapper
-            && musicState.musicState?.currentSong != null
-            && musicState.musicState.playType == PlayType.PREVIEW
+
+    LaunchedEffect(currentHomeScreen) {
+        val screen = currentHomeScreen is Destination.ProfileScreen || currentHomeScreen is Destination.SettingScreen
+        if ( screen &&
+            musicState.musicState?.currentSong != null &&
+            musicState.musicState.playType == PlayType.PREVIEW
         ) {
+            Log.d("PlayerViewModel", "NavigationRoot: stop")
             playerViewModel.onIntent(PlayerIntent.StopPlaying)
+        } else {
+            Log.d("PlayerViewModel", "NavigationRoot: not stopp")
         }
     }
 
     LaunchedEffect(Unit) {
         if (!firstNavGraphEntry) {
-            delay(100) 
+            delay(100)
             if (musicState.musicState?.currentSong != null) {
                 backStack.add(Destination.PlayerWrapper)
             }
@@ -101,10 +113,18 @@ fun NavigationRoot(
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            if (currentScreen is Destination.HomeWrapper
-                || currentScreen is Destination.LibraryScreen
-                || currentScreen is Destination.PlaylistWrapper
-            ) {
+
+            val inHomeMain = currentScreen is Destination.HomeWrapper &&
+                             currentHomeScreen is Destination.HomeScreen
+
+            val inLibraryMain = currentScreen is Destination.LibraryScreen
+
+            val inPlaylistMain = currentScreen is Destination.PlaylistWrapper &&
+                                 currentPlaylistScreen is Destination.PlaylistScreen
+
+            val showBottomBar = inHomeMain || inLibraryMain || inPlaylistMain
+            
+            if (showBottomBar) {
                 val isCancel = musicState.musicState?.isCancel ?: false
                 Column {
                     AnimatedVisibility(!isCancel) {
@@ -134,7 +154,18 @@ fun NavigationRoot(
             }
         },
         floatingActionButton = {
-            if (musicState.musicState?.currentSong != null && (currentScreen is Destination.HomeWrapper || currentScreen is Destination.LibraryScreen || currentScreen is Destination.PlaylistWrapper)) {
+            val inHomeMain = currentScreen is Destination.HomeWrapper &&
+                             currentHomeScreen is Destination.HomeScreen
+
+            val inLibraryMain = currentScreen is Destination.LibraryScreen
+
+            val inPlaylistMain = currentScreen is Destination.PlaylistWrapper &&
+                                 currentPlaylistScreen is Destination.PlaylistScreen
+
+            val showFAB = musicState.musicState?.currentSong != null &&
+                          (inHomeMain || inLibraryMain || inPlaylistMain)
+            
+            if (showFAB) {
                 Icon(
                     painter = painterResource(R.drawable.cancel),
                     contentDescription = null,
@@ -178,19 +209,24 @@ fun NavigationRoot(
                     val homeViewModel = hiltViewModel<HomeViewModel, HomeViewModel.Factory>(
                         creationCallback = { factory ->
                             factory.create(key)
-                        }
+                        },
                     )
                     HomeWrapperEntry(
-                        popBack = {
-                            while(backStack.isNotEmpty()) {
+                        homeViewModel = homeViewModel,
+                        homeBackStack = homeBackStack,
+                        addDestination = {
+                            homeBackStack.add(it)
+                        },
+                        onBack = {
+                            homeBackStack.removeLastOrNull()
+                        },
+                        navigateToLogin = {
+                            while (backStack.isNotEmpty()) {
                                 backStack.removeLastOrNull()
                             }
                             backStack.add(Destination.AuthWrapper)
+                            homeBackStack.removeLastOrNull()
                         },
-                        sendCurrentRoute = {
-                            
-                        },
-                        homeViewModel =  homeViewModel
                     )
                 }
                 entry<Destination.LibraryScreen> { key ->
@@ -211,7 +247,16 @@ fun NavigationRoot(
                             factory.create(key)
                         },
                     )
-                    PlaylistWrapperEntry(viewModel)
+                    PlaylistWrapperEntry(
+                        viewModel = viewModel,
+                        playlistBackStack = playlistBackStack,
+                        onBack = {
+                            playlistBackStack.removeLastOrNull()
+                        },
+                        addDestination = {
+                            playlistBackStack.add(it)
+                        }
+                    )
                 }
                 entry<Destination.PlayerWrapper> {
                     PlayerScreenRoot(

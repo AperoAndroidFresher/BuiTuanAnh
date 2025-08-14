@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.setting
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -66,6 +67,7 @@ fun SettingScreen(
                 onBack = { viewModel.onIntent(SettingIntent.CancelLanguage) },
                 onAction = {
                     viewModel.onIntent(SettingIntent.AcceptLanguage)
+                    (context as? Activity)?.recreate() 
                     expanded = false
                 },
                 title = context.getString(R.string.setting),

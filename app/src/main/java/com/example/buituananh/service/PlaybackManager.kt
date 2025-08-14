@@ -1,19 +1,35 @@
 package com.example.buituananh.service
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.buituananh.domain.model.Song
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PlaybackManager @Inject constructor() {
+class PlaybackManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private val _musicState = MutableStateFlow(MusicState())
     val playerState = _musicState.asStateFlow()
 
     private val _command = MutableSharedFlow<PlaybackServiceEvent>()
     val command = _command.asSharedFlow()
+    
+    var firstLaunchService = true
     
     suspend fun dragSliderEnd() {
         sendEvent(PlaybackServiceEvent.DragSlider)
@@ -62,6 +78,13 @@ class PlaybackManager @Inject constructor() {
             playSong()
         } else {
             pauseSong()
+        }
+    }
+    
+    fun launchService() {
+        if(firstLaunchService) {
+            context.startForegroundService(Intent(context, MusicService::class.java))
+            firstLaunchService = false
         }
     }
 

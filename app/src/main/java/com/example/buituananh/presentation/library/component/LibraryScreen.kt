@@ -34,6 +34,7 @@ import com.example.buituananh.presentation.library.LibraryEffect
 import com.example.buituananh.presentation.library.LibraryIntent
 import com.example.buituananh.presentation.library.LibraryState
 import com.example.buituananh.presentation.library.LibraryViewModel
+import com.example.buituananh.presentation.playlist.PlaylistIntent
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
 import com.example.buituananh.util.Destination
 import com.example.buituananh.util.SongSource
@@ -60,8 +61,12 @@ fun LibraryScreenRoot(
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
 
-    val mediaPermissionState = rememberPermissionState(permission)
-
+    val mediaPermissionState = rememberPermissionState(permission) { isGranted ->
+        if(isGranted) {
+            viewModel.launchService()
+        }
+    }
+    
     LaunchedEffect(Unit) {
         viewModel.channel.collect { effect ->
             when (effect) {
@@ -138,6 +143,8 @@ fun LibraryScreen(
             onIntent(LibraryIntent.LoadNetworkSongs)
         }
     }
+    
+    val permission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS) 
 
     Scaffold(
         topBar = {
@@ -170,7 +177,11 @@ fun LibraryScreen(
                         onIntent(LibraryIntent.ShareSong(song))
                     },
                     playSong = { song ->
-                        onIntent(LibraryIntent.StartSong(song))
+                        if(permission.status.isGranted) {
+                            onIntent(LibraryIntent.StartSong(song))
+                        } else {
+                            permission.launchPermissionRequest()
+                        }
                     },
                     modifier = Modifier,
                     isLocalMode = state.isLocalMode,

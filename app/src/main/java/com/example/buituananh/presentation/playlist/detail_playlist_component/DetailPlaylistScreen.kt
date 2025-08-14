@@ -1,7 +1,9 @@
 package com.example.buituananh.presentation.playlist.detail_playlist_component
 
 import android.content.Intent
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -48,8 +50,12 @@ import com.example.buituananh.presentation.playlist.PlaylistIntent
 import com.example.buituananh.presentation.playlist.PlaylistState
 import com.example.buituananh.presentation.playlist.PlaylistViewModel
 import com.example.buituananh.ui.theme.BuiTuanAnhTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.channels.Channel
 import java.io.File
+import java.util.jar.Manifest
 import kotlin.math.roundToInt
 
 @Composable
@@ -99,16 +105,22 @@ fun DetailPlaylistScreenRoot(
         modifier = modifier,
         state = state,
         isSongInPlaylist = viewModel.checkSongInPlaylist(),
-        onIntent = viewModel::onIntent
+        onIntent = viewModel::onIntent,
+        launchService = {
+            viewModel.launchService()
+        }
     )
 
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DetailPlaylistScreen(
     modifier: Modifier = Modifier,
     state: PlaylistState,
     isSongInPlaylist: Boolean,
+    launchService: () -> Unit,
     onIntent: (PlaylistIntent) -> Unit
 ) {
 
@@ -160,6 +172,12 @@ fun DetailPlaylistScreen(
         }
     }
 
+    val permission = android.Manifest.permission.POST_NOTIFICATIONS
+    val notificationPermission = rememberPermissionState(permission) {
+        if(it) {
+            launchService()
+        } 
+    }
 
     Box(
         modifier = modifier
@@ -207,7 +225,11 @@ fun DetailPlaylistScreen(
                         items(state.selectedPlaylist.songs) { song: Song ->
                             GridSongItem(
                                 startSong = {
-                                    onIntent(PlaylistIntent.StartSong(song))
+                                    if(notificationPermission.status.isGranted) {
+                                        onIntent(PlaylistIntent.StartSong(song))
+                                    } else {
+                                        notificationPermission.launchPermissionRequest()   
+                                    }
                                 },
                                 isSongInPlaylist = isSongInPlaylist,
                                 playedSong = state.playedSong,
@@ -344,7 +366,11 @@ fun DetailPlaylistScreen(
                         }
                         LinearSongItem(
                             startSong = {
-                                onIntent(PlaylistIntent.StartSong(song))
+                                if(notificationPermission.status.isGranted) {
+                                    onIntent(PlaylistIntent.StartSong(song))
+                                } else {
+                                    notificationPermission.launchPermissionRequest()
+                                }
                             },
                             playedSong = state.playedSong,
                             song = song,

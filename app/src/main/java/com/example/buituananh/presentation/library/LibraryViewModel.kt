@@ -1,5 +1,6 @@
 package com.example.buituananh.presentation.library
 
+import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -61,6 +62,10 @@ class LibraryViewModel @AssistedInject constructor (
             is LibraryIntent.ClickPlaylist -> clickPlaylist(intent.playlist)
             is LibraryIntent.StartSong -> startSong(intent.song)
         }
+    }
+    
+    fun launchService(){
+        playbackManager.launchService()
     }
 
     private fun startSong(song: Song) {

@@ -38,7 +38,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePlaybackManager(): PlaybackManager = PlaybackManager()
+    fun providePlaybackManager(@ApplicationContext context: Context): PlaybackManager = PlaybackManager(context)
 
     @Provides
     @Singleton

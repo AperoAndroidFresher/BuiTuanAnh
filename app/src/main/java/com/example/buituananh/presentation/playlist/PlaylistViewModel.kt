@@ -1,8 +1,8 @@
 package com.example.buituananh.presentation.playlist
 
-import android.util.Log
+import android.app.Activity
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.buituananh.data.local.mapper.toEntity
 import com.example.buituananh.data.util.Result
@@ -22,7 +22,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = PlaylistViewModel.Factory::class)
 class PlaylistViewModel @AssistedInject constructor(
@@ -70,6 +69,10 @@ class PlaylistViewModel @AssistedInject constructor(
             is PlaylistIntent.UndoRemovePlaylist -> undoRemovePlaylist()
             is PlaylistIntent.StartSong -> startSong(intent.song)
         }
+    }
+
+    fun launchService(){
+        playbackManager.launchService()
     }
     
     fun checkSongInPlaylist(): Boolean {
