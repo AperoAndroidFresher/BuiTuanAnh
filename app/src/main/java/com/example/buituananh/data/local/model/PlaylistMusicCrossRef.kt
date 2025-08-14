@@ -25,5 +25,6 @@ import androidx.room.Index
 )
 data class PlaylistMusicCrossRef(
     val playlistId: Long,
-    val songId: Long
+    val songId: Long,
+    val position: Int
 )
