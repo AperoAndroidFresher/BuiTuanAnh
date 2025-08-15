@@ -88,7 +88,11 @@ class PlaylistRepositoryImpl @Inject constructor(
         }
     }
 
-       
+    override suspend fun getPlaylistWithSongById(playlistId: Long): Flow<Playlist> {
+        return playlistDao.getPlaylistWithSongsById(playlistId).map { it.toPlaylist()
+        
+          }
+    }
 
     override suspend fun isSongInPlaylist(playlistId: Long, songId: Long): Boolean {
         return playlistDao.isSongInPlaylist(playlistId, songId)
